@@ -39,7 +39,7 @@
 - G4 PASS：Key 仅 env、不落盘；产物脱敏测试通过；桶与上游类型一致；fail-closed 实现并被测试触发验证。
 - G5 PASS：四组固定生成器 + 长度不变量测试；A 组混杂标注。
 - G6 PASS（live 完成）：100/100 有效调用，逐次证据 results/phase0/live/calls.csv。
-- G7 待提交后核验：远端 SHA 一致性将在 push 后于本报告补记。
+- G7 PASS：push 后核验 origin/main == 本地 HEAD = `b6f8b78912fb2345b1b41f25452794b13f8b8d3c`（git ls-remote 对拍），工作区 clean（git status --porcelain 为空）。
 - G8 PASS：未声称缓存降本结论或进化效果；结果仅为测量值+混杂披露。
 
 ## 运行记录

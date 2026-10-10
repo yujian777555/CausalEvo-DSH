@@ -15,8 +15,10 @@
   "executor_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "PENDING_FINAL_COMMIT",
-    "remote_verified": false
+    "latest_executor_commit": "b6f8b78912fb2345b1b41f25452794b13f8b8d3c",
+    "remote_verified": true,
+    "remote_verification": "git ls-remote origin main == local HEAD; git status --porcelain empty",
+    "note": "this status.json update itself is committed in the follow-up housekeeping commit on top of b6f8b78"
   },
   "tests": {
     "run": true,
