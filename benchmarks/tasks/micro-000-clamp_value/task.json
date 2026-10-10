@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-000-clamp_value",
+  "function": "clamp_value",
+  "bug_class": "swapped-arguments",
+  "split": "train",
+  "instructions": "solution.py provides clamp_value(x, lo, hi) that should clamp x into [lo, hi]. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "8479f83a359dd3893113507843dcb229729e00f7faf9814c9f37e63d0ba2b27c",
+    "visible_tests.py": "4c7aee0011206007e780b74d94da5be416461e51ba8ba094c31df7eed5711cf0",
+    "sealed/sealed_tests.py": "7baaca15a9ed54cbca4a9e96c4e9d413d997d069aa653ebb1d0cbfa393259ce3",
+    "reference/solution_fixed.py": "d1a294cd3fae0b13199d8ea82a88be50763adca8dd7d85efae2d8a106e97a76b"
+  },
+  "task_json_sha256": "7f0df66083cdbe6949c492d2a753107c4cfbccc95719076272db1d86c151f9f2"
+}

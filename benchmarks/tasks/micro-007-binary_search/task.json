@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-007-binary_search",
+  "function": "binary_search",
+  "bug_class": "wrong-return",
+  "split": "sealed_test",
+  "instructions": "solution.py provides binary_search(xs, t): index of t in ascending xs, or -1 if absent. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "b7aa899a1f779a110e9993717dbb5b84d414323f38699b19666760fe04aa38b5",
+    "visible_tests.py": "5bf2c5da65f87959178f705c7f21c3aeddcd87c8e4f04d3d0c17bcf317550098",
+    "sealed/sealed_tests.py": "aa470dd2e09949fc747af331f9519df38d9df14f5401c8aa3da17ddfbffdbd38",
+    "reference/solution_fixed.py": "4d430015b0413531ff353a9b3f2bfa9b528e3f93095c590ed0dd4d419eb8d6a7"
+  },
+  "task_json_sha256": "3863ee844762af7f9bb5977c3dafe6600d7d4e83abc5b7da74a64a65af7b589b"
+}

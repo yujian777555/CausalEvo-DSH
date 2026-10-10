@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-019-parse_kv",
+  "function": "parse_kv",
+  "bug_class": "missing-limit",
+  "split": "train",
+  "instructions": "solution.py provides parse_kv(s): parse 'k=v;k2=v2' into a dict; values may contain '='. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "36c25fac0a754f910b9e8c91ac9e8f9d1d92fb95d9779c5e33c3ffd5835e2306",
+    "visible_tests.py": "389496f3c62d1cf27b85fef18249d449755b7e421e7612bd53359a681d2b49fd",
+    "sealed/sealed_tests.py": "f70fd84832465c3d90e75ecdb258d3045488107d61c459f7662fb745c051f7e3",
+    "reference/solution_fixed.py": "ea849ad0e559a225a47186bbf0915eb7738896622c4ae4907790c43870737b54"
+  },
+  "task_json_sha256": "0466b31b437972174c23c79489a49aaa693fe8309993d5f14a1643e4ef9414d1"
+}

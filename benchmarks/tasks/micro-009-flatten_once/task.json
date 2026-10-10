@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-009-flatten_once",
+  "function": "flatten_once",
+  "bug_class": "wrong-iteration",
+  "split": "train",
+  "instructions": "solution.py provides flatten_once(lst): flatten one nesting level, e.g. [[1,2],[3]] -> [1,2,3]. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "92a2b68e7f385641eb9a8e2393c16d206f9e892c7a676740638f402a78aaae9b",
+    "visible_tests.py": "3fdc6d9624e68f154bbb71c9b2f46a521e9c6f3df29ed9c8a9ca8f896efc25c6",
+    "sealed/sealed_tests.py": "405ff42b6e116d66acd15a317d589e60aed903b124e14c7dcbeab57861635bd4",
+    "reference/solution_fixed.py": "c4d24c3daa2c5c3c2396a1b9f4a2305be3ea0fbeb04017512fc25e328cd3ec7d"
+  },
+  "task_json_sha256": "135d2f098be7b47cb945d19d8c92a366ac3f8034d1da4c7e657524f3e72704f8"
+}

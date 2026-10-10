@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-001-moving_average",
+  "function": "moving_average",
+  "bug_class": "off-by-one",
+  "split": "sealed_test",
+  "instructions": "solution.py provides moving_average(xs, k): list of windowed means for every consecutive window of size k. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "20b7857e3cc3f61ad1c30b064d352d88c6f90163bfb2209fdbb686368ea9d570",
+    "visible_tests.py": "e81115aef2d7de6c0519b882448d19560b9ac1f2ad89216a2714a11487f2b748",
+    "sealed/sealed_tests.py": "c1990ebfd935dce0b0f986105072f317804e54491f6751f89715858de7fa35db",
+    "reference/solution_fixed.py": "9eae3cdbafdc15af105814aafde494ccf91025dd0efbcb7a66e49a6b42e02250"
+  },
+  "task_json_sha256": "81721f4595c146b96786b1d4c5481380acb0e32b67b7c612ef6b42b5be1c5537"
+}

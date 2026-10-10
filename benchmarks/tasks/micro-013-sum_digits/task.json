@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-013-sum_digits",
+  "function": "sum_digits",
+  "bug_class": "missing-edge-case",
+  "split": "train",
+  "instructions": "solution.py provides sum_digits(n): sum of decimal digits of integer n, also correct for negative n (sign ignored). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "a2ebf90a299c1ceba2fd2387e3ef4745feb2860c01e7ae6963d063a7f1963386",
+    "visible_tests.py": "034be30116ac126694fe69e341aad4b8715f47d97831a063de9160034148dee5",
+    "sealed/sealed_tests.py": "284ee0073ceada9697632ab5a97a62ccf0b8f7d10cc7063dbbb47a498d7272f3",
+    "reference/solution_fixed.py": "4f316e1a428e0a39af2ead302f6d10fcb7bae8647b9c0cedb17f8e75ba8321c7"
+  },
+  "task_json_sha256": "3a90820d65a8ac2707f7e157f4fcd25553a31caa546fc9bfd7fe0a4ab39e51ab"
+}

@@ -1,0 +1,41 @@
+{
+  "run_id": "B1-self-reflection-fixed-budget-20261010T071316Z",
+  "policy_id": "B1-self-reflection-fixed-budget",
+  "created_utc": "20261010T071410Z",
+  "split_seed": 20261010,
+  "task_count": 26,
+  "executor_kind": "docker",
+  "config": {
+    "policy": "B1-self-reflection-fixed-budget",
+    "budget": {
+      "max_provider_calls": 2,
+      "max_total_output_tokens": 2048,
+      "max_tool_calls": 20,
+      "wall_time_s": 300
+    },
+    "behavior": {
+      "allow_reflection": true,
+      "max_attempts_per_task": 2,
+      "persistent_updates": false
+    },
+    "execution": {
+      "mode": "offline",
+      "executor": "docker",
+      "fake_agent_mode": "noop"
+    },
+    "tasks": {
+      "source": "benchmarks/tasks",
+      "splits": [
+        "train",
+        "dev",
+        "sealed_test"
+      ]
+    }
+  },
+  "config_sha256": "760a694380bcd29f",
+  "notes": [
+    "OFFLINE pipeline validation with fake agent; outcomes are not model performance",
+    "judge receives no policy identity (blinded)",
+    "sealed tests never enter the agent-visible workspace"
+  ]
+}

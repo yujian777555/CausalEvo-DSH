@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-004-fibonacci",
+  "function": "fibonacci",
+  "bug_class": "wrong-base-case",
+  "split": "train",
+  "instructions": "solution.py provides fibonacci(n): n-th Fibonacci number with fibonacci(0)==0, fibonacci(1)==1. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "161ad28a16f5de1302893c309e332f0b6ea9d28e1a409762325033b617e52da7",
+    "visible_tests.py": "eb856cebfb794f1ffb81ba20c4021967139913719a7c65957c96c8e02e227d18",
+    "sealed/sealed_tests.py": "babaaa24ec12e60c3a6d6cc0abf2cab2b005c6311cae343145dfd1c90f8fbb57",
+    "reference/solution_fixed.py": "65acf1fe373716e2753b63e4157dec7418ad17175500e55ecbe7cffbc499544f"
+  },
+  "task_json_sha256": "21004417f865caf3d658fad3cf58847c90ad23bbc489dfefe427dfbe57ce5875"
+}

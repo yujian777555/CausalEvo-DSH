@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-012-title_case",
+  "function": "title_case",
+  "bug_class": "incomplete-mapping",
+  "split": "dev",
+  "instructions": "solution.py provides title_case(s): capitalize the first letter of every whitespace-separated word, lowercase the rest. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "ce3aa933fee67162e778267117b9c7c0cb6c3dbfd5803ba1b01475cc5556539f",
+    "visible_tests.py": "282baf10b45330324b3428a58007fa46f258ac0852a11db64c7950cae53039fd",
+    "sealed/sealed_tests.py": "dd54d9fc08555d29249ebb06d687d1ec47b06e45a66c20c39f7ce4055e65775d",
+    "reference/solution_fixed.py": "fc32a13870e305dc5c8938586036a318fe2a4cd2567dd113da186b92dc35c405"
+  },
+  "task_json_sha256": "63415a70bfd6d4cf41ef40388003bac0d358a5a9dc3c4249ed9973c3612c8712"
+}

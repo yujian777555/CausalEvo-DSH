@@ -1,0 +1,11 @@
+# Pinned-hash content must checkout byte-identical on every platform.
+benchmarks/tasks/** text eol=lf
+benchmarks/registry.json text eol=lf
+results/** text eol=lf
+configs/** text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.jsonl text eol=lf

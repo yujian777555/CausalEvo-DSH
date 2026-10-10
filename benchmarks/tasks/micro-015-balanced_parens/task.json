@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-015-balanced_parens",
+  "function": "balanced_parens",
+  "bug_class": "missing-prefix-check",
+  "split": "train",
+  "instructions": "solution.py provides balanced_parens(s): True iff parentheses string s is balanced (never negative prefix, ends at zero). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "0828fb1a0d9da1496a7805b62704271b6c02581a0f21a0d6221a5cd96839d684",
+    "visible_tests.py": "b8f02f096b4d096bc942b90959424c8f1bf5acd7c41a5351b6817cc27c1d2710",
+    "sealed/sealed_tests.py": "6165e5a27ad9fe7bd44aa6a67639eadc8595d260184377a49d98df30ecd2de69",
+    "reference/solution_fixed.py": "b82485816dbb75d6229319386ce52f34513f14fda3c8faccd187ab690b2ed180"
+  },
+  "task_json_sha256": "72073babffab9ae1c1f57bde0977f5ec054f3e1cc4e21e993496bd20c8558fbf"
+}

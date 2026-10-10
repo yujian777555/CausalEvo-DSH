@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-010-chunk_list",
+  "function": "chunk_list",
+  "bug_class": "missing-step",
+  "split": "sealed_test",
+  "instructions": "solution.py provides chunk_list(xs, n): split xs into consecutive chunks of size n (last chunk may be shorter). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "08b8a695665a9a856f33a234c88ac0b14beb3960d51c4fc7512bbc6bfc76f2da",
+    "visible_tests.py": "56d22231b1fffb3720549555ba8e784e35924539e4bf2c4a973f7f0eb838ec76",
+    "sealed/sealed_tests.py": "4890d9a82f32cab560c73232be271cc17b873ce5f0258f73b75c4f3d6171b30c",
+    "reference/solution_fixed.py": "bd878034152f6f3713175f2e720a6a47a522ce72f7bd4e785cd5dd449c1d4475"
+  },
+  "task_json_sha256": "ee043bb6a3e1c77374ea815b58059174805476555ea3cb127e6f4a298e1f7931"
+}

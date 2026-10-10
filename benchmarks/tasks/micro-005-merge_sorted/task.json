@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-005-merge_sorted",
+  "function": "merge_sorted",
+  "bug_class": "inverted-comparison",
+  "split": "dev",
+  "instructions": "solution.py provides merge_sorted(a, b): merge two ascending lists into one ascending list. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "ff3c2b6af3356654ee46bfff19d96cf786123283e4f10207121d8264007fe0ec",
+    "visible_tests.py": "8829e55f02c02cdb0977d49dc8e1814cabfa45718ab01f05ffafc23a31e370bb",
+    "sealed/sealed_tests.py": "dfe1d992b9bcc23b77c3e39aa63786dfc8089181366f9bb7462f77e754b8b1a9",
+    "reference/solution_fixed.py": "49bf21829a010d539a8bc86399d666db19a5f65f4cf41e3a2dbb9e9c7c04871c"
+  },
+  "task_json_sha256": "49655efd59345105173b9123bf21225660fc7c6fc83e2758053e5300bc5652ac"
+}

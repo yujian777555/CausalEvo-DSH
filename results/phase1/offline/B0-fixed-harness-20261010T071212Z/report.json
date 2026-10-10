@@ -1,0 +1,55 @@
+{
+  "manifest": {
+    "run_id": "B0-fixed-harness-20261010T071212Z",
+    "policy_id": "B0-fixed-harness",
+    "created_utc": "20261010T071316Z",
+    "split_seed": 20261010,
+    "task_count": 26,
+    "executor_kind": "docker",
+    "config": {
+      "policy": "B0-fixed-harness",
+      "budget": {
+        "max_provider_calls": 2,
+        "max_total_output_tokens": 2048,
+        "max_tool_calls": 20,
+        "wall_time_s": 300
+      },
+      "behavior": {
+        "allow_reflection": false,
+        "max_attempts_per_task": 1,
+        "persistent_updates": false
+      },
+      "execution": {
+        "mode": "offline",
+        "executor": "docker",
+        "fake_agent_mode": "noop"
+      },
+      "tasks": {
+        "source": "benchmarks/tasks",
+        "splits": [
+          "train",
+          "dev",
+          "sealed_test"
+        ]
+      }
+    },
+    "config_sha256": "1a2d5b7fb97c9dfa",
+    "notes": [
+      "OFFLINE pipeline validation with fake agent; outcomes are not model performance",
+      "judge receives no policy identity (blinded)",
+      "sealed tests never enter the agent-visible workspace"
+    ]
+  },
+  "summary": {
+    "requested": 26,
+    "executed": 26,
+    "scored": 26,
+    "visible_tests_passed": 15,
+    "sealed_tests_passed": 0,
+    "task_succeeded": 0,
+    "invalid": 0,
+    "timeouts": 0,
+    "success_rate_over_executed": 0.0,
+    "note": "offline pipeline validation; fake-policy outcomes are NOT model performance"
+  }
+}

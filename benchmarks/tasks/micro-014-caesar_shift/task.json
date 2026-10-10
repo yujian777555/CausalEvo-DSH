@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-014-caesar_shift",
+  "function": "caesar_shift",
+  "bug_class": "wrong-direction",
+  "split": "train",
+  "instructions": "solution.py provides caesar_shift(s, k): shift every lowercase ASCII letter FORWARD by k positions (wrap around). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "70b6e4fbd86bdd6d7019f4420d9da53d22397132649dec97db92adc1f6341b89",
+    "visible_tests.py": "d7b8290e4f4f5a5715d017ed74b9f4d147f754a9f1a99286bf2e46126f070437",
+    "sealed/sealed_tests.py": "b4bacb3e2ded4ec931b6d2a07d3c3cb6c0ca24d2b16f2cc2ec46da745393caaa",
+    "reference/solution_fixed.py": "959e1c71b7a3ce35342d84862b679e711c9cf70f66b28d71fabd6953a8338704"
+  },
+  "task_json_sha256": "2eae038b76b734812663d7016e17b7328f264be835e42cd760d4f427e6daabd7"
+}

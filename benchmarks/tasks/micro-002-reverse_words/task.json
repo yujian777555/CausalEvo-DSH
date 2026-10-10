@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-002-reverse_words",
+  "function": "reverse_words",
+  "bug_class": "missing-operation",
+  "split": "dev",
+  "instructions": "solution.py provides reverse_words(s): reverse the order of whitespace-separated words. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "28568741dd68ab47fcd515e7a883d3e3773146437d01f038236f2bb385132443",
+    "visible_tests.py": "935d0cff705fb2dae40d49a7521c02f3ada2580a0970d89fe378801f56815ebf",
+    "sealed/sealed_tests.py": "1d44a4d26d88e1583419c6a27ca53d5343d54b8df31ad302af0b3a5acb97b5fc",
+    "reference/solution_fixed.py": "6285eb9304fb3967205149a8efa8f7de3c3d38257d027604a2dd6323c7034fed"
+  },
+  "task_json_sha256": "6affd60df28ba17c74226b72dbdab535d32fc91f9a88d558071668b1b959ebe9"
+}

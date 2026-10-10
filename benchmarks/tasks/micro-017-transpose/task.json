@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-017-transpose",
+  "function": "transpose",
+  "bug_class": "swapped-indices",
+  "split": "train",
+  "instructions": "solution.py provides transpose(m): transpose a rectangular matrix (list of rows). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "42c9aac6cf14de7421d72820a6429828210f9a49c2581111eb7f7b84687e78d8",
+    "visible_tests.py": "2858c727122c00347a4c97def96055c799b68803474767e6f0f2fe4a5944f543",
+    "sealed/sealed_tests.py": "bb8e26392254a95fa1d96dae8d96ac51220c5b2c6b8087424b1b258768db227c",
+    "reference/solution_fixed.py": "5dcf88e9acbc482aaf727b2f963d4ae1ae7db9aaaea814821e7755aee03b42cf"
+  },
+  "task_json_sha256": "07a5e789e29dc466af4af0123f0ca9c6f4acda9ad4242b5c73a5f2b8930f6ed7"
+}

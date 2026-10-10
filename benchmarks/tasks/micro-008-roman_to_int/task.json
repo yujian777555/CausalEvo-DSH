@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-008-roman_to_int",
+  "function": "roman_to_int",
+  "bug_class": "inverted-condition",
+  "split": "sealed_test",
+  "instructions": "solution.py provides roman_to_int(s): convert a valid Roman numeral (I,V,X,L,C) to int, standard subtraction rule. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "e8abef99a8e4ee17c665677bb47f4abb4daa36f48c540b6cebfb573e4256db1a",
+    "visible_tests.py": "d02b0e76d7875d802b80f8f1b56db7810a62a49def418ff01d6a535414452795",
+    "sealed/sealed_tests.py": "023edf70d2d12c448d2a64a60f5516add9bb7e5ac1cdb37f7e0e5aa824460209",
+    "reference/solution_fixed.py": "22337d372d6c30a44ae9e0136702269959ad7b0a629700b80990ce44f3633445"
+  },
+  "task_json_sha256": "108dbc7ecf3ed83709eeb5fc9ef8b65f966533f8a6b3ba226397f0ace902fe95"
+}

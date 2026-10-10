@@ -1,0 +1,18 @@
+# Phase 1 baseline B0 — fixed harness agent (OFFLINE definition this round).
+policy: B0-fixed-harness
+budget:
+  max_provider_calls: 2        # envelope shared with B1; B0 uses at most 1
+  max_total_output_tokens: 2048
+  max_tool_calls: 20
+  wall_time_s: 300
+behavior:
+  allow_reflection: false
+  max_attempts_per_task: 1
+  persistent_updates: false
+execution:
+  mode: offline               # live requires a separate Planner plan + budget
+  executor: docker            # fallback local-trusted only for trusted content
+  fake_agent_mode: noop       # honest: no fixes are applied
+tasks:
+  source: benchmarks/tasks
+  splits: [train, dev, sealed_test]

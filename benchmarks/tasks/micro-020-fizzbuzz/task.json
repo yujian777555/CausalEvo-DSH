@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-020-fizzbuzz",
+  "function": "fizzbuzz",
+  "bug_class": "wrong-order",
+  "split": "dev",
+  "instructions": "solution.py provides fizzbuzz(n): 'FizzBuzz' if divisible by 15, 'Fizz' by 3, 'Buzz' by 5, else str(n). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "480b2c1aad749c5fcd995c8641f57a75f7d4ce56304a2dc066f3a9d06d54e6bf",
+    "visible_tests.py": "379923898189c79e32b1687b8cb815727aed868701508b0ada53c6757a9d6af9",
+    "sealed/sealed_tests.py": "96dc74aa3d93a4f1a8412da65bc92042a3690c1207a496699724e6f67692ef73",
+    "reference/solution_fixed.py": "0cdf4890a022cb85f8cde8fb1e50de1f61248e6b7e8ab2457ceeab3f7e9617e2"
+  },
+  "task_json_sha256": "5aaa5857b196838298ebbb15055640402ed77125cad1d0ee7d53da528c22418f"
+}

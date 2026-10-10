@@ -22,8 +22,10 @@ results/**/workspace/
 
 # --- raw / oversized logs ---
 *.log
-*.jsonl
 logs/
+# raw harness session logs stay local; redacted-by-construction eval traces may be committed
+*.jsonl
+!results/phase1/**/traces.jsonl
 
 # --- benchmark scratch ---
 results/phase0/tmp/

@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-003-count_vowels",
+  "function": "count_vowels",
+  "bug_class": "wrong-constant",
+  "split": "train",
+  "instructions": "solution.py provides count_vowels(s): count English vowels a,e,i,o,u (case-insensitive; y is NOT a vowel). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "926ea8a11b212a5342ac3499f47cc99ec515937773d8352622224a1cb4729a0f",
+    "visible_tests.py": "15bf2e019abbddbeca87914d90aeeeb5f9645ffe4b8c486600917c0d6233cc38",
+    "sealed/sealed_tests.py": "40a313014ebf0204a5f9971dc3fb739f66e3556f3068e1dbf5194441e784dc41",
+    "reference/solution_fixed.py": "5d5b0a86048f2f760e93a1620fd348a0853b33e4cc6303101ca0c715850e7d1b"
+  },
+  "task_json_sha256": "f35f364384b05de0a55dd9805514c9166452b0a2049a9ac8a46a5f5e8323bc09"
+}

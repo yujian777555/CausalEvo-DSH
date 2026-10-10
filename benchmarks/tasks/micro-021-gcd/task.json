@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-021-gcd",
+  "function": "gcd",
+  "bug_class": "wrong-final-value",
+  "split": "sealed_test",
+  "instructions": "solution.py provides gcd(a, b): greatest common divisor of positive integers via Euclid. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "b692f14a91cb17240a54aa95dd8677a1a1d15af1f171e402d6af31f8f48228df",
+    "visible_tests.py": "d1db7e25e249e47c9edc0396b48f5ca5b5cbd42b30cc39d223a5149fd14c5730",
+    "sealed/sealed_tests.py": "467233fd6a58e1ccc28cd824da6cfe3111ae42b4d6d44998156d02d3a0daab93",
+    "reference/solution_fixed.py": "284dc9bdad1167ba135e235228699da90d35382c9bb3950f0b044735286d10e6"
+  },
+  "task_json_sha256": "2900b8328914a55f4c4f8a796e4351954dae57b3d60a6a1c53b8dd2902fb8d74"
+}

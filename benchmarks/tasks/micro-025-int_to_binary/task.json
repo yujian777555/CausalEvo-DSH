@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-025-int_to_binary",
+  "function": "int_to_binary",
+  "bug_class": "wrong-padding-side",
+  "split": "dev",
+  "instructions": "solution.py provides int_to_binary(n, width): binary string of non-negative n zero-padded on the LEFT to width (n fits). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "1c0375b03166396b70c1ccaaf8db66e9768377a7281deefe6a512df92ebbd1d7",
+    "visible_tests.py": "ccf43cc0221d5ff7cf7c33256ddcf8dbe4dd4f8b663a5c5a1b06d0c2857fb77e",
+    "sealed/sealed_tests.py": "306c4db6a4abc941a3b82e56e7513cbe29c8b28895bf98a650aa326faedbe6fd",
+    "reference/solution_fixed.py": "483393b06ceebd59f48dc9bc26945e468ec33c7f8ce41c4adfedaf36ed74e691"
+  },
+  "task_json_sha256": "95ffbc5429edb329772bcb3900d666bedddd41b3aba7a41e01519f0ba01c5b41"
+}

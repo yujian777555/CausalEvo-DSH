@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-006-is_palindrome",
+  "function": "is_palindrome",
+  "bug_class": "missing-normalization",
+  "split": "dev",
+  "instructions": "solution.py provides is_palindrome(s): True iff s reads the same forwards and backwards, case-insensitively. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "55cdbbaa8c1a5cca7d2a8cc8704c1ac5a5cb5936ddbf64d9b1b4ba6009ec4014",
+    "visible_tests.py": "ed05566d9e4e22d0cd6821f6e7272651329a5dafc5bd35b9f3a5193ac0bb4f3d",
+    "sealed/sealed_tests.py": "849dadb47833b9d251b80b0192d78071ac3f2b08bb45c39a4f398c5e5978b0c2",
+    "reference/solution_fixed.py": "3d7d9e24288481198023862bf0fcd75e4200a6b31e357e595b0b0def5f3d6d28"
+  },
+  "task_json_sha256": "88a43b9bf7ec0299741b37bb6acecf85cfbe355e8a732b11818b5aa7e8099265"
+}

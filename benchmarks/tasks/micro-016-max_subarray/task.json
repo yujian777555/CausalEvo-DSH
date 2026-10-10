@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-016-max_subarray",
+  "function": "max_subarray",
+  "bug_class": "wrong-initial-value",
+  "split": "train",
+  "instructions": "solution.py provides max_subarray(xs): maximum sum of any non-empty contiguous subarray (Kadane). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "a2c1d690a02c0744d68538d0948dc4b0cd51a92e05612fa22808677f5b5bf796",
+    "visible_tests.py": "90154e5b3947e8efa410bc91a39efadcbde7696839e73e2e6e64f6e7dc812da5",
+    "sealed/sealed_tests.py": "55382c83b8b1479abc93a8da7add581d3bcf28437f3a4f2d9d44acbf04861204",
+    "reference/solution_fixed.py": "3e93db34ab04de27396fd2c3216896be9d8a4718c93a73752cba2ec2dc93f06d"
+  },
+  "task_json_sha256": "4d8e4374eabefe961c3874625e3e82089d70b5efda3d916f8eed884fb74bdb3f"
+}

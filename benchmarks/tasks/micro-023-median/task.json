@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-023-median",
+  "function": "median",
+  "bug_class": "missing-branch",
+  "split": "dev",
+  "instructions": "solution.py provides median(xs): median of a non-empty list; even length -> mean of the two middle values. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "e93e503e3451e25705541066f24f3b60e5d164ad81607607d1f770a00c9b936d",
+    "visible_tests.py": "67c0d2f4947b67e25f36d2800e8ac6a8f8d99bae6ea692972eefc69a3820bc46",
+    "sealed/sealed_tests.py": "37b185abdeee26ffc7952eb84c1ba7a62388de679c415e6cc85874714a4b45c7",
+    "reference/solution_fixed.py": "ec106f898a277bdb1c1b33cf281bad57d0c41ae89ea0bddc1d542e2208267bf7"
+  },
+  "task_json_sha256": "2245acaae88b9e8a749c5c3b60363b78b6460bd516d587fd0752dae2b91bee25"
+}

@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-024-count_inversions_naive",
+  "function": "count_inversions_naive",
+  "bug_class": "inverted-strictness",
+  "split": "train",
+  "instructions": "solution.py provides count_inversions(xs): number of pairs i<j with xs[i] > xs[j] (strictly greater). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "9ce7d665cc3e03f1e80391c63f57ea4a78773e5320ff743de250de59e364d336",
+    "visible_tests.py": "3989727cfee6aeb1a3178f3a0a99023b050cf7467208d1ef16248463277e34fc",
+    "sealed/sealed_tests.py": "4058607e6e0f07890e03c1f1930dfaa66a5c3f7c91d1f2cbc772b024295924ad",
+    "reference/solution_fixed.py": "1010b1dcb0ce8ba9202f8c2f4ff79585ebcd563fb3294b6693669d8b9a26970a"
+  },
+  "task_json_sha256": "478ec869f6913b85b2c69a4972451b63d473bf94009415c9bdf9293ef31109e5"
+}

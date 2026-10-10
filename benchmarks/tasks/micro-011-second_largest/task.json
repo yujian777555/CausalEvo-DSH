@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-011-second_largest",
+  "function": "second_largest",
+  "bug_class": "wrong-end",
+  "split": "sealed_test",
+  "instructions": "solution.py provides second_largest(xs): the second-largest distinct value in xs (xs has >=2 distinct values). It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "c932d7b9c3684dce0190a54fc0b6b6bc01f1f372e37c520b9816045e7be48d64",
+    "visible_tests.py": "9e92ed1e3c2169bb14944ce468928d68131449297fc9819a7546fd8b3ea1342c",
+    "sealed/sealed_tests.py": "9f9e71ff1aa88f50a464eea887eea9665e938992525e9703e7bd8d4d1ffd5d8d",
+    "reference/solution_fixed.py": "25682430b6c0424dda6043e5f8ca7ec16695df39d0b3e98631f75a6b4ca583b8"
+  },
+  "task_json_sha256": "282a136d666a56ab59136454842c73a62c549d037c45043cfc88fe684effebea"
+}

@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-022-word_count",
+  "function": "word_count",
+  "bug_class": "naive-split",
+  "split": "train",
+  "instructions": "solution.py provides word_count(s): number of whitespace-separated words; runs of whitespace count as one separator. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "c468478c6486418e468068af989edc7db6020141b70e36db20f9d191f72ca782",
+    "visible_tests.py": "1021305a5d6dc068bfbf1524093bc76e6b2808fb37ce5b88f46ee7607f25c10d",
+    "sealed/sealed_tests.py": "c9e6179d7361b6571fabee376b861d6998ef8d8fd8d7b51ec5e156e253273556",
+    "reference/solution_fixed.py": "25f30488c08c810ad247739e41e40634cb5ee524bf6ebcbfe80d6c9d25a4d942"
+  },
+  "task_json_sha256": "2c073f077bc523586e89368c8d3c6fab8e18a1826565b16f0abe7c5c53187045"
+}

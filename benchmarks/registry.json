@@ -1,0 +1,403 @@
+{
+  "version": 1,
+  "generated": "2026-10-10",
+  "plan_id": "CE-DSH-P1-R1",
+  "external_candidates": [
+    {
+      "name": "SWE-bench Verified",
+      "source": "https://github.com/SWE-bench/SWE-bench + HF dataset princeton-nlp/SWE-bench_Verified",
+      "license": "MIT (repo, via GitHub license API 2026-10-10; HF dataset card)",
+      "tasks": 500,
+      "oracle": "hidden test suite per instance (deterministic pass/fail), Docker harness",
+      "offline_capable": "after image/dataset download; ~120GB disk for full build set",
+      "cost": "free data; heavy compute",
+      "contamination_risk": "high (public GitHub issues in training corpora); mitigation: sealed-split usage only for eval, none for tuning",
+      "status": "NOT_VERIFIED (metadata audit only; no download this round)"
+    },
+    {
+      "name": "Terminal-Bench (core/2.x)",
+      "source": "https://github.com/laude-institute/terminal-bench + harbor framework",
+      "license": "originally dual MIT/Apache-2.0 (third-party NOTICE, 2026-03); GitHub license API returned none on 2026-10-10 — re-verify before redistribution",
+      "tasks": "~89 (2.0) to 247 (core) depending on version",
+      "oracle": "per-task Docker image + programmatic verification tests, oracle solutions exist",
+      "offline_capable": "after image pull; per-task containers",
+      "cost": "free data; moderate compute",
+      "contamination_risk": "medium (public tasks); sealed-split discipline still required",
+      "status": "NOT_VERIFIED (metadata audit only; no download this round)"
+    },
+    {
+      "name": "AppWorld",
+      "source": "https://github.com/StonyBrookNLP/appworld (ACL'24 best resource paper)",
+      "license": "Apache-2.0 (GitHub license API 2026-10-10)",
+      "tasks": "tasks over 457 APIs / 9 simulated apps",
+      "oracle": "programmatic state-based tests (TGC etc.)",
+      "offline_capable": "engine runs locally; heavier setup",
+      "cost": "free",
+      "contamination_risk": "medium",
+      "status": "NOT_VERIFIED (metadata audit only; no download this round)"
+    }
+  ],
+  "selection": {
+    "primary_candidate": "SWE-bench Verified",
+    "rationale": "mature Docker harness with deterministic hidden-test oracle, MIT license, Python repos match our executor; adoption makes results comparable. License-verified Apache-2.0 AppWorld kept as secondary (tool/API diversity). Terminal-Bench license needs re-verification before use.",
+    "decision_status": "candidate selected for Phase 1B pilot planning; no external benchmark has been downloaded or run"
+  },
+  "microtasks": {
+    "count": 26,
+    "purpose": "engineering smoke only; NOT external benchmark performance evidence",
+    "split_seed": 20261010,
+    "split_quota": {
+      "train": 13,
+      "dev": 7,
+      "sealed_test": 6
+    },
+    "splits": {
+      "train": [
+        "micro-000-clamp_value",
+        "micro-003-count_vowels",
+        "micro-004-fibonacci",
+        "micro-009-flatten_once",
+        "micro-013-sum_digits",
+        "micro-014-caesar_shift",
+        "micro-015-balanced_parens",
+        "micro-016-max_subarray",
+        "micro-017-transpose",
+        "micro-018-dedup_adjacent",
+        "micro-019-parse_kv",
+        "micro-022-word_count",
+        "micro-024-count_inversions_naive"
+      ],
+      "dev": [
+        "micro-002-reverse_words",
+        "micro-005-merge_sorted",
+        "micro-006-is_palindrome",
+        "micro-012-title_case",
+        "micro-020-fizzbuzz",
+        "micro-023-median",
+        "micro-025-int_to_binary"
+      ],
+      "sealed_test": [
+        "micro-001-moving_average",
+        "micro-007-binary_search",
+        "micro-008-roman_to_int",
+        "micro-010-chunk_list",
+        "micro-011-second_largest",
+        "micro-021-gcd"
+      ]
+    },
+    "tasks": [
+      {
+        "task_id": "micro-000-clamp_value",
+        "split": "train",
+        "function": "clamp_value",
+        "bug_class": "swapped-arguments",
+        "hashes": {
+          "workspace/solution.py": "8479f83a359dd3893113507843dcb229729e00f7faf9814c9f37e63d0ba2b27c",
+          "visible_tests.py": "4c7aee0011206007e780b74d94da5be416461e51ba8ba094c31df7eed5711cf0",
+          "sealed/sealed_tests.py": "7baaca15a9ed54cbca4a9e96c4e9d413d997d069aa653ebb1d0cbfa393259ce3",
+          "reference/solution_fixed.py": "d1a294cd3fae0b13199d8ea82a88be50763adca8dd7d85efae2d8a106e97a76b"
+        }
+      },
+      {
+        "task_id": "micro-001-moving_average",
+        "split": "sealed_test",
+        "function": "moving_average",
+        "bug_class": "off-by-one",
+        "hashes": {
+          "workspace/solution.py": "20b7857e3cc3f61ad1c30b064d352d88c6f90163bfb2209fdbb686368ea9d570",
+          "visible_tests.py": "e81115aef2d7de6c0519b882448d19560b9ac1f2ad89216a2714a11487f2b748",
+          "sealed/sealed_tests.py": "c1990ebfd935dce0b0f986105072f317804e54491f6751f89715858de7fa35db",
+          "reference/solution_fixed.py": "9eae3cdbafdc15af105814aafde494ccf91025dd0efbcb7a66e49a6b42e02250"
+        }
+      },
+      {
+        "task_id": "micro-002-reverse_words",
+        "split": "dev",
+        "function": "reverse_words",
+        "bug_class": "missing-operation",
+        "hashes": {
+          "workspace/solution.py": "28568741dd68ab47fcd515e7a883d3e3773146437d01f038236f2bb385132443",
+          "visible_tests.py": "935d0cff705fb2dae40d49a7521c02f3ada2580a0970d89fe378801f56815ebf",
+          "sealed/sealed_tests.py": "1d44a4d26d88e1583419c6a27ca53d5343d54b8df31ad302af0b3a5acb97b5fc",
+          "reference/solution_fixed.py": "6285eb9304fb3967205149a8efa8f7de3c3d38257d027604a2dd6323c7034fed"
+        }
+      },
+      {
+        "task_id": "micro-003-count_vowels",
+        "split": "train",
+        "function": "count_vowels",
+        "bug_class": "wrong-constant",
+        "hashes": {
+          "workspace/solution.py": "926ea8a11b212a5342ac3499f47cc99ec515937773d8352622224a1cb4729a0f",
+          "visible_tests.py": "15bf2e019abbddbeca87914d90aeeeb5f9645ffe4b8c486600917c0d6233cc38",
+          "sealed/sealed_tests.py": "40a313014ebf0204a5f9971dc3fb739f66e3556f3068e1dbf5194441e784dc41",
+          "reference/solution_fixed.py": "5d5b0a86048f2f760e93a1620fd348a0853b33e4cc6303101ca0c715850e7d1b"
+        }
+      },
+      {
+        "task_id": "micro-004-fibonacci",
+        "split": "train",
+        "function": "fibonacci",
+        "bug_class": "wrong-base-case",
+        "hashes": {
+          "workspace/solution.py": "161ad28a16f5de1302893c309e332f0b6ea9d28e1a409762325033b617e52da7",
+          "visible_tests.py": "eb856cebfb794f1ffb81ba20c4021967139913719a7c65957c96c8e02e227d18",
+          "sealed/sealed_tests.py": "babaaa24ec12e60c3a6d6cc0abf2cab2b005c6311cae343145dfd1c90f8fbb57",
+          "reference/solution_fixed.py": "65acf1fe373716e2753b63e4157dec7418ad17175500e55ecbe7cffbc499544f"
+        }
+      },
+      {
+        "task_id": "micro-005-merge_sorted",
+        "split": "dev",
+        "function": "merge_sorted",
+        "bug_class": "inverted-comparison",
+        "hashes": {
+          "workspace/solution.py": "ff3c2b6af3356654ee46bfff19d96cf786123283e4f10207121d8264007fe0ec",
+          "visible_tests.py": "8829e55f02c02cdb0977d49dc8e1814cabfa45718ab01f05ffafc23a31e370bb",
+          "sealed/sealed_tests.py": "dfe1d992b9bcc23b77c3e39aa63786dfc8089181366f9bb7462f77e754b8b1a9",
+          "reference/solution_fixed.py": "49bf21829a010d539a8bc86399d666db19a5f65f4cf41e3a2dbb9e9c7c04871c"
+        }
+      },
+      {
+        "task_id": "micro-006-is_palindrome",
+        "split": "dev",
+        "function": "is_palindrome",
+        "bug_class": "missing-normalization",
+        "hashes": {
+          "workspace/solution.py": "55cdbbaa8c1a5cca7d2a8cc8704c1ac5a5cb5936ddbf64d9b1b4ba6009ec4014",
+          "visible_tests.py": "ed05566d9e4e22d0cd6821f6e7272651329a5dafc5bd35b9f3a5193ac0bb4f3d",
+          "sealed/sealed_tests.py": "849dadb47833b9d251b80b0192d78071ac3f2b08bb45c39a4f398c5e5978b0c2",
+          "reference/solution_fixed.py": "3d7d9e24288481198023862bf0fcd75e4200a6b31e357e595b0b0def5f3d6d28"
+        }
+      },
+      {
+        "task_id": "micro-007-binary_search",
+        "split": "sealed_test",
+        "function": "binary_search",
+        "bug_class": "wrong-return",
+        "hashes": {
+          "workspace/solution.py": "b7aa899a1f779a110e9993717dbb5b84d414323f38699b19666760fe04aa38b5",
+          "visible_tests.py": "5bf2c5da65f87959178f705c7f21c3aeddcd87c8e4f04d3d0c17bcf317550098",
+          "sealed/sealed_tests.py": "aa470dd2e09949fc747af331f9519df38d9df14f5401c8aa3da17ddfbffdbd38",
+          "reference/solution_fixed.py": "4d430015b0413531ff353a9b3f2bfa9b528e3f93095c590ed0dd4d419eb8d6a7"
+        }
+      },
+      {
+        "task_id": "micro-008-roman_to_int",
+        "split": "sealed_test",
+        "function": "roman_to_int",
+        "bug_class": "inverted-condition",
+        "hashes": {
+          "workspace/solution.py": "e8abef99a8e4ee17c665677bb47f4abb4daa36f48c540b6cebfb573e4256db1a",
+          "visible_tests.py": "d02b0e76d7875d802b80f8f1b56db7810a62a49def418ff01d6a535414452795",
+          "sealed/sealed_tests.py": "023edf70d2d12c448d2a64a60f5516add9bb7e5ac1cdb37f7e0e5aa824460209",
+          "reference/solution_fixed.py": "22337d372d6c30a44ae9e0136702269959ad7b0a629700b80990ce44f3633445"
+        }
+      },
+      {
+        "task_id": "micro-009-flatten_once",
+        "split": "train",
+        "function": "flatten_once",
+        "bug_class": "wrong-iteration",
+        "hashes": {
+          "workspace/solution.py": "92a2b68e7f385641eb9a8e2393c16d206f9e892c7a676740638f402a78aaae9b",
+          "visible_tests.py": "3fdc6d9624e68f154bbb71c9b2f46a521e9c6f3df29ed9c8a9ca8f896efc25c6",
+          "sealed/sealed_tests.py": "405ff42b6e116d66acd15a317d589e60aed903b124e14c7dcbeab57861635bd4",
+          "reference/solution_fixed.py": "c4d24c3daa2c5c3c2396a1b9f4a2305be3ea0fbeb04017512fc25e328cd3ec7d"
+        }
+      },
+      {
+        "task_id": "micro-010-chunk_list",
+        "split": "sealed_test",
+        "function": "chunk_list",
+        "bug_class": "missing-step",
+        "hashes": {
+          "workspace/solution.py": "08b8a695665a9a856f33a234c88ac0b14beb3960d51c4fc7512bbc6bfc76f2da",
+          "visible_tests.py": "56d22231b1fffb3720549555ba8e784e35924539e4bf2c4a973f7f0eb838ec76",
+          "sealed/sealed_tests.py": "4890d9a82f32cab560c73232be271cc17b873ce5f0258f73b75c4f3d6171b30c",
+          "reference/solution_fixed.py": "bd878034152f6f3713175f2e720a6a47a522ce72f7bd4e785cd5dd449c1d4475"
+        }
+      },
+      {
+        "task_id": "micro-011-second_largest",
+        "split": "sealed_test",
+        "function": "second_largest",
+        "bug_class": "wrong-end",
+        "hashes": {
+          "workspace/solution.py": "c932d7b9c3684dce0190a54fc0b6b6bc01f1f372e37c520b9816045e7be48d64",
+          "visible_tests.py": "9e92ed1e3c2169bb14944ce468928d68131449297fc9819a7546fd8b3ea1342c",
+          "sealed/sealed_tests.py": "9f9e71ff1aa88f50a464eea887eea9665e938992525e9703e7bd8d4d1ffd5d8d",
+          "reference/solution_fixed.py": "25682430b6c0424dda6043e5f8ca7ec16695df39d0b3e98631f75a6b4ca583b8"
+        }
+      },
+      {
+        "task_id": "micro-012-title_case",
+        "split": "dev",
+        "function": "title_case",
+        "bug_class": "incomplete-mapping",
+        "hashes": {
+          "workspace/solution.py": "ce3aa933fee67162e778267117b9c7c0cb6c3dbfd5803ba1b01475cc5556539f",
+          "visible_tests.py": "282baf10b45330324b3428a58007fa46f258ac0852a11db64c7950cae53039fd",
+          "sealed/sealed_tests.py": "dd54d9fc08555d29249ebb06d687d1ec47b06e45a66c20c39f7ce4055e65775d",
+          "reference/solution_fixed.py": "fc32a13870e305dc5c8938586036a318fe2a4cd2567dd113da186b92dc35c405"
+        }
+      },
+      {
+        "task_id": "micro-013-sum_digits",
+        "split": "train",
+        "function": "sum_digits",
+        "bug_class": "missing-edge-case",
+        "hashes": {
+          "workspace/solution.py": "a2ebf90a299c1ceba2fd2387e3ef4745feb2860c01e7ae6963d063a7f1963386",
+          "visible_tests.py": "034be30116ac126694fe69e341aad4b8715f47d97831a063de9160034148dee5",
+          "sealed/sealed_tests.py": "284ee0073ceada9697632ab5a97a62ccf0b8f7d10cc7063dbbb47a498d7272f3",
+          "reference/solution_fixed.py": "4f316e1a428e0a39af2ead302f6d10fcb7bae8647b9c0cedb17f8e75ba8321c7"
+        }
+      },
+      {
+        "task_id": "micro-014-caesar_shift",
+        "split": "train",
+        "function": "caesar_shift",
+        "bug_class": "wrong-direction",
+        "hashes": {
+          "workspace/solution.py": "70b6e4fbd86bdd6d7019f4420d9da53d22397132649dec97db92adc1f6341b89",
+          "visible_tests.py": "d7b8290e4f4f5a5715d017ed74b9f4d147f754a9f1a99286bf2e46126f070437",
+          "sealed/sealed_tests.py": "b4bacb3e2ded4ec931b6d2a07d3c3cb6c0ca24d2b16f2cc2ec46da745393caaa",
+          "reference/solution_fixed.py": "959e1c71b7a3ce35342d84862b679e711c9cf70f66b28d71fabd6953a8338704"
+        }
+      },
+      {
+        "task_id": "micro-015-balanced_parens",
+        "split": "train",
+        "function": "balanced_parens",
+        "bug_class": "missing-prefix-check",
+        "hashes": {
+          "workspace/solution.py": "0828fb1a0d9da1496a7805b62704271b6c02581a0f21a0d6221a5cd96839d684",
+          "visible_tests.py": "b8f02f096b4d096bc942b90959424c8f1bf5acd7c41a5351b6817cc27c1d2710",
+          "sealed/sealed_tests.py": "6165e5a27ad9fe7bd44aa6a67639eadc8595d260184377a49d98df30ecd2de69",
+          "reference/solution_fixed.py": "b82485816dbb75d6229319386ce52f34513f14fda3c8faccd187ab690b2ed180"
+        }
+      },
+      {
+        "task_id": "micro-016-max_subarray",
+        "split": "train",
+        "function": "max_subarray",
+        "bug_class": "wrong-initial-value",
+        "hashes": {
+          "workspace/solution.py": "a2c1d690a02c0744d68538d0948dc4b0cd51a92e05612fa22808677f5b5bf796",
+          "visible_tests.py": "90154e5b3947e8efa410bc91a39efadcbde7696839e73e2e6e64f6e7dc812da5",
+          "sealed/sealed_tests.py": "55382c83b8b1479abc93a8da7add581d3bcf28437f3a4f2d9d44acbf04861204",
+          "reference/solution_fixed.py": "3e93db34ab04de27396fd2c3216896be9d8a4718c93a73752cba2ec2dc93f06d"
+        }
+      },
+      {
+        "task_id": "micro-017-transpose",
+        "split": "train",
+        "function": "transpose",
+        "bug_class": "swapped-indices",
+        "hashes": {
+          "workspace/solution.py": "42c9aac6cf14de7421d72820a6429828210f9a49c2581111eb7f7b84687e78d8",
+          "visible_tests.py": "2858c727122c00347a4c97def96055c799b68803474767e6f0f2fe4a5944f543",
+          "sealed/sealed_tests.py": "bb8e26392254a95fa1d96dae8d96ac51220c5b2c6b8087424b1b258768db227c",
+          "reference/solution_fixed.py": "5dcf88e9acbc482aaf727b2f963d4ae1ae7db9aaaea814821e7755aee03b42cf"
+        }
+      },
+      {
+        "task_id": "micro-018-dedup_adjacent",
+        "split": "train",
+        "function": "dedup_adjacent",
+        "bug_class": "wrong-comparison-target",
+        "hashes": {
+          "workspace/solution.py": "b22209b92a262e46fc419c28b1637a7c3542e1b5b6478f5825abf00cc278989a",
+          "visible_tests.py": "3cbb39c592088c37bb7770c508ec013c3a7fddab2f298a202f81046105d5cf7f",
+          "sealed/sealed_tests.py": "0ef31d0c5e2482e5bbb1f170e0b7b55a57347d8b91d3c72236765dbd3732d9a4",
+          "reference/solution_fixed.py": "0e8fd7f6a5883711e83476dd8b0f42fca2a1b54021c69e780c8e7d341e94f9d6"
+        }
+      },
+      {
+        "task_id": "micro-019-parse_kv",
+        "split": "train",
+        "function": "parse_kv",
+        "bug_class": "missing-limit",
+        "hashes": {
+          "workspace/solution.py": "36c25fac0a754f910b9e8c91ac9e8f9d1d92fb95d9779c5e33c3ffd5835e2306",
+          "visible_tests.py": "389496f3c62d1cf27b85fef18249d449755b7e421e7612bd53359a681d2b49fd",
+          "sealed/sealed_tests.py": "f70fd84832465c3d90e75ecdb258d3045488107d61c459f7662fb745c051f7e3",
+          "reference/solution_fixed.py": "ea849ad0e559a225a47186bbf0915eb7738896622c4ae4907790c43870737b54"
+        }
+      },
+      {
+        "task_id": "micro-020-fizzbuzz",
+        "split": "dev",
+        "function": "fizzbuzz",
+        "bug_class": "wrong-order",
+        "hashes": {
+          "workspace/solution.py": "480b2c1aad749c5fcd995c8641f57a75f7d4ce56304a2dc066f3a9d06d54e6bf",
+          "visible_tests.py": "379923898189c79e32b1687b8cb815727aed868701508b0ada53c6757a9d6af9",
+          "sealed/sealed_tests.py": "96dc74aa3d93a4f1a8412da65bc92042a3690c1207a496699724e6f67692ef73",
+          "reference/solution_fixed.py": "0cdf4890a022cb85f8cde8fb1e50de1f61248e6b7e8ab2457ceeab3f7e9617e2"
+        }
+      },
+      {
+        "task_id": "micro-021-gcd",
+        "split": "sealed_test",
+        "function": "gcd",
+        "bug_class": "wrong-final-value",
+        "hashes": {
+          "workspace/solution.py": "b692f14a91cb17240a54aa95dd8677a1a1d15af1f171e402d6af31f8f48228df",
+          "visible_tests.py": "d1db7e25e249e47c9edc0396b48f5ca5b5cbd42b30cc39d223a5149fd14c5730",
+          "sealed/sealed_tests.py": "467233fd6a58e1ccc28cd824da6cfe3111ae42b4d6d44998156d02d3a0daab93",
+          "reference/solution_fixed.py": "284dc9bdad1167ba135e235228699da90d35382c9bb3950f0b044735286d10e6"
+        }
+      },
+      {
+        "task_id": "micro-022-word_count",
+        "split": "train",
+        "function": "word_count",
+        "bug_class": "naive-split",
+        "hashes": {
+          "workspace/solution.py": "c468478c6486418e468068af989edc7db6020141b70e36db20f9d191f72ca782",
+          "visible_tests.py": "1021305a5d6dc068bfbf1524093bc76e6b2808fb37ce5b88f46ee7607f25c10d",
+          "sealed/sealed_tests.py": "c9e6179d7361b6571fabee376b861d6998ef8d8fd8d7b51ec5e156e253273556",
+          "reference/solution_fixed.py": "25f30488c08c810ad247739e41e40634cb5ee524bf6ebcbfe80d6c9d25a4d942"
+        }
+      },
+      {
+        "task_id": "micro-023-median",
+        "split": "dev",
+        "function": "median",
+        "bug_class": "missing-branch",
+        "hashes": {
+          "workspace/solution.py": "e93e503e3451e25705541066f24f3b60e5d164ad81607607d1f770a00c9b936d",
+          "visible_tests.py": "67c0d2f4947b67e25f36d2800e8ac6a8f8d99bae6ea692972eefc69a3820bc46",
+          "sealed/sealed_tests.py": "37b185abdeee26ffc7952eb84c1ba7a62388de679c415e6cc85874714a4b45c7",
+          "reference/solution_fixed.py": "ec106f898a277bdb1c1b33cf281bad57d0c41ae89ea0bddc1d542e2208267bf7"
+        }
+      },
+      {
+        "task_id": "micro-024-count_inversions_naive",
+        "split": "train",
+        "function": "count_inversions_naive",
+        "bug_class": "inverted-strictness",
+        "hashes": {
+          "workspace/solution.py": "9ce7d665cc3e03f1e80391c63f57ea4a78773e5320ff743de250de59e364d336",
+          "visible_tests.py": "3989727cfee6aeb1a3178f3a0a99023b050cf7467208d1ef16248463277e34fc",
+          "sealed/sealed_tests.py": "4058607e6e0f07890e03c1f1930dfaa66a5c3f7c91d1f2cbc772b024295924ad",
+          "reference/solution_fixed.py": "1010b1dcb0ce8ba9202f8c2f4ff79585ebcd563fb3294b6693669d8b9a26970a"
+        }
+      },
+      {
+        "task_id": "micro-025-int_to_binary",
+        "split": "dev",
+        "function": "int_to_binary",
+        "bug_class": "wrong-padding-side",
+        "hashes": {
+          "workspace/solution.py": "1c0375b03166396b70c1ccaaf8db66e9768377a7281deefe6a512df92ebbd1d7",
+          "visible_tests.py": "ccf43cc0221d5ff7cf7c33256ddcf8dbe4dd4f8b663a5c5a1b06d0c2857fb77e",
+          "sealed/sealed_tests.py": "306c4db6a4abc941a3b82e56e7513cbe29c8b28895bf98a650aa326faedbe6fd",
+          "reference/solution_fixed.py": "483393b06ceebd59f48dc9bc26945e468ec33c7f8ce41c4adfedaf36ed74e691"
+        }
+      }
+    ]
+  }
+}

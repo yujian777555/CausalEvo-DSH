@@ -1,0 +1,18 @@
+{
+  "task_id": "micro-018-dedup_adjacent",
+  "function": "dedup_adjacent",
+  "bug_class": "wrong-comparison-target",
+  "split": "train",
+  "instructions": "solution.py provides dedup_adjacent(xs): remove consecutive duplicates, keeping first of each run. It is buggy. Fix it.",
+  "entry_file": "solution.py",
+  "timeout_s": 30,
+  "n_visible_checks": 1,
+  "n_sealed_checks": 5,
+  "hashes": {
+    "workspace/solution.py": "b22209b92a262e46fc419c28b1637a7c3542e1b5b6478f5825abf00cc278989a",
+    "visible_tests.py": "3cbb39c592088c37bb7770c508ec013c3a7fddab2f298a202f81046105d5cf7f",
+    "sealed/sealed_tests.py": "0ef31d0c5e2482e5bbb1f170e0b7b55a57347d8b91d3c72236765dbd3732d9a4",
+    "reference/solution_fixed.py": "0e8fd7f6a5883711e83476dd8b0f42fca2a1b54021c69e780c8e7d341e94f9d6"
+  },
+  "task_json_sha256": "4335bf6266da03e2b74f8b354b2f32c8cfb293498d640c4dbbf51659ddedfe82"
+}

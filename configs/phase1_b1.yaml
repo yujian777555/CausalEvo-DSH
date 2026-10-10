@@ -1,0 +1,18 @@
+# Phase 1 baseline B1 — self-reflection within the SAME budget envelope.
+policy: B1-self-reflection-fixed-budget
+budget:
+  max_provider_calls: 2        # identical envelope to B0 (fairness gate)
+  max_total_output_tokens: 2048
+  max_tool_calls: 20
+  wall_time_s: 300
+behavior:
+  allow_reflection: true      # one structured reflection + one re-attempt
+  max_attempts_per_task: 2
+  persistent_updates: false
+execution:
+  mode: offline
+  executor: docker
+  fake_agent_mode: noop
+tasks:
+  source: benchmarks/tasks
+  splits: [train, dev, sealed_test]
