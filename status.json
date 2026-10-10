@@ -19,9 +19,10 @@
   "fix_report_path": "docs/PHASE0_R1_1_FIX_REPORT.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "PENDING_FINAL_COMMIT",
+    "latest_executor_commit": "dbd0e93808bbdb30ac15afa1aa1f9618bb0126cf",
     "github_commit_verified": false,
-    "executor_reports_local_clean": true
+    "executor_reports_local_clean": true,
+    "note": "deliverables commit; a housekeeping commit recording this verification sits on top"
   },
   "tests": {
     "executor_reported_run": true,
@@ -45,7 +46,12 @@
     "response_accepted": 100,
     "task_valid": "unknown",
     "task_valid_note": "responses not persisted in raw CSV; 41/100 finished max-tokens (not complete task outputs)",
-    "counts_by_group": {"A": 25, "B": 25, "C": 25, "D": 25},
+    "counts_by_group": {
+      "A": 25,
+      "B": 25,
+      "C": 25,
+      "D": 25
+    },
     "verified_csv_aggregate": {
       "uncached_input_tokens": 27316,
       "cache_read_tokens": 29184,
