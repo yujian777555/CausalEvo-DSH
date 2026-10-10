@@ -21,6 +21,10 @@ class RunnerOutcome:
     finish_reason: str | None = None
     events: list[dict[str, Any]] = field(default_factory=list)
     error: str | None = None
+    # error_kind distinguishes failures that provably never sent a request
+    # ("local_rejected": validation/refusal before any byte left) from
+    # "transport"/"provider" failures where spend is possible but unmeasured.
+    error_kind: str | None = None  # None | "local_rejected" | "transport" | "provider"
     wire_model: str | None = None
     registered_tools: list[str] | None = None
 
@@ -134,7 +138,8 @@ class HarnessRunner:
         try:
             result = self._harness.run(prompt, session_id=session_id)
         except Exception as exc:  # transport/protocol/API errors -> failed attempt
-            return RunnerOutcome(ok=False, error=f"{type(exc).__name__}: {exc}")
+            # The request may or may not have left the machine: spend unknown.
+            return RunnerOutcome(ok=False, error=f"{type(exc).__name__}: {exc}", error_kind="transport")
         return RunnerOutcome(
             ok=result.finish_reason is not None,
             final_response=result.final_response,

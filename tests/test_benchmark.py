@@ -13,6 +13,20 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = REPO_ROOT / "configs" / "cache_benchmark.yaml"
 
 
+def usage_event(uncached: int, cache_read: int, output: int) -> dict:
+    return {
+        "type": "assistant/message",
+        "data": {
+            "message": {"role": "assistant", "content": [{"type": "text", "text": "x"}]},
+            "usage": {
+                "inputTokens": uncached,
+                "cacheReadTokens": cache_read,
+                "outputTokens": output,
+            },
+        },
+    }
+
+
 def _config(calls_per_group=2, max_cny=10.0, max_retries=1):
     config = load_config(CONFIG_PATH)
     object.__setattr__(config, "calls_per_group", calls_per_group)
@@ -46,6 +60,16 @@ def test_dry_run_completes_and_writes_evidence(tmp_path):
     assert all(len(r["session_id_hash"]) == 12 for r in rows)
 
 
+def test_summary_overall_equals_group_sums(tmp_path):
+    _, summary = _run(tmp_path)
+    overall = summary["overall"]
+    for key in ("uncached_input_tokens", "cache_read_tokens",
+                "total_prompt_tokens", "output_tokens_all_attempts"):
+        assert sum(summary["groups"][g][key] for g in "ABCD") == overall[key]
+    assert summary["consistency"]["groups_sum_equals_overall"] is True
+    assert overall["logical_calls"] == 8 == overall["provider_attempts"]
+
+
 def test_fake_cache_trend_visible_in_group_a(tmp_path):
     """FakeRunner reads history as cache: A's second call must show cache_read."""
     _, summary = _run(tmp_path)
@@ -53,24 +77,13 @@ def test_fake_cache_trend_visible_in_group_a(tmp_path):
     assert summary["groups"]["B"]["cache_read_tokens"] == 0  # fresh sessions
 
 
-class FlakyRunner(FakeRunner):
-    """Fails the first attempt of every call, then succeeds."""
-
-    def run(self, session_id: str, prompt: str) -> RunnerOutcome:
-        if session_id not in self.__dict__.setdefault("_seen", set()):
-            self._seen.add(session_id)
-            return RunnerOutcome(ok=False, error="injected transport failure")
-        return super().run(session_id, prompt)
-
-
-def test_retry_accounting_meters_failed_attempts(tmp_path):
-    config = _config(calls_per_group=1, max_retries=1)
-    runner = FlakyRunner()
-    bench = Benchmark(config=config, runner=runner, output_dir=tmp_path, run_id="pytest", live=False)
-    summary = bench.run()
-    assert summary["ok_calls"] == 4
-    rows = list(csv.DictReader((tmp_path / "calls.csv").open(encoding="utf-8")))
-    assert all(int(r["attempts"]) == 2 for r in rows), "retry must be recorded"
+def test_task_valid_marked_for_fake_completed_responses(tmp_path):
+    """FakeRunner answers T000 for everything: only T000-expecting rows validate."""
+    _, summary = _run(tmp_path)
+    counts = summary["overall"]["task_valid_counts"]
+    # valid: A(idx0)+B(idx0,1)+C(idx0)+D(idx0,1) = 6; invalid: A(idx1)+C(idx1) = 2
+    assert counts.get("valid") == 6
+    assert counts.get("invalid") == 2
 
 
 class CorruptUsageRunner(FakeRunner):
@@ -92,24 +105,8 @@ def test_missing_usage_fails_closed_and_stops_run(tmp_path):
     summary = bench.run()
     assert summary["ok_calls"] == 0
     assert summary["aborted_reason"] is not None
-    assert "fail-closed" in summary["aborted_reason"]
+    assert "fail_closed" in summary["aborted_reason"]
     assert summary["executed_calls"] == 1, "must stop after the first corrupt call"
-
-
-class AlwaysFailRunner(FakeRunner):
-    def run(self, session_id: str, prompt: str) -> RunnerOutcome:
-        return RunnerOutcome(ok=False, error="permanent failure")
-
-
-def test_persistent_failure_records_attempts_without_stopping(tmp_path):
-    config = _config(calls_per_group=1, max_retries=1)
-    bench = Benchmark(config=config, runner=AlwaysFailRunner(), output_dir=tmp_path,
-                      run_id="pytest", live=False)
-    summary = bench.run()
-    assert summary["ok_calls"] == 0
-    assert summary["executed_calls"] == 4  # errors don't abort; only fail-closed does
-    rows = list(csv.DictReader((tmp_path / "calls.csv").open(encoding="utf-8")))
-    assert all(r["status"] == "error" for r in rows)
 
 
 def test_budget_refusal_aborts_before_spend(tmp_path):
@@ -117,7 +114,18 @@ def test_budget_refusal_aborts_before_spend(tmp_path):
     bench, summary = _run(tmp_path, config=config)
     assert summary["executed_calls"] == 0
     assert summary["aborted_reason"] is not None
-    assert summary["total_cost_cny_peak"] == 0
+    assert summary["overall"]["cost_cny_peak"] == 0
+
+
+def test_gate_counts_retry_upper_bound(tmp_path):
+    """Preflight must price every remaining ATTEMPT, not just logical calls."""
+    config = _config(calls_per_group=1, max_retries=3)
+    bench = Benchmark(config=config, runner=FakeRunner(), output_dir=tmp_path,
+                      run_id="pytest", live=False)
+    preflight = bench.preflight()
+    assert preflight["max_attempts_planned"] == 4 * 4
+    expected = preflight["worst_case_cost_per_attempt_cny"] * 16
+    assert abs(preflight["worst_case_total_cny"] - expected) < 1e-3  # 4dp rounding in preflight
 
 
 def test_live_key_required(monkeypatch):
@@ -139,3 +147,14 @@ def test_no_key_material_in_any_output(tmp_path):
     for path in tmp_path.rglob("*"):
         if path.is_file():
             assert monkey_key not in path.read_text(encoding="utf-8", errors="replace")
+
+
+def test_response_content_never_persisted_only_hash(tmp_path):
+    """Rows store response_sha16, never the raw response text."""
+    _run(tmp_path)
+    for path in tmp_path.rglob("*"):
+        if path.is_file():
+            text = path.read_text(encoding="utf-8", errors="replace")
+            assert '{"task":"T000","status":"ok"}' not in text
+    rows = list(csv.DictReader((tmp_path / "calls.csv").open(encoding="utf-8")))
+    assert all(len(r["response_sha16"]) == 16 for r in rows)

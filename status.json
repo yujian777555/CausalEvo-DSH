@@ -6,40 +6,46 @@
   "plan_id": "CE-DSH-P0-R1.1",
   "previous_plan_id": "CE-DSH-P0-R1",
   "phase": "Phase 0",
-  "phase_status": "CHANGES_REQUESTED",
-  "planner_review": "CHANGES_REQUESTED",
-  "next_actor": "Kimi-Executor",
+  "phase_status": "READY_FOR_REVIEW",
+  "planner_review": "PENDING_SECOND_ROUND",
+  "next_actor": "GPT-Planner",
   "planner_review_date": "2026-10-10",
+  "executor_fix_date": "2026-10-10",
   "baseline_main_sha": "a9bef642e35eeed398f5578890a00f8872af2af0",
   "reviewed_executor_head": "dc056ea0cb210bf976e1b9f105be5fa2103c1863",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P0-R1-review.md",
   "executor_report_path": "planner/executor_report.md",
+  "fix_report_path": "docs/PHASE0_R1_1_FIX_REPORT.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "dc056ea0cb210bf976e1b9f105be5fa2103c1863",
-    "github_commit_verified": true,
+    "latest_executor_commit": "PENDING_FINAL_COMMIT",
+    "github_commit_verified": false,
     "executor_reports_local_clean": true
   },
   "tests": {
     "executor_reported_run": true,
-    "passed": 42,
+    "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
+    "passed": 64,
     "failed": 0,
     "skipped": 0,
+    "includes_failure_injection": true,
     "planner_reran": false
   },
   "live_api": {
     "run": true,
     "run_id": "p0live02",
     "raw_csv_path": "results/phase0/live/calls.csv",
-    "reported_successful_api_samples": 100,
-    "audited_csv_rows": 100,
-    "counts_by_group": {
-      "A": 25,
-      "B": 25,
-      "C": 25,
-      "D": 25
-    },
+    "raw_csv_sha256": "1961bdd81a7f6a4ad4169d6f246530ed3df3170f70948f85de13ca136e364c59",
+    "reconciliation_path": "results/phase0/live/reconciliation.json",
+    "logical_calls": 100,
+    "provider_attempts": 100,
+    "metered_attempts": 100,
+    "unknown_spend_calls": 0,
+    "response_accepted": 100,
+    "task_valid": "unknown",
+    "task_valid_note": "responses not persisted in raw CSV; 41/100 finished max-tokens (not complete task outputs)",
+    "counts_by_group": {"A": 25, "B": 25, "C": 25, "D": 25},
     "verified_csv_aggregate": {
       "uncached_input_tokens": 27316,
       "cache_read_tokens": 29184,
@@ -47,29 +53,46 @@
       "total_prompt_tokens": 56500,
       "output_tokens": 3833,
       "weighted_cache_hit_rate": 0.5165309734513275,
+      "mean_per_request_cache_hit_rate": 0.45983795734851773,
       "max_tokens_finishes": 41,
       "finish_completed": 59,
-      "estimated_cost_cny_offpeak": 0.0460417392
+      "estimated_cost_cny_offpeak": 0.0460417392,
+      "estimated_cost_cny_peak_upper_bound": 0.0920834784
     },
     "actual_billed_cost_cny": null,
     "visible_balance_before_cny": 4.83,
     "visible_balance_after_cny": 4.83,
     "visible_balance_delta_cny": 0,
-    "notes": "Provider billing delta unverified. Original report totals inconsistent with CSV; do not overwrite raw CSV. No new live spend authorized in CE-DSH-P0-R1.1."
+    "billing_note": "visible balance delta only; 0.01 CNY display resolution and possible billing lag mean actual billed cost is unknown",
+    "budget_cap_authorized_cny": 10,
+    "budget_cap_runtime_cny": 4.83,
+    "new_live_calls_this_round": 0
   },
-  "blockers": [
-    "P0-R1.1-F1: summary/status/report aggregate tokens disagree with raw CSV",
-    "P0-R1.1-F2: failures without usage can continue with zero recorded cost",
-    "P0-R1.1-F3: 41/100 API observations max-tokens; task validity not established",
-    "P0-R1.1-F4: effective config hash and over-broad redaction",
-    "P0-R1.1-F5: provider actual billing remains unknown"
+  "r1_1_fixes": {
+    "F1_aggregation_consistency": "FIXED",
+    "F2_unknown_cost_fail_closed": "FIXED",
+    "F3_api_success_vs_task_valid": "FIXED",
+    "F4_config_fingerprint_redaction": "FIXED",
+    "F5_docs_status_consistency": "FIXED"
+  },
+  "blockers": [],
+  "limitations": [
+    "actual billed cost unknown (balance resolution/lag)",
+    "task_validity of stored 100 samples unknown (bodies not persisted)",
+    "no-tools runtime evidence produced on executor machine only"
   ],
   "evidence": [
-    "planner/reviews/CE-DSH-P0-R1-review.md",
+    "docs/PHASE0_R1_1_FIX_REPORT.md",
+    "docs/PHASE0_RESULTS.md",
+    "docs/PHASE0_AUDIT.md",
+    "docs/HARNESS_INTEGRATION.md",
     "results/phase0/live/calls.csv",
     "results/phase0/live/summary.json",
-    "src/causalevo/benchmark.py",
-    "src/causalevo/redaction.py"
+    "results/phase0/live/reconciliation.json",
+    "tests/test_live_csv_consistency.py",
+    "tests/test_failure_metering.py",
+    "tests/test_task_validity.py",
+    "tests/test_config_fingerprint.py"
   ],
-  "next_goal": "Finish narrow offline Phase 0 remediation, push evidence, return READY_FOR_REVIEW; do not start Phase 1."
+  "notes": "R1.1 remediation complete offline; raw CSV immutable; no new spend. Awaiting Planner second-round review; Phase 1 not started."
 }

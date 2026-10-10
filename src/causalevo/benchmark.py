@@ -2,10 +2,22 @@
 
 Safety properties:
 - dry-run is the default; --live is an explicit opt-in requiring the key.
-- a BudgetGate refuses any new live call that cannot be proven within cap.
-- usage missing/malformed after a live attempt -> fail-closed: stop the run,
-  keep already-incurred costs marked, never fabricate numbers.
+- a BudgetGate refuses any new live call that cannot be proven within cap,
+  counting every remaining ATTEMPT (retries included) at worst-case price.
+- usage is extracted from EVERY attempt, success or failure; a failed attempt
+  with usage is metered and billed.
+- a failed attempt WITHOUT usage means the request may have left the machine
+  with unmeasurable cost: the call is marked unknown_cost and the run STOPS
+  (fail-closed). Only errors proven to happen before any bytes were sent
+  (error_kind="local_rejected") may continue without spend.
+- successful-looking responses without parseable usage are fail-closed too.
 - every attempt (including failures/retries) is metered and persisted.
+
+R1.1-F3: API success and task validity are separate axes. response_accepted
+means "valid metered API observation" (turn finished AND usage present).
+task_valid additionally requires finish_reason == "completed" and the exact
+expected minified JSON. Truncated (max-tokens) responses are valid metering
+samples but not valid task outputs.
 """
 
 from __future__ import annotations
@@ -31,7 +43,7 @@ from .pricing import (
 )
 from .redaction import hash_identifier, redact_obj
 from .runner import Runner, RunnerOutcome, estimate_tokens
-from .scenarios import PlannedCall, build_call_plan, check_length_invariants
+from .scenarios import PlannedCall, build_call_plan, check_length_invariants, expected_response
 from .usage import AttemptRecord, UsageRecord, UsageUnavailable, extract_settled_usage
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -73,7 +85,52 @@ def load_config(path: Path) -> BenchConfig:
 
 
 def config_hash(config: BenchConfig) -> str:
+    """LEGACY raw-YAML hash (R1 definition). Kept for continuity with run
+    p0live02 (a4f11755ea27380c); new code should cite effective_config_fingerprint."""
     canonical = json.dumps(config.raw, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def sdk_version() -> str | None:
+    try:
+        from importlib.metadata import version
+
+        return version("deepseek-harness-sdk")
+    except Exception:
+        return None
+
+
+def effective_config_fingerprint(
+    config: BenchConfig,
+    *,
+    patch_path: Path | None = None,
+    sdk: str | None = None,
+) -> str:
+    """Hash of the EFFECTIVE experiment configuration (R1.1-F4).
+
+    Covers every field that changes the experiment's semantics — including
+    CLI overrides, because they mutate the BenchConfig before this is called —
+    plus the no-tools patch content and the SDK version. Budget caps are
+    deliberately NOT part of the fingerprint: tightening the cap to the
+    platform balance changes spend authorization, not the experiment; the
+    runtime cap is recorded separately in the config snapshot.
+    """
+    payload: dict[str, Any] = {
+        "model": config.model,
+        "reasoning_effort": config.reasoning_effort,
+        "max_tokens": config.max_tokens,
+        "calls_per_group": config.calls_per_group,
+        "interleave": config.interleave,
+        "max_retries_per_call": config.max_retries_per_call,
+        "prompt_overhead_tokens": config.prompt_overhead_tokens,
+        "patch_sha256": _sha256_file(patch_path) if patch_path else None,
+        "deepseek_harness_sdk": sdk if sdk is not None else sdk_version(),
+    }
+    canonical = json.dumps(payload, sort_keys=True, ensure_ascii=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
 
 
@@ -82,7 +139,8 @@ def preflight_report(config: BenchConfig, plan: list[PlannedCall], live: bool) -
     max_prompt = max(p.prompt_chars for p in plan)
     worst_prompt_tokens = estimate_tokens("x" * max_prompt) + config.prompt_overhead_tokens
     worst_per_call = worst_case_cost_cny(worst_prompt_tokens, config.max_tokens, config.usd_cny)
-    total_worst = worst_per_call * len(plan) * (1 + config.max_retries_per_call)
+    attempts_per_call = 1 + config.max_retries_per_call
+    total_worst = worst_per_call * len(plan) * attempts_per_call
     return {
         "live": live,
         "model": config.model,
@@ -91,11 +149,12 @@ def preflight_report(config: BenchConfig, plan: list[PlannedCall], live: bool) -
         "planned_calls": len(plan),
         "calls_per_group": config.calls_per_group,
         "max_retries_per_call": config.max_retries_per_call,
+        "max_attempts_planned": len(plan) * attempts_per_call,
         "interleave": config.interleave,
-        "config_hash": config_hash(config),
+        "config_hash_legacy_raw": config_hash(config),
         "max_prompt_chars": max_prompt,
         "worst_case_prompt_tokens_estimate": worst_prompt_tokens,
-        "worst_case_cost_per_call_cny": round(worst_per_call, 6),
+        "worst_case_cost_per_attempt_cny": round(worst_per_call, 6),
         "worst_case_total_cny": round(total_worst, 4),
         "budget_cap_cny": config.max_cny,
         "budget_ok": total_worst <= config.max_cny,
@@ -107,6 +166,69 @@ def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def aggregate_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Shared aggregation for live summaries and offline CSV reconciliation.
+
+    All totals are sums over rows (calls); the weighted hit rate divides the
+    summed buckets, whereas mean_per_request averages per-row rates — the two
+    measure different things and are reported side by side.
+    """
+    def _int(row: dict[str, Any], key: str) -> int:
+        value = row.get(key)
+        return int(value) if value not in (None, "") else 0
+
+    def _metered(row: dict[str, Any]) -> int:
+        value = row.get("metered_attempts")
+        if value in (None, ""):
+            # legacy rows (pre-R1.1 CSV): ok rows always carried one metered attempt
+            return int(row.get("attempts") or 1) if row.get("status") == "ok" else 0
+        return int(value)
+
+    ok_rows = [r for r in rows if r.get("status") == "ok"]
+    hit_rates = [
+        float(r["cache_hit_rate"])
+        for r in ok_rows
+        if r.get("cache_hit_rate") not in (None, "")
+    ]
+    finish: dict[str, int] = {}
+    for r in rows:
+        key = str(r.get("finish_reason") or "none")
+        finish[key] = finish.get(key, 0) + 1
+    task_valid: dict[str, int] = {}
+    for r in rows:
+        key = str(r.get("task_valid") or "unknown")
+        task_valid[key] = task_valid.get(key, 0) + 1
+    uncached = sum(_int(r, "uncached_input_tokens") for r in rows)
+    cache_read = sum(_int(r, "cache_read_tokens") for r in rows)
+    cache_write = sum(_int(r, "cache_write_tokens") for r in rows)
+    total_prompt = sum(_int(r, "total_prompt_tokens") for r in rows)
+    output_all = sum(_int(r, "output_tokens_all_attempts") for r in rows)
+    return {
+        "logical_calls": len(rows),
+        "completed_calls": len(ok_rows),
+        "provider_attempts": sum(_int(r, "attempts") or 1 for r in rows),
+        "metered_attempts": sum(_metered(r) for r in rows),
+        "unknown_spend_calls": sum(1 for r in rows if r.get("status") == "unknown_cost"),
+        "response_accepted": len(ok_rows),
+        "task_valid_counts": task_valid,
+        "uncached_input_tokens": uncached,
+        "cache_read_tokens": cache_read,
+        "cache_write_tokens": cache_write,
+        "cache_write_reported": any(
+            str(r.get("cache_write_reported", "")).lower() == "true" for r in rows
+        ),
+        "total_prompt_tokens": total_prompt,
+        "output_tokens_all_attempts": output_all,
+        "weighted_cache_hit_rate": (cache_read / total_prompt) if total_prompt > 0 else None,
+        "mean_per_request_cache_hit_rate": (
+            sum(hit_rates) / len(hit_rates) if hit_rates else None
+        ),
+        "finish_reason_distribution": finish,
+        "cost_cny_peak": round(sum(float(r.get("cost_cny_peak") or 0) for r in rows), 10),
+        "cost_cny_tiered": round(sum(float(r.get("cost_cny_tiered") or 0) for r in rows), 10),
+    }
+
+
 class Benchmark:
     def __init__(
         self,
@@ -115,15 +237,18 @@ class Benchmark:
         output_dir: Path,
         run_id: str,
         live: bool,
+        patch_path: Path | None = None,
+        authorized_cap_cny: float | None = None,
     ) -> None:
         self.config = config
         self.runner = runner
         self.output_dir = output_dir
         self.run_id = run_id
         self.live = live
+        self.patch_path = patch_path
+        self.authorized_cap_cny = authorized_cap_cny if authorized_cap_cny is not None else config.max_cny
         self.plan = build_call_plan(config.calls_per_group, run_id, config.interleave)
         self.rows: list[dict[str, Any]] = []
-        self.failures: list[dict[str, Any]] = []
         self.aborted_reason: str | None = None
         self._salt = config_hash(config) + ":" + run_id
 
@@ -146,10 +271,11 @@ class Benchmark:
             ),
         )
 
+        attempts_per_call = 1 + self.config.max_retries_per_call
         for position, planned in enumerate(self.plan):
-            remaining = len(self.plan) - position
+            remaining_attempts = (len(self.plan) - position) * attempts_per_call
             try:
-                gate.check_can_start(remaining)
+                gate.check_can_start(remaining_attempts)
             except BudgetExceeded as exc:
                 self.aborted_reason = str(exc)
                 break
@@ -157,42 +283,59 @@ class Benchmark:
             self.rows.append(row)
             gate.record_spend(row["cost_cny_peak"])  # conservative: meter at peak
             self._write_calls_csv()  # persist after every call: crash-safe
-            if row["status"] == "fail_closed":
-                self.aborted_reason = "fail-closed stop: " + (row.get("error") or "unknown")
+            if row["status"] in ("fail_closed", "unknown_cost"):
+                self.aborted_reason = f"{row['status']} stop: " + (row.get("error") or "unknown")
                 break
         return self._finalize()
 
     def _execute_call(self, planned: PlannedCall, position: int) -> dict[str, Any]:
         attempts: list[AttemptRecord] = []
         last_outcome: RunnerOutcome | None = None
+        started = ended = _utcnow()
         for attempt_index in range(1 + self.config.max_retries_per_call):
             started = _utcnow()
             outcome = self.runner.run(planned.session_id, planned.prompt)
             ended = _utcnow()
             last_outcome = outcome
+            # Usage is extracted from EVERY attempt, success or failure:
+            # a failed attempt with usage still bills.
             usage: UsageRecord | None = None
-            error: str | None = outcome.error
-            if outcome.ok:
+            usage_error: str | None = None
+            if outcome.events:
                 try:
                     usage = extract_settled_usage(outcome.events)
                 except UsageUnavailable as exc:
+                    usage_error = f"{USAGE_UNAVAILABLE_PREFIX}{exc}"
+            error: str | None = outcome.error
+            if outcome.ok:
+                if usage is None:
                     # Fail-closed: a successful-looking response without
                     # trustworthy usage corrupts all downstream accounting.
-                    outcome = RunnerOutcome(ok=False, error=f"{USAGE_UNAVAILABLE_PREFIX}{exc}")
-                    error = outcome.error
+                    status = "fail_closed"
+                    error = usage_error or f"{USAGE_UNAVAILABLE_PREFIX}no usage events"
+                else:
+                    status = "ok"
+            else:
+                if usage is not None:
+                    status = "error"  # metered failure: billed, retryable
+                elif outcome.error_kind == "local_rejected":
+                    status = "locally_rejected"  # proven never sent: no spend
+                else:
+                    status = "unknown_cost"  # may have left the machine: STOP
+                    error = error or "failed attempt without usage"
             attempts.append(
                 AttemptRecord(
                     attempt_index=attempt_index,
-                    status="ok" if outcome.ok else "error",
+                    status=status,
                     usage=usage,
                     finish_reason=outcome.finish_reason,
                     error=error,
                 )
             )
-            if outcome.ok:
+            if status == "ok":
                 break
-            if error and error.startswith(USAGE_UNAVAILABLE_PREFIX):
-                break  # fail-closed: retrying cannot fix accounting corruption
+            if status in ("unknown_cost",) or (error or "").startswith(USAGE_UNAVAILABLE_PREFIX):
+                break  # fail-closed: retrying cannot fix unknown/corrupt accounting
         row = self._row(planned, position, attempts, last_outcome, started, ended)
         return row
 
@@ -207,14 +350,12 @@ class Benchmark:
     ) -> dict[str, Any]:
         final = attempts[-1]
         usage = final.usage
-        if final.error and final.error.startswith(USAGE_UNAVAILABLE_PREFIX):
-            status = "fail_closed"
-        elif final.status == "ok" and usage is None:
-            status = "fail_closed"
-        elif final.status == "ok":
-            status = "ok"
-        else:
-            status = "error" if usage is None else "fail_closed"
+        status = final.status
+        response_accepted = status == "ok" and usage is not None
+        task_valid = self._assess_task_valid(planned, outcome, final)
+        response_sha16 = None
+        if outcome is not None and outcome.final_response:
+            response_sha16 = hashlib.sha256(outcome.final_response.encode("utf-8")).hexdigest()[:16]
         tier = classify_price_tier(started)
         cost_peak = sum(
             cost_for_usage(a.usage, "peak", self.config.usd_cny).cost_cny
@@ -235,13 +376,18 @@ class Benchmark:
             "utc_end": ended.isoformat(),
             "latency_ms": int((ended - started).total_seconds() * 1000),
             "attempts": len(attempts),
+            "metered_attempts": sum(1 for a in attempts if a.usage is not None),
             "status": status,
             "finish_reason": final.finish_reason,
+            "response_accepted": response_accepted,
+            "task_valid": task_valid,
+            "response_sha16": response_sha16,
             "wire_model": outcome.wire_model if outcome else None,
             "price_tier": tier,
             "uncached_input_tokens": usage.uncached_input_tokens if usage else None,
             "cache_read_tokens": usage.cache_read_tokens if usage else None,
             "cache_write_tokens": usage.cache_write_tokens if usage else None,
+            "cache_write_reported": usage.cache_write_reported if usage else False,
             "output_tokens": usage.output_tokens if usage else None,
             "total_prompt_tokens": usage.total_prompt_tokens if usage else None,
             "cache_hit_rate": usage.cache_hit_rate if usage else None,
@@ -253,52 +399,85 @@ class Benchmark:
             "error": final.error,
         }
 
+    @staticmethod
+    def _assess_task_valid(
+        planned: PlannedCall, outcome: RunnerOutcome | None, final: AttemptRecord
+    ) -> str:
+        """R1.1-F3: 'valid' requires completed finish AND exact expected JSON.
+        Truncated (max-tokens) or wrong content -> 'invalid'; nothing to
+        check (no response captured) -> 'unknown'."""
+        if final.finish_reason != "completed":
+            return "invalid" if (outcome and outcome.final_response) else "unknown"
+        if outcome is None or not outcome.final_response:
+            return "unknown"
+        return "valid" if outcome.final_response.strip() == expected_response(
+            planned.group, planned.index
+        ) else "invalid"
+
     def preflight(self) -> dict[str, Any]:
         return preflight_report(self.config, self.plan, self.live)
 
     def summary(self) -> dict[str, Any]:
         groups: dict[str, Any] = {}
         for group in ("A", "B", "C", "D"):
-            rows = [r for r in self.rows if r["group"] == group and r["status"] == "ok"]
-            hits = [r["cache_hit_rate"] for r in rows if r["cache_hit_rate"] is not None]
+            group_rows = [r for r in self.rows if r["group"] == group]
+            agg = aggregate_rows(group_rows)
             groups[group] = {
-                "ok_calls": len(rows),
-                "cache_hit_rate_mean": (sum(hits) / len(hits)) if hits else None,
-                "cache_read_tokens": sum(r["cache_read_tokens"] or 0 for r in rows),
-                "uncached_input_tokens": sum(r["uncached_input_tokens"] or 0 for r in rows),
-                "cache_write_tokens": sum(r["cache_write_tokens"] or 0 for r in rows),
-                "output_tokens_all_attempts": sum(r["output_tokens_all_attempts"] for r in rows),
-                "total_prompt_tokens": sum(r["total_prompt_tokens"] or 0 for r in rows),
-                "cost_cny_peak": round(sum(r["cost_cny_peak"] for r in rows), 6),
-                "cost_cny_tiered": round(sum(r["cost_cny_tiered"] for r in rows), 6),
+                "ok_calls": agg["completed_calls"],
+                "cache_hit_rate_mean": agg["mean_per_request_cache_hit_rate"],
+                "weighted_cache_hit_rate": agg["weighted_cache_hit_rate"],
+                "cache_read_tokens": agg["cache_read_tokens"],
+                "uncached_input_tokens": agg["uncached_input_tokens"],
+                "cache_write_tokens": agg["cache_write_tokens"],
+                "output_tokens_all_attempts": agg["output_tokens_all_attempts"],
+                "total_prompt_tokens": agg["total_prompt_tokens"],
+                "finish_reason_distribution": agg["finish_reason_distribution"],
+                "cost_cny_peak": round(agg["cost_cny_peak"], 6),
+                "cost_cny_tiered": round(agg["cost_cny_tiered"], 6),
             }
-        ok_total = sum(1 for r in self.rows if r["status"] == "ok")
+        overall = aggregate_rows(self.rows)
         return {
             "run_id": self.run_id,
             "live": self.live,
-            "config_hash": config_hash(self.config),
+            "config_hash_legacy_raw": config_hash(self.config),
+            "effective_config_fingerprint": effective_config_fingerprint(
+                self.config, patch_path=self.patch_path
+            ),
             "planned_calls": len(self.plan),
             "executed_calls": len(self.rows),
-            "ok_calls": ok_total,
-            "failed_calls": len(self.rows) - ok_total,
+            "ok_calls": overall["completed_calls"],
+            "failed_calls": len(self.rows) - overall["completed_calls"],
             "aborted_reason": self.aborted_reason,
-            "total_cost_cny_peak": round(sum(r["cost_cny_peak"] for r in self.rows), 6),
-            "total_cost_cny_tiered": round(sum(r["cost_cny_tiered"] for r in self.rows), 6),
+            "overall": overall,
             "groups": groups,
+            "consistency": {
+                "groups_sum_equals_overall": all(
+                    sum(groups[g][field] for g in groups) == overall[key]
+                    for field, key in (
+                        ("uncached_input_tokens", "uncached_input_tokens"),
+                        ("cache_read_tokens", "cache_read_tokens"),
+                        ("total_prompt_tokens", "total_prompt_tokens"),
+                        ("output_tokens_all_attempts", "output_tokens_all_attempts"),
+                    )
+                ),
+            },
             "confounds": [
                 "Group A reuses one session: hit-rate trend is confounded by growing history length.",
                 "Group D varies early prefix bytes: it measures prefix sensitivity, not the API's in-history system-prompt-update feature.",
                 "Costs labeled 'peak' are conservative upper bounds; 'tiered' uses per-call timestamps (weekend/off-peak rule).",
+                "mean_per_request_cache_hit_rate averages per-call ratios; weighted_cache_hit_rate divides token totals. They are not the same measure.",
             ],
         }
 
     def _csv_fields(self) -> list[str]:
         return [
             "position", "group", "index", "session_id_hash", "prompt_sha16", "prompt_chars",
-            "utc_start", "utc_end", "latency_ms", "attempts", "status", "finish_reason",
+            "utc_start", "utc_end", "latency_ms", "attempts", "metered_attempts", "status",
+            "finish_reason", "response_accepted", "task_valid", "response_sha16",
             "wire_model", "price_tier", "uncached_input_tokens", "cache_read_tokens",
-            "cache_write_tokens", "output_tokens", "total_prompt_tokens", "cache_hit_rate",
-            "output_tokens_all_attempts", "cost_cny_peak", "cost_cny_tiered", "error",
+            "cache_write_tokens", "cache_write_reported", "output_tokens", "total_prompt_tokens",
+            "cache_hit_rate", "output_tokens_all_attempts", "cost_cny_peak", "cost_cny_tiered",
+            "error",
         ]
 
     def _write_calls_csv(self) -> None:
@@ -318,7 +497,28 @@ class Benchmark:
         )
         snapshot = {
             "config": redact_obj(self.config.raw),
-            "config_hash": config_hash(self.config),
+            "effective_config": {
+                "model": self.config.model,
+                "reasoning_effort": self.config.reasoning_effort,
+                "max_tokens": self.config.max_tokens,
+                "calls_per_group": self.config.calls_per_group,
+                "interleave": self.config.interleave,
+                "max_retries_per_call": self.config.max_retries_per_call,
+                "prompt_overhead_tokens": self.config.prompt_overhead_tokens,
+                "patch_sha256": (
+                    _sha256_file(self.patch_path) if self.patch_path else None
+                ),
+                "deepseek_harness_sdk": sdk_version(),
+            },
+            "budget": {
+                "authorized_cap_cny": self.authorized_cap_cny,
+                "runtime_cap_cny": self.config.max_cny,
+                "note": "runtime cap may be tightened to the platform balance; that changes spend authorization, not the experiment fingerprint",
+            },
+            "config_hash_legacy_raw": config_hash(self.config),
+            "effective_config_fingerprint": effective_config_fingerprint(
+                self.config, patch_path=self.patch_path
+            ),
             "run_id": self.run_id,
             "live": self.live,
             "created_utc": _utcnow().isoformat(),

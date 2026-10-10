@@ -106,6 +106,12 @@ def prompt_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
 
 
+def expected_response(group: str, index: int) -> str:
+    """The exact minified JSON a complete, correct reply must equal."""
+    tid = f"T{(index if group in ('A', 'C') else 0):03d}"
+    return f'{{"task":"{tid}","status":"ok"}}'
+
+
 @dataclass(frozen=True, slots=True)
 class PlannedCall:
     group: str

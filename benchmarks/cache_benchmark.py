@@ -55,6 +55,7 @@ def main(argv: list[str] | None = None) -> int:
 
     run_id = args.run_id or uuid.uuid4().hex[:8]
     output_dir = args.output_dir or (REPO_ROOT / "results" / "phase0" / ("live" if live else "dry-run"))
+    authorized_cap_cny = config.max_cny
 
     if live:
         require_live_key()
@@ -88,7 +89,15 @@ def main(argv: list[str] | None = None) -> int:
     else:
         runner = FakeRunner()
 
-    bench = Benchmark(config=config, runner=runner, output_dir=output_dir, run_id=run_id, live=live)
+    bench = Benchmark(
+        config=config,
+        runner=runner,
+        output_dir=output_dir,
+        run_id=run_id,
+        live=live,
+        patch_path=DEFAULT_PATCH if live else None,
+        authorized_cap_cny=authorized_cap_cny,
+    )
     preflight = bench.preflight()
     print("=== Phase 0 cache benchmark preflight ===")
     print(json.dumps(preflight, indent=2, ensure_ascii=False))
@@ -105,8 +114,9 @@ def main(argv: list[str] | None = None) -> int:
             summary["balance_reconciliation"] = {
                 "balance_before_cny": balance_before,
                 "balance_after_cny": balance_after,
-                "billed_delta_cny": round(balance_before - balance_after, 6),
-                "note": "platform-billed delta in CNY (ground truth; billing may lag)",
+                "visible_balance_delta_cny": round(balance_before - balance_after, 6),
+                "actual_billed_cost_cny": None,
+                "note": "visible balance delta only; display resolution is 0.01 CNY and billing may lag, so the actual billed amount is UNKNOWN from this source",
             }
             (output_dir / "summary.json").write_text(
                 json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"

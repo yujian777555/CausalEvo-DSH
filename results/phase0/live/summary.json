@@ -1,69 +1,117 @@
 {
   "run_id": "p0live02",
   "live": true,
-  "config_hash": "a4f11755ea27380c",
+  "config_hash_legacy_raw": "a4f11755ea27380c",
   "planned_calls": 100,
   "executed_calls": 100,
   "ok_calls": 100,
   "failed_calls": 0,
   "aborted_reason": null,
-  "total_cost_cny_peak": 0.092083,
-  "total_cost_cny_tiered": 0.046042,
+  "overall": {
+    "logical_calls": 100,
+    "completed_calls": 100,
+    "provider_attempts": 100,
+    "metered_attempts": 100,
+    "unknown_spend_calls": 0,
+    "response_accepted": 100,
+    "task_valid_counts": {
+      "unknown": 100
+    },
+    "uncached_input_tokens": 27316,
+    "cache_read_tokens": 29184,
+    "cache_write_tokens": 0,
+    "cache_write_reported": false,
+    "total_prompt_tokens": 56500,
+    "output_tokens_all_attempts": 3833,
+    "weighted_cache_hit_rate": 0.5165309734513275,
+    "mean_per_request_cache_hit_rate": 0.45983795734851773,
+    "finish_reason_distribution": {
+      "completed": 59,
+      "max-tokens": 41
+    },
+    "cost_cny_peak": 0.0920834784,
+    "cost_cny_tiered": 0.0460417392
+  },
   "groups": {
     "A": {
       "ok_calls": 25,
       "cache_hit_rate_mean": 0.7476673944260546,
+      "weighted_cache_hit_rate": 0.7683001172332943,
       "cache_read_tokens": 16384,
       "uncached_input_tokens": 4941,
       "cache_write_tokens": 0,
       "output_tokens_all_attempts": 361,
       "total_prompt_tokens": 21325,
+      "finish_reason_distribution": {
+        "completed": 25
+      },
       "cost_cny_peak": 0.014298,
       "cost_cny_tiered": 0.007149
     },
     "B": {
       "ok_calls": 25,
       "cache_hit_rate_mean": 0.5458422174840082,
+      "weighted_cache_hit_rate": 0.5458422174840085,
       "cache_read_tokens": 6400,
       "uncached_input_tokens": 5325,
       "cache_write_tokens": 0,
       "output_tokens_all_attempts": 1105,
       "total_prompt_tokens": 11725,
+      "finish_reason_distribution": {
+        "max-tokens": 13,
+        "completed": 12
+      },
       "cost_cny_peak": 0.021029,
       "cost_cny_tiered": 0.010515
     },
     "C": {
       "ok_calls": 25,
       "cache_hit_rate_mean": 0.5458422174840082,
+      "weighted_cache_hit_rate": 0.5458422174840085,
       "cache_read_tokens": 6400,
       "uncached_input_tokens": 5325,
       "cache_write_tokens": 0,
       "output_tokens_all_attempts": 1067,
       "total_prompt_tokens": 11725,
+      "finish_reason_distribution": {
+        "completed": 15,
+        "max-tokens": 10
+      },
       "cost_cny_peak": 0.020706,
       "cost_cny_tiered": 0.010353
     },
     "D": {
       "ok_calls": 25,
       "cache_hit_rate_mean": 0.0,
+      "weighted_cache_hit_rate": 0.0,
       "cache_read_tokens": 0,
       "uncached_input_tokens": 11725,
       "cache_write_tokens": 0,
       "output_tokens_all_attempts": 1300,
       "total_prompt_tokens": 11725,
+      "finish_reason_distribution": {
+        "completed": 7,
+        "max-tokens": 18
+      },
       "cost_cny_peak": 0.03605,
       "cost_cny_tiered": 0.018025
     }
+  },
+  "task_validity_note": "CSV persisted no response bodies: task_valid is 'unknown' for all 100 rows. 41 rows finished with max-tokens (B=13, C=10, D=18) and are valid metering samples but NOT verified complete JSON outputs.",
+  "balance_reconciliation": {
+    "balance_before_cny": 4.83,
+    "balance_after_cny": 4.83,
+    "billed_delta_cny": 0.0,
+    "note": "platform-billed delta in CNY (ground truth; billing may lag)"
   },
   "confounds": [
     "Group A reuses one session: hit-rate trend is confounded by growing history length.",
     "Group D varies early prefix bytes: it measures prefix sensitivity, not the API's in-history system-prompt-update feature.",
     "Costs labeled 'peak' are conservative upper bounds; 'tiered' uses per-call timestamps (weekend/off-peak rule)."
   ],
-  "balance_reconciliation": {
-    "balance_before_cny": 4.83,
-    "balance_after_cny": 4.83,
-    "billed_delta_cny": 0.0,
-    "note": "platform-billed delta in CNY (ground truth; billing may lag)"
+  "backfilled_from": {
+    "path": "calls.csv",
+    "sha256": "1961bdd81a7f6a4ad4169d6f246530ed3df3170f70948f85de13ca136e364c59",
+    "note": "regenerated from the immutable raw CSV on 2026-10-10 (R1.1-F1); supersedes the original summary's hand-transcribed totals"
   }
 }

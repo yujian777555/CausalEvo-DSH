@@ -1,63 +1,107 @@
 {
-  "run_id": "dryrun002",
+  "run_id": "dryrun-r11",
   "live": false,
-  "config_hash": "a4f11755ea27380c",
+  "config_hash_legacy_raw": "a4f11755ea27380c",
+  "effective_config_fingerprint": "c9a4e9014f6708ce",
   "planned_calls": 100,
   "executed_calls": 100,
   "ok_calls": 100,
   "failed_calls": 0,
   "aborted_reason": null,
-  "total_cost_cny_peak": 0.135029,
-  "total_cost_cny_tiered": 0.067515,
+  "overall": {
+    "logical_calls": 100,
+    "completed_calls": 100,
+    "provider_attempts": 100,
+    "metered_attempts": 100,
+    "unknown_spend_calls": 0,
+    "response_accepted": 100,
+    "task_valid_counts": {
+      "valid": 52,
+      "invalid": 48
+    },
+    "uncached_input_tokens": 58000,
+    "cache_read_tokens": 29700,
+    "cache_write_tokens": 0,
+    "cache_write_reported": true,
+    "total_prompt_tokens": 87700,
+    "output_tokens_all_attempts": 1200,
+    "weighted_cache_hit_rate": 0.338654503990878,
+    "mean_per_request_cache_hit_rate": 0.23420067384674595,
+    "finish_reason_distribution": {
+      "completed": 100
+    },
+    "cost_cny_peak": 0.13502922,
+    "cost_cny_tiered": 0.06751461
+  },
   "groups": {
     "A": {
       "ok_calls": 25,
       "cache_hit_rate_mean": 0.9368026953869838,
-      "cache_read_tokens": "[REDACTED]",
-      "uncached_input_tokens": "[REDACTED]",
-      "cache_write_tokens": "[REDACTED]",
-      "output_tokens_all_attempts": "[REDACTED]",
-      "total_prompt_tokens": "[REDACTED]",
+      "weighted_cache_hit_rate": 0.9534510433386838,
+      "cache_read_tokens": 29700,
+      "uncached_input_tokens": 1450,
+      "cache_write_tokens": 0,
+      "output_tokens_all_attempts": 300,
+      "total_prompt_tokens": 31150,
+      "finish_reason_distribution": {
+        "completed": 25
+      },
       "cost_cny_peak": 0.00691,
       "cost_cny_tiered": 0.003455
     },
     "B": {
       "ok_calls": 25,
       "cache_hit_rate_mean": 0.0,
-      "cache_read_tokens": "[REDACTED]",
-      "uncached_input_tokens": "[REDACTED]",
-      "cache_write_tokens": "[REDACTED]",
-      "output_tokens_all_attempts": "[REDACTED]",
-      "total_prompt_tokens": "[REDACTED]",
+      "weighted_cache_hit_rate": 0.0,
+      "cache_read_tokens": 0,
+      "uncached_input_tokens": 18850,
+      "cache_write_tokens": 0,
+      "output_tokens_all_attempts": 300,
+      "total_prompt_tokens": 18850,
+      "finish_reason_distribution": {
+        "completed": 25
+      },
       "cost_cny_peak": 0.042707,
       "cost_cny_tiered": 0.021353
     },
     "C": {
       "ok_calls": 25,
       "cache_hit_rate_mean": 0.0,
-      "cache_read_tokens": "[REDACTED]",
-      "uncached_input_tokens": "[REDACTED]",
-      "cache_write_tokens": "[REDACTED]",
-      "output_tokens_all_attempts": "[REDACTED]",
-      "total_prompt_tokens": "[REDACTED]",
+      "weighted_cache_hit_rate": 0.0,
+      "cache_read_tokens": 0,
+      "uncached_input_tokens": 18850,
+      "cache_write_tokens": 0,
+      "output_tokens_all_attempts": 300,
+      "total_prompt_tokens": 18850,
+      "finish_reason_distribution": {
+        "completed": 25
+      },
       "cost_cny_peak": 0.042707,
       "cost_cny_tiered": 0.021353
     },
     "D": {
       "ok_calls": 25,
       "cache_hit_rate_mean": 0.0,
-      "cache_read_tokens": "[REDACTED]",
-      "uncached_input_tokens": "[REDACTED]",
-      "cache_write_tokens": "[REDACTED]",
-      "output_tokens_all_attempts": "[REDACTED]",
-      "total_prompt_tokens": "[REDACTED]",
+      "weighted_cache_hit_rate": 0.0,
+      "cache_read_tokens": 0,
+      "uncached_input_tokens": 18850,
+      "cache_write_tokens": 0,
+      "output_tokens_all_attempts": 300,
+      "total_prompt_tokens": 18850,
+      "finish_reason_distribution": {
+        "completed": 25
+      },
       "cost_cny_peak": 0.042707,
       "cost_cny_tiered": 0.021353
     }
   },
+  "consistency": {
+    "groups_sum_equals_overall": true
+  },
   "confounds": [
     "Group A reuses one session: hit-rate trend is confounded by growing history length.",
     "Group D varies early prefix bytes: it measures prefix sensitivity, not the API's in-history system-prompt-update feature.",
-    "Costs labeled 'peak' are conservative upper bounds; 'tiered' uses per-call timestamps (weekend/off-peak rule)."
+    "Costs labeled 'peak' are conservative upper bounds; 'tiered' uses per-call timestamps (weekend/off-peak rule).",
+    "mean_per_request_cache_hit_rate averages per-call ratios; weighted_cache_hit_rate divides token totals. They are not the same measure."
   ]
 }

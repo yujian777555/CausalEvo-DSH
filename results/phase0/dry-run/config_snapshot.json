@@ -3,13 +3,13 @@
     "benchmark": {
       "model": "deepseek-flash",
       "reasoning_effort": "low",
-      "max_tokens": "[REDACTED]",
+      "max_tokens": 64,
       "calls_per_group": 25,
       "interleave": true,
       "max_retries_per_call": 1,
       "max_cny": 10.0,
       "usd_cny": 7.1,
-      "prompt_overhead_tokens": "[REDACTED]",
+      "prompt_overhead_tokens": 2000,
       "stop": {
         "fail_closed_on_missing_usage": true,
         "abort_on_budget_breach": true
@@ -30,8 +30,25 @@
       }
     }
   },
-  "config_hash": "a4f11755ea27380c",
-  "run_id": "dryrun002",
+  "effective_config": {
+    "model": "deepseek-flash",
+    "reasoning_effort": "low",
+    "max_tokens": 64,
+    "calls_per_group": 25,
+    "interleave": true,
+    "max_retries_per_call": 1,
+    "prompt_overhead_tokens": 2000,
+    "patch_sha256": null,
+    "deepseek_harness_sdk": "0.1.5rc1"
+  },
+  "budget": {
+    "authorized_cap_cny": 10.0,
+    "runtime_cap_cny": 10.0,
+    "note": "runtime cap may be tightened to the platform balance; that changes spend authorization, not the experiment fingerprint"
+  },
+  "config_hash_legacy_raw": "a4f11755ea27380c",
+  "effective_config_fingerprint": "c9a4e9014f6708ce",
+  "run_id": "dryrun-r11",
   "live": false,
-  "created_utc": "2026-10-10T03:55:35.728934+00:00"
+  "created_utc": "2026-10-10T06:04:23.219579+00:00"
 }

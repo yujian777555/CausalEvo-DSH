@@ -29,12 +29,13 @@
 - settled usage：每个 assistant/message 事件的 data.usage（或最后一个 chunk:usage 帧）为该请求终值；分片不求和；多步 turn 的多个请求分别计费后求和。
 - 重试与失败 attempt 单独记录（attempts 计数 + 各自 usage），成本永不忽略。
 - 缺失/畸形 usage → fail-closed：标记 fail_closed、停止后续 live 调用、保留已发生成本（`tests/test_benchmark.py::test_missing_usage_fails_closed_and_stops_run`）。
+- R1.1 补充：失败 attempt 带 usage → 照常计费（metered error）；失败且无 usage 且不能证实未发出 → `unknown_cost` 立即停机，费用标未知而非 0；`local_rejected`（证实未发出）零成本可继续。gate 预检按 attempt 上界（含重试）计价。
 
 ### 2.4 价格与预算（P0.4）
 - 价格表快照：官方价格页 2026-10-10（docs 记录 URL 与日期）；峰时 01:00–04:00、06:00–10:00 UTC 周一至周五（中国法定节假日除外），周末全天谷价。
 - cache-write 无单独定价 → 按 miss 价计费并明确披露为上界，不等同 hit 价。
 - 2026-10-10 为周六 → 全天 off-peak；报告同时给出 peak 口径上界。
-- USD→CNY 7.10 为记录假设；实际对账以平台 /user/balance CNY 差值为准（live 运行前后各查一次）。
+- USD→CNY 7.10 为记录假设；平台 /user/balance 可见差值仅作参考（分辨率 0.01 CNY、可能延迟），实际扣费金额标记 unknown，不以差值 0 充当已核实账单（R1.1-F5）。
 - 预算门控：每次新请求前要求「已花费 + 剩余计划 × 最坏单价 ≤ cap」，否则拒绝并安全退出；最坏单价按全部 miss + 满输出 + 峰价 + 允许重试计算。账单可能延迟，不宣称绝对不超支。
 
 ### 2.5 实验设计（P0.3 / G5）

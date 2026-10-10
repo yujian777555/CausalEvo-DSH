@@ -15,7 +15,19 @@ _PATTERNS = [
     re.compile(r"(?i)(api[_-]?key|authorization|token|secret)([\"'\s:=]+)([^\s\"',}]{8,})"),
 ]
 
-_SENSITIVE_KEY_RE = re.compile(r"(?i)(api[_-]?key|authorization|token|secret|password|credential)")
+_SENSITIVE_KEYS = {
+    "api_key", "apikey", "api-key", "authorization", "bearer", "password",
+    "passwd", "secret", "client_secret", "credential", "credentials",
+    "access_token", "refresh_token", "id_token", "session_token",
+    "private_key", "token", "auth",
+}
+# NOTE: deliberately an explicit allowlist of credential field NAMES, not a
+# substring match. "max_tokens"/"prompt_overhead_tokens" are ordinary numeric
+# config and must survive redaction (R1.1-F4 regression).
+
+
+def _is_sensitive_key(key: str) -> bool:
+    return key.strip().lower().replace("-", "_") in _SENSITIVE_KEYS
 
 
 def redact_text(text: str) -> str:
@@ -33,7 +45,7 @@ def redact_obj(obj: Any) -> Any:
     if isinstance(obj, Mapping):
         redacted: dict[str, Any] = {}
         for key, value in obj.items():
-            if isinstance(key, str) and _SENSITIVE_KEY_RE.search(key):
+            if isinstance(key, str) and _is_sensitive_key(key):
                 redacted[key] = _REDACTED
             else:
                 redacted[key] = redact_obj(value)
