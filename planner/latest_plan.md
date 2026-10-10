@@ -1,70 +1,56 @@
-# CE-DSH-P0-R1.1 — Phase 0 审计修复计划
+# CE-DSH-P0-R1.2 — Phase 0 最终计量闭环修复
 
-- 发布：2026-10-10
-- Planner：GPT；Executor：Kimi
-- 来源：planner/reviews/CE-DSH-P0-R1-review.md
-- 审计输入提交：dc056ea0cb210bf976e1b9f105be5fa2103c1863
-- 状态：CHANGES_REQUESTED；Phase 0 尚未最终 ACCEPTED
-- 范围：只修补 Phase 0 证据统计、异常计费、输出有效性及可复现性；**不得自行进入 Phase 1**
-- 费用：本轮要求完全离线修复和测试；**无新增 live API 调用授权**，也不必重新进行原 100 次实验。
+日期：2026-10-10
+Planner：GPT；Executor：Kimi
+审计输入 HEAD：28738e905efbec2525afa51edf4e5eb6256d0e5e
+当前状态：CHANGES_REQUESTED（Phase 0 未冻结）
+审查报告：planner/reviews/CE-DSH-P0-R1.1-review.md
 
-## 0. 验收判断依据
+## 0. 范围与硬约束
 
-Planner 读取了 GitHub HEAD、原始 100 行 calls.csv、summary.json、状态及核心代码。独立对 CSV 计数：100 行，A/B/C/D 各 25；uncached=27316，cache_read=29184，input=56500，output=3833，整体加权缓存率 29184/56500=0.5165309734513274，分时费用按 CSV 汇总 ¥0.0460417392。41 条 finish_reason=max-tokens（B=13、C=10、D=18；A=0），不能直接视为“完整 JSON 任务成功”。报告里 45500 prompt、22784 cache hit 与原始数据不符。
+此次仅关闭 R1.1 剩下的两项计量缺口，不实施 Phase 1，不更改 100 条原始 live CSV，不新增任何真实 DeepSeek API 调用或费用。本轮无需重做缓存基准。保留已有 64 项测试、离线 dry-run 和原本的 phase0/live/reconciliation 证据；不得伪造实测数据。
 
-注意：这些统计是对 **提交到 GitHub 的 CSV 的一致性审计**；Planner 未直接访问用户的 API 服务商计费明细，也未在本地重新运行 42 项 pytest。不能把此审计写成 API 服务端真实性第三方证明。
+## 1. F2.1 多次尝试的 Token 桶必须全部累计（P0）
 
-## 1. P0-R1.1-F1：修正聚合与跨文件一致性（P0，阻断）
+问题定位：src/causalevo/benchmark.py::_row() 费用和 output_tokens_all_attempts 汇总了所有 Attempts，但 uncached_input_tokens/cache_read_tokens/cache_write_tokens/total_prompt_tokens/cache_hit_rate 只取最后一次 attempt 的 usage，导致带 usage 的失败然后重试成功时，费用和 Token 表互相不一致。
 
-- 更新 src/causalevo/benchmark.py 的 summary：添加 overall 汇总，至少包括 executed/ok、uncached_input_tokens、cache_read_tokens、cache_write_tokens + reported/missing 标志、total_prompt_tokens、output_tokens_all_attempts、weighted_cache_hit_rate、mean_per_request_cache_hit_rate、finish_reason 分布、费用。
-- 验证所有总量 == A+B+C+D == calls.csv 聚合，避免在 status.json 或 executor_report.md 中手抄错误。
-- 将 docs/PHASE0_RESULTS.md、planner/executor_report.md、status.json 里 Phase 0 旧统计纠正为 27316、29184、56500、3833、overall=51.65%（整体 token 加权比率），并解释“各组逐请求 mean”与“整体加权率”不同。
-- 原始 results/phase0/live/calls.csv 不要修改；summary.json 可以从该 CSV 无损重算并注明回填来源，新增 results/phase0/live/reconciliation.json，包含 file SHA-256、计算规则与校验结果；不重写/伪造服务端 usage。
-- tests 增加源于已存储 live CSV 的聚合一致性测试：读取 100 行并验证各组和总体总量、费用、finish_reason 分布，缺失或不等时失败。
+修复：
+1. 每个逻辑调用保留列表 attempts[]；对所有有 settled usage 的 provider attempts 求和组成 billed_usage，逐请求显示最终尝试的 usage 可以保留专门字段 final_attempt_usage（不能冒充总账）。
+2. CSV 主列 uncached_input_tokens/cache_read_tokens/cache_write_tokens/output_tokens_all_attempts/total_prompt_tokens/cache_hit_rate 必须以全部已计量 attempts 为准。若为兼容旧 CSV 更合理采用 *_all_attempts 新列，需要清晰定义且所有总体汇总、账单、断言统一使用所有 attempts；保证既有 100 条存量 CSV 可无损读取。
+3. cache-write 某些 attempt 未上报时，cache_write_reported 需体现 **所有 attempts 是否完整上报**；不可仅用最后一个 attempt 的上报标识。未上报的值按已有策略标记缺失，不伪造成已上报 0。
+4. 若存在未知费用的 attempt，summary 不能把已知 Token / 已知费用描述为完整成本；分别记录 known_measured_cost 与 unknown_spend_attempts，以及费用完整性标志。
+5. 增加自动一致性断言：单条调用所有已计量 attempts 的桶和应等于最终 CSV 桶和，已知费率加总与 cost 列相符；overall 与 groups、CSV 必须相容。
+6. test_retry_success_meters_both_attempts 必须断言 **输入各桶也累加了失败+成功两个 attempts**，再增加仅失败两次均有 usage 的测试。至少测试 peak、off_peak 计费与多次重试。不能只断言 cost>0 或 output_tokens_all_attempts。
 
-## 2. P0-R1.1-F2：错误及重试的未知计费必须 fail-closed（P0，阻断）
+## 2. F2.2 解析 assistant/attempt 事件中的 settled usage（P0）
 
-当前 src/causalevo/benchmark.py 只在 outcome.ok 时调用 extract_settled_usage：当失败 attempt 返回 events/usage，或 transport 异常导致无 usage 时，后续 retry 或调用可能未记入消耗；status=error + usage=None 时 gate.record_spend(0) 且继续。修复如下：
-- 不论成功或失败，只要有可结算 usage，按每次 provider attempt 解析并计费；一个失败 Attempt 也应保留自己的 Token 桶和费用。
-- 请求可能已经发出但无 usage 时，标记 unknown_cost / UNCERTAIN_SPEND，停止后续 live 请求，或实现经严格证明的最坏预算冻结；默认 fail-closed STOP，不得报 ¥0 消耗。若错误确定发生在请求发送前，可标注 preflight/locally_rejected 并附证据。
-- 若先失败后重试，保留每次 attempt 的单独计量与真实发出请求总数；summary 的 usage/cost 应包括所有有用量的重试 attempt，而非只显示最后成功 attempt。
-- 对 fake transport failure with usage、transport failure without usage、HTTP failure、retry-success、两个 response attempts、失败事件中仅 assistant/attempt 的 usage 构造离线测试；原来的 FlakyRunner 无 usage 的失败不得被宣称为完整计费测试。
-- 结果中区分 provider_attempts、logical_calls、completed_calls、measured_cost_cny、unknown_spend_calls。
-- 预检/每次 gate 应正确考虑剩余 retry 上界；同时验证失败/缺 usage 时输出 partial artifact 与停机原因。
+问题定位：src/causalevo/usage.py::_usage_from_message_event 仅接受 assistant/message，但 Harness 失败/重试的 assistant/attempt 可通过 data.stream 中最终的 usage 帧记录计费。此时把它作为无用量失败会导致漏计或不必要中止。
 
-## 3. P0-R1.1-F3：分离 API 成功与任务输出完整性（P1，阻断）
+修复：
+1. 支持 assistant/attempt 的 data.stream 内最终 settled usage 帧；有明确 data.usage 时按上游契约解析，且优先 authoritative settled 位置。
+2. 避免重复记账：同一 provider request 的 stream 多个累计 usage frame 只取最终值；只有不同 request/attempt 可以求和。评估 assistant/attempt 和 assistant/message 同时出现、可能指向同一 attempt 的情况，根据可证明的 turn/step/attempt identity 做去重，否则 fail-closed / 标明不能确定，禁止盲目加总。
+3. 成功/失败分别提供带 usage 的真实事件结构近似 fixture 测试；覆盖 assistant/attempt only、stream 中多帧累计、assistant/message 事件、重复可疑事件及无 usage 异常。
+4. 保留原有对未知费用请求 fail-closed 停机，但当 assistant/attempt 有可靠 usage 时必须记录费用；不能因为它是失败事件就丢弃。
+5. 将上游事件结构依据固定到 docs/HARNESS_INTEGRATION.md，明确来自代码契约还是实际服务端观测，不能将构造 fixture 写成真实 API 实测。
 
-- 当前 runner.py 使用 finish_reason is not None 作为成功，可能把 error/max-tokens 当作成功。
-- 统计 response_accepted（有可信 usage 的有效 API 观测）与 task_valid（finish_reason=completed 且 final_response 是与 task suffix 一致的完整 minified JSON）等两层含义。max-tokens 不是完成的任务输出，但对于缓存计费观测仍可算有效（若 usage 完整）。
-- 保留 100 条 Phase 0 API usage 样本；在报告中披露 41 次 max-tokens（A0/B13/C10/D18），绝不声称 100/100 JSON 正确。已持久化 CSV 没有 final_response 时，不得从 finish_reason=completed 推断 JSON 必然有效，标记 task_valid_unknown，必须说明未存储可独立验证的响应内容。
-- 如未来储存答案，保存最小化的去敏校验状态/校验哈希，而非原始无关内容；加入对格式错误、截断、错误 finish 的单测。
+## 3. F2.3 独立离线证据及报告更新
 
-## 4. P0-R1.1-F4：修复配置哈希/快照脱敏（P1）
+- 旧 results/phase0/live/calls.csv 的内容 SHA-256 固定为 1961bdd81a7f6a4ad4169d6f246530ed3df3170f70948f85de13ca136e364c59；不能覆写。
+- 原始 p0live02 100 次调用全是 1 attempt，故 Phase 0 历史数字应继续是：27316 uncached / 29184 read / 56500 total prompt / 3833 output；cache hit=0.5165309734513275；估算 offpeak ¥0.0460417392。不能为了适配新结构更改数字。
+- 新失败注入测试、reconciliation 与既有不变 CSV consistency tests 均通过，补充至少一个离线 CSV 端到端样例：metered fail → metered retry success → 对账一致；再提供 local_rejected 和 unknown_cost 样例。
+- 更新 docs/PHASE0_R1_2_FIX_REPORT.md、docs/PHASE0_AUDIT.md、planner/executor_report.md、status.json；明确代码修复不意味着新的 API 实测。
+- 真实扣费继续 actual_billed_cost_cny=null，历史 JSON task_valid=unknown；41 个 max-tokens 继续披露。
 
-- redaction.py 当前 _SENSITIVE_KEY_RE 匹配 `max_tokens`、`prompt_overhead_tokens`，导致 config_snapshot.json 将正常 numeric 字段替换为 [REDACTED]；应将密钥字段识别改为明确的 API key/bearer/auth credential/password 等字段，只在值确实是凭据时脱敏，保留 token 数值配置。
-- 有效运行配置包括命令行 --calls/--max-cny override、真实生效的预算收紧、模型/effort/max_tokens、patch 的内容哈希、SDK 版本；config_hash 应基于 **effective config**，不能只哈希 YAML 原始 config.raw。区分“授权支出上限”和“余额可用额度”，不因余额变化误称科学实验配置改变，但要记录运行时 budget cap。
-- 当前 run_id=p0live02 的旧 config_hash 不可悄悄改写；新代码中保留 legacy 哈希和其定义，并在补充材料中标记旧快照字段被过度脱敏。
-- 增加 test_cli_overrides_affect_effective_hash、test_numeric_token_fields_are_preserved、test_secrets_are_redacted、test_patch_fingerprint_changes。
+## 4. 验收 Gate
 
-## 5. P0-R1.1-F5：文档、审计证据与 regression Gate
+G1：失败 attempt + 成功 attempt Token 桶和与费用总账一致，测试可独立证明；
+G2：assistant/attempt 的最终 usage 被正确识别，无累计分片/重复事件双重计账；
+G3：unknown_cost（未能可靠得知是否计费）仍触发 fail-closed，known failed usage 仍计费；
+G4：原始 CSV hash 不变，历史数据与报告一致；不修改旧 live 证据；
+G5：本轮全部测试、100 次 fake dry-run 真实执行，给出 PASS/FAIL/SKIP 和命令；
+G6：零新增 live API 调用，零新增收费授权；
+G7：git push origin main，远端 HEAD == 本地 HEAD、工作树 clean，提供完整 SHA。
 
-- 将 docs/PHASE0_RESULTS.md、docs/PHASE0_AUDIT.md 以及 executor_report.md 逐项校正；费用 ¥0.0460 是基于定价和 USD/CNY 假设的 **估算值**。balance_before==balance_after 仅表示可见余额差 0，不能记 `actual_billed_cost_cny:0`。该字段应设置 null / unknown，并记录 visible_balance_delta_cny:0 与账单分辨率/延迟限制。
-- live 结果持续注明四组时长约 70 秒，A 历史增长混杂，D 非 in-history update，缓存 128-token 粒度是观察不是 API 契约。
-- 如果原始数据与 summary 的差异揭示新问题，增补 tests，并报告原因、修改行号、执行证据。
-- 先运行全量 pytest；再运行 100 fake dry-run，确认无凭据无需联网。不能因为旧测试 42 passed 就声称新测试也通过。
-- 验证 Git HEAD、origin/main、工作树 clean；附关键配置 dump 的结构化脱敏输出，必要时与 no-tools patch 是否完全生效逐项比对。
+## 5. 提交与停止
 
-## 6. Executor 回报及停止条件
-
-交付：
-- 更新 planner/executor_report.md 和 status.json；
-- 新增 docs/PHASE0_R1_1_FIX_REPORT.md、reconciliation.json 和测试；
-- 保存原始 100 条 CSV 不改动；
-- commit + push origin/main，保证工作树 clean、远端 HEAD 一致；
-- 报告测试总数、基于 CSV 的纠正后统计、异常计费 failure injection 结果、任何无法验证事项。
-- 本轮**严禁新增真实 API 费用**，不得跳转 Phase 1。
-- 状态设为 READY_FOR_REVIEW 等待 GPT Planner 第二轮验收；仅 Planner 可把 Phase 0 标记 ACCEPTED。
-
-## 7. 进入 Phase 1 的条件
-
-此轮 F1–F5 无阻断缺陷且真实校验证据闭合后，我将发布单独 Phase 1 规划：稳定的可执行 Agent 任务 Benchmark + 一致任务/预算的 Baseline（尚不允许先写有显著改善的结论）。
+完成后 Commit+Push，status.phase_status=READY_FOR_REVIEW，next_actor=GPT-Planner；报告本轮改动路径、验证命令、测试结果、事故与残留风险。在 Planner 独立验收前，绝不进入 Phase 1；不要修改科研目标或提前发表性能结论。

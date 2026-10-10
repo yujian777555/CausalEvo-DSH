@@ -3,24 +3,24 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P0-R1.1",
-  "previous_plan_id": "CE-DSH-P0-R1",
+  "plan_id": "CE-DSH-P0-R1.2",
+  "previous_plan_id": "CE-DSH-P0-R1.1",
   "phase": "Phase 0",
-  "phase_status": "READY_FOR_REVIEW",
-  "planner_review": "PENDING_SECOND_ROUND",
-  "next_actor": "GPT-Planner",
+  "phase_status": "CHANGES_REQUESTED",
+  "planner_review": "CHANGES_REQUESTED",
+  "next_actor": "Kimi-Executor",
   "planner_review_date": "2026-10-10",
   "executor_fix_date": "2026-10-10",
   "baseline_main_sha": "a9bef642e35eeed398f5578890a00f8872af2af0",
-  "reviewed_executor_head": "dc056ea0cb210bf976e1b9f105be5fa2103c1863",
+  "reviewed_executor_head": "28738e905efbec2525afa51edf4e5eb6256d0e5e",
   "plan_path": "planner/latest_plan.md",
-  "review_path": "planner/reviews/CE-DSH-P0-R1-review.md",
+  "review_path": "planner/reviews/CE-DSH-P0-R1.1-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "docs/PHASE0_R1_1_FIX_REPORT.md",
   "implementation": {
     "started": true,
     "latest_executor_commit": "dbd0e93808bbdb30ac15afa1aa1f9618bb0126cf",
-    "github_commit_verified": false,
+    "github_commit_verified": true,
     "executor_reports_local_clean": true,
     "note": "deliverables commit; a housekeeping commit recording this verification sits on top"
   },
@@ -76,12 +76,15 @@
   },
   "r1_1_fixes": {
     "F1_aggregation_consistency": "FIXED",
-    "F2_unknown_cost_fail_closed": "FIXED",
+    "F2_unknown_cost_fail_closed": "PARTIAL_FIX_REQUIRES_R1_2",
     "F3_api_success_vs_task_valid": "FIXED",
     "F4_config_fingerprint_redaction": "FIXED",
     "F5_docs_status_consistency": "FIXED"
   },
-  "blockers": [],
+  "blockers": [
+    "R1.2-F2.1: input/cache token columns fail to aggregate failed + retried metered attempts; fees sum correctly but token reporting doesn't",
+    "R1.2-F2.2: assistant/attempt settled usage events are ignored in extract_settled_usage"
+  ],
   "limitations": [
     "actual billed cost unknown (balance resolution/lag)",
     "task_validity of stored 100 samples unknown (bodies not persisted)",
@@ -100,5 +103,6 @@
     "tests/test_task_validity.py",
     "tests/test_config_fingerprint.py"
   ],
-  "notes": "R1.1 remediation complete offline; raw CSV immutable; no new spend. Awaiting Planner second-round review; Phase 1 not started."
+  "notes": "R1.1 remediation complete offline; raw CSV immutable; no new spend. Awaiting Planner second-round review; Phase 1 not started.",
+  "next_goal": "Offline Phase0 R1.2 token/attempt metering closure; no live calls or phase 1"
 }
