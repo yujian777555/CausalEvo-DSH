@@ -169,13 +169,30 @@ def _utcnow() -> datetime:
 def aggregate_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Shared aggregation for live summaries and offline CSV reconciliation.
 
-    All totals are sums over rows (calls); the weighted hit rate divides the
-    summed buckets, whereas mean_per_request averages per-row rates — the two
-    measure different things and are reported side by side.
+    ALL totals use the all-attempts billed buckets: the `*_all_attempts`
+    columns when present (post-R1.2 CSVs), falling back to the legacy columns
+    for the pre-R1.2 stored CSV (100 rows, each exactly 1 attempt, so legacy
+    final-attempt values equal all-attempts values — lossless).
+
+    weighted_cache_hit_rate divides the summed buckets; mean_per_request
+    averages per-row all-attempts rates. They are not the same measure.
     """
     def _int(row: dict[str, Any], key: str) -> int:
         value = row.get(key)
         return int(value) if value not in (None, "") else 0
+
+    def _bucket(row: dict[str, Any], base: str) -> int:
+        value = row.get(f"{base}_all_attempts")
+        if value not in (None, ""):
+            return int(value)
+        return _int(row, base)
+
+    def _row_hit_rate(row: dict[str, Any]) -> float | None:
+        value = row.get("cache_hit_rate_all_attempts")
+        if value not in (None, ""):
+            return float(value)
+        value = row.get("cache_hit_rate")
+        return float(value) if value not in (None, "") else None
 
     def _metered(row: dict[str, Any]) -> int:
         value = row.get("metered_attempts")
@@ -184,12 +201,14 @@ def aggregate_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
             return int(row.get("attempts") or 1) if row.get("status") == "ok" else 0
         return int(value)
 
+    def _unknown_spend(row: dict[str, Any]) -> int:
+        value = row.get("unknown_spend_attempts")
+        if value in (None, ""):
+            return 1 if row.get("status") == "unknown_cost" else 0
+        return int(value)
+
     ok_rows = [r for r in rows if r.get("status") == "ok"]
-    hit_rates = [
-        float(r["cache_hit_rate"])
-        for r in ok_rows
-        if r.get("cache_hit_rate") not in (None, "")
-    ]
+    hit_rates = [rate for r in ok_rows if (rate := _row_hit_rate(r)) is not None]
     finish: dict[str, int] = {}
     for r in rows:
         key = str(r.get("finish_reason") or "none")
@@ -198,24 +217,27 @@ def aggregate_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
     for r in rows:
         key = str(r.get("task_valid") or "unknown")
         task_valid[key] = task_valid.get(key, 0) + 1
-    uncached = sum(_int(r, "uncached_input_tokens") for r in rows)
-    cache_read = sum(_int(r, "cache_read_tokens") for r in rows)
-    cache_write = sum(_int(r, "cache_write_tokens") for r in rows)
-    total_prompt = sum(_int(r, "total_prompt_tokens") for r in rows)
-    output_all = sum(_int(r, "output_tokens_all_attempts") for r in rows)
+    uncached = sum(_bucket(r, "uncached_input_tokens") for r in rows)
+    cache_read = sum(_bucket(r, "cache_read_tokens") for r in rows)
+    cache_write = sum(_bucket(r, "cache_write_tokens") for r in rows)
+    total_prompt = sum(_bucket(r, "total_prompt_tokens") for r in rows)
+    output_all = sum(_bucket(r, "output_tokens") for r in rows)
+    unknown_spend_attempts = sum(_unknown_spend(r) for r in rows)
     return {
         "logical_calls": len(rows),
         "completed_calls": len(ok_rows),
         "provider_attempts": sum(_int(r, "attempts") or 1 for r in rows),
         "metered_attempts": sum(_metered(r) for r in rows),
         "unknown_spend_calls": sum(1 for r in rows if r.get("status") == "unknown_cost"),
+        "unknown_spend_attempts": unknown_spend_attempts,
         "response_accepted": len(ok_rows),
         "task_valid_counts": task_valid,
         "uncached_input_tokens": uncached,
         "cache_read_tokens": cache_read,
         "cache_write_tokens": cache_write,
         "cache_write_reported": any(
-            str(r.get("cache_write_reported", "")).lower() == "true" for r in rows
+            str(r.get("cache_write_reported_all_attempts",
+                      r.get("cache_write_reported", ""))).lower() == "true" for r in rows
         ),
         "total_prompt_tokens": total_prompt,
         "output_tokens_all_attempts": output_all,
@@ -226,6 +248,7 @@ def aggregate_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "finish_reason_distribution": finish,
         "cost_cny_peak": round(sum(float(r.get("cost_cny_peak") or 0) for r in rows), 10),
         "cost_cny_tiered": round(sum(float(r.get("cost_cny_tiered") or 0) for r in rows), 10),
+        "cost_completeness": "complete" if unknown_spend_attempts == 0 else "partial_unknown",
     }
 
 
@@ -357,14 +380,25 @@ class Benchmark:
         if outcome is not None and outcome.final_response:
             response_sha16 = hashlib.sha256(outcome.final_response.encode("utf-8")).hexdigest()[:16]
         tier = classify_price_tier(started)
+        metered = [a.usage for a in attempts if a.usage is not None]
         cost_peak = sum(
-            cost_for_usage(a.usage, "peak", self.config.usd_cny).cost_cny
-            for a in attempts if a.usage is not None
+            cost_for_usage(u, "peak", self.config.usd_cny).cost_cny for u in metered
         )
         cost_tiered = sum(
-            cost_for_usage(a.usage, classify_price_tier(started), self.config.usd_cny).cost_cny
-            for a in attempts if a.usage is not None
+            cost_for_usage(u, classify_price_tier(started), self.config.usd_cny).cost_cny
+            for u in metered
         )
+        # R1.2-F2.1: billed totals across ALL metered attempts. The legacy
+        # columns keep their final-attempt meaning; the *_all_attempts columns
+        # are the only source for aggregation, billing and assertions.
+        all_uncached = sum(u.uncached_input_tokens for u in metered)
+        all_read = sum(u.cache_read_tokens for u in metered)
+        all_write_reported = bool(metered) and all(u.cache_write_reported for u in metered)
+        all_write = sum(u.cache_write_tokens or 0 for u in metered) if all_write_reported else None
+        all_output = sum(u.output_tokens for u in metered)
+        all_total_prompt = all_uncached + all_read + (all_write or 0)
+        all_hit_rate = (all_read / all_total_prompt) if all_total_prompt > 0 else None
+        unknown_spend_attempts = sum(1 for a in attempts if a.usage is None and a.status == "unknown_cost")
         return {
             "position": position,
             "group": planned.group,
@@ -376,7 +410,8 @@ class Benchmark:
             "utc_end": ended.isoformat(),
             "latency_ms": int((ended - started).total_seconds() * 1000),
             "attempts": len(attempts),
-            "metered_attempts": sum(1 for a in attempts if a.usage is not None),
+            "metered_attempts": len(metered),
+            "unknown_spend_attempts": unknown_spend_attempts,
             "status": status,
             "finish_reason": final.finish_reason,
             "response_accepted": response_accepted,
@@ -384,6 +419,7 @@ class Benchmark:
             "response_sha16": response_sha16,
             "wire_model": outcome.wire_model if outcome else None,
             "price_tier": tier,
+            # --- legacy columns: FINAL attempt only (kept for old-CSV continuity) ---
             "uncached_input_tokens": usage.uncached_input_tokens if usage else None,
             "cache_read_tokens": usage.cache_read_tokens if usage else None,
             "cache_write_tokens": usage.cache_write_tokens if usage else None,
@@ -391,9 +427,17 @@ class Benchmark:
             "output_tokens": usage.output_tokens if usage else None,
             "total_prompt_tokens": usage.total_prompt_tokens if usage else None,
             "cache_hit_rate": usage.cache_hit_rate if usage else None,
-            "output_tokens_all_attempts": sum(
-                a.usage.output_tokens for a in attempts if a.usage is not None
+            "final_attempt_usage": (
+                json.dumps(usage.as_dict(), sort_keys=True) if usage else None
             ),
+            # --- billed totals across ALL metered attempts (aggregation source) ---
+            "uncached_input_tokens_all_attempts": all_uncached,
+            "cache_read_tokens_all_attempts": all_read,
+            "cache_write_tokens_all_attempts": all_write,
+            "cache_write_reported_all_attempts": all_write_reported,
+            "output_tokens_all_attempts": all_output,
+            "total_prompt_tokens_all_attempts": all_total_prompt,
+            "cache_hit_rate_all_attempts": all_hit_rate,
             "cost_cny_peak": cost_peak,
             "cost_cny_tiered": cost_tiered,
             "error": final.error,
@@ -436,6 +480,8 @@ class Benchmark:
                 "cost_cny_tiered": round(agg["cost_cny_tiered"], 6),
             }
         overall = aggregate_rows(self.rows)
+        overall["known_measured_cost_cny_peak"] = overall["cost_cny_peak"]
+        overall["known_measured_cost_cny_tiered"] = overall["cost_cny_tiered"]
         return {
             "run_id": self.run_id,
             "live": self.live,
@@ -472,11 +518,20 @@ class Benchmark:
     def _csv_fields(self) -> list[str]:
         return [
             "position", "group", "index", "session_id_hash", "prompt_sha16", "prompt_chars",
-            "utc_start", "utc_end", "latency_ms", "attempts", "metered_attempts", "status",
+            "utc_start", "utc_end", "latency_ms", "attempts", "metered_attempts",
+            "unknown_spend_attempts", "status",
             "finish_reason", "response_accepted", "task_valid", "response_sha16",
-            "wire_model", "price_tier", "uncached_input_tokens", "cache_read_tokens",
+            "wire_model", "price_tier",
+            # legacy final-attempt columns (unchanged meaning; old CSV reads losslessly)
+            "uncached_input_tokens", "cache_read_tokens",
             "cache_write_tokens", "cache_write_reported", "output_tokens", "total_prompt_tokens",
-            "cache_hit_rate", "output_tokens_all_attempts", "cost_cny_peak", "cost_cny_tiered",
+            "cache_hit_rate", "final_attempt_usage",
+            # billed totals across all metered attempts (the aggregation/billing source)
+            "uncached_input_tokens_all_attempts", "cache_read_tokens_all_attempts",
+            "cache_write_tokens_all_attempts", "cache_write_reported_all_attempts",
+            "output_tokens_all_attempts", "total_prompt_tokens_all_attempts",
+            "cache_hit_rate_all_attempts",
+            "cost_cny_peak", "cost_cny_tiered",
             "error",
         ]
 

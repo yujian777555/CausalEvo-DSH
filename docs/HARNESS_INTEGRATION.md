@@ -31,16 +31,22 @@ benchmarks/cache_benchmark.py
 
 Session 生命周期：SDK 的 `Session.run()` 拥有从 prompt 落入持久 inbox 到整个 agent idle 的活动区间；session 事件 JSONL 持久化在 `DSH_HOME/sessions`（基准中指向隔离的 `results/phase0/*/dsh_home`，已 gitignore）。同一 `session_id` 再次 `run()` 即续接该 session（A 组依赖此语义）。
 
-## LLM request 与 usage 事件（2026-10-10 live 冒烟实测）
+## 用量事件结构（2026-10-10 live 冒烟实测 + R1.2 契约补充）
 
+实测（live smoke，真实服务端观测）：
 - `request/header` 事件：`{config: {provider: "deepseek-official", model: "deepseek-flash", reasoningEffort: "low", maxTokens: 64}}`。
 - `request/context` 事件：`{provider, model, contextWindow: 1000000, systemPromptUpdate: "in-history"}`。
 - `assistant/message` 事件携带 settled usage：
-  `{"inputTokens": 146, "outputTokens": 32, "totalTokens": 178, "cacheReadTokens": 0, "reasoningTokens": 21}`。
+  `{"inputTokens": 146, "outputTokens": 32, "totalTokens": 178, "cacheReadTokens": 0, "reasoningTokens": 21}`，
+  位于 `data.usage`，且 `data.turn`/`data.step` 标识存在。
   - `inputTokens` = 未缓存输入，与 `cacheReadTokens` 互斥（与 planner/review.md 一致）。
   - **`cacheWriteTokens` 未返回**（可选桶，见 src/causalevo/usage.py 与计划 P0.4「如上游返回」）。
   - `reasoningTokens` 计入 `outputTokens`（32 = 21 reasoning + 11 text）。
   - 同一事件的 stream 末尾有 `chunk:usage` 帧，值与 `data.usage` 相同——同一次请求的分片不得重复累计。
+
+代码契约（来自上游事件结构约定，**非真实 API 故障观测**，R1.2 起由构造 fixture 锁定解析语义）：
+- `assistant/attempt`：失败/被重试的模型尝试可携带 settled usage（`data.usage` 优先，否则 `data.stream` 最终 `chunk:usage` 帧），即使从未提交 surface message。身份为 (turn, step, attempt id)。
+- 去重规则：同一 (turn, step) 的无 id attempt 与已提交 message 用量相等 → 同一请求判重；用量不同 → 独立计费请求（如 provider 层重试）；身份缺失或冲突 → fail-closed。
 - 系统提示词（`@deepseek-ai/dsh-system-prompt` 注入）：
   `You are an AI agent powered by DeepSeek Harness. / You are a coding agent powered by the deepseek-flash model. / Your working directory is <ws>`，
   另有每轮固定注入的运行时快照（Approval policy 说明）。两者在整个基准中字节恒定，构成被测稳定前缀的一部分。

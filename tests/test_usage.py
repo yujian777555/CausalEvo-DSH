@@ -60,8 +60,12 @@ def test_hit_rate_unavailable_on_zero_denominator():
     assert u.cache_hit_rate is None
 
 
-def _message_event(usage: dict, text: str = "x") -> dict:
-    return {"type": "assistant/message", "data": {"message": {"content": [{"text": text}]}, "usage": usage}}
+def _message_event(usage: dict, text: str = "x", turn: int = 1, step: int = 1) -> dict:
+    return {
+        "type": "assistant/message",
+        "data": {"turn": turn, "step": step,
+                 "message": {"content": [{"text": text}]}, "usage": usage},
+    }
 
 
 def test_extract_settled_single_message():
@@ -81,6 +85,8 @@ def test_stream_shards_never_summed():
     event = {
         "type": "assistant/message",
         "data": {
+            "turn": 1,
+            "step": 1,
             "message": {},
             "stream": [
                 {"type": "chunk", "chunk": {"type": "usage", "usage": shard}},
@@ -94,8 +100,8 @@ def test_stream_shards_never_summed():
 
 def test_multi_step_turn_sums_distinct_requests():
     events = [
-        _message_event({"inputTokens": 100, "cacheReadTokens": 0, "outputTokens": 10}),
-        _message_event({"inputTokens": 130, "cacheReadTokens": 80, "outputTokens": 12}),
+        _message_event({"inputTokens": 100, "cacheReadTokens": 0, "outputTokens": 10}, turn=1, step=1),
+        _message_event({"inputTokens": 130, "cacheReadTokens": 80, "outputTokens": 12}, turn=1, step=2),
     ]
     u = extract_settled_usage(events)
     assert u.uncached_input_tokens == 230

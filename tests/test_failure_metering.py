@@ -122,6 +122,41 @@ def test_retry_success_meters_both_attempts(tmp_path):
     assert all(int(r["attempts"]) == 2 for r in rows), "retry must be recorded"
     assert all(int(r["metered_attempts"]) == 2 for r in rows), "failed attempt usage must count"
     assert all(int(r["output_tokens_all_attempts"]) == 10 + 12 for r in rows)
+    # R1.2-F2.1: INPUT buckets must also accumulate across failed+success attempts.
+    # The injected failed attempt billed (uncached=700, read=0); the legacy
+    # columns hold the final (successful) attempt only.
+    for r in rows:
+        assert int(r["uncached_input_tokens_all_attempts"]) == 700 + int(r["uncached_input_tokens"])
+        assert int(r["cache_read_tokens_all_attempts"]) == 0 + int(r["cache_read_tokens"])
+        assert int(r["total_prompt_tokens_all_attempts"]) == 700 + int(r["total_prompt_tokens"])
+    # costs are computed from ALL attempts: overall input totals must match the rows
+    overall = summary["overall"]
+    assert overall["uncached_input_tokens"] == sum(
+        int(r["uncached_input_tokens_all_attempts"]) for r in rows
+    )
+    assert overall["cache_read_tokens"] == sum(
+        int(r["cache_read_tokens_all_attempts"]) for r in rows
+    )
+
+
+def test_two_metered_failures_both_bill(tmp_path):
+    """Fail twice, both with usage: both attempts' buckets and cost accumulate."""
+    bench = Benchmark(config=_config(calls=1, retries=1), runner=TransportFailWithUsage(),
+                      output_dir=tmp_path, run_id="pytest", live=False)
+    summary = bench.run()
+    assert summary["ok_calls"] == 0
+    rows = _rows(tmp_path)
+    assert all(int(r["attempts"]) == 2 and int(r["metered_attempts"]) == 2 for r in rows)
+    for r in rows:
+        assert int(r["uncached_input_tokens_all_attempts"]) == 1400
+        assert int(r["output_tokens_all_attempts"]) == 60
+    # off-peak: 1400 miss + 60 out per row, x4 rows
+    from causalevo.pricing import cost_for_usage
+    from causalevo.usage import UsageRecord
+    per_row = cost_for_usage(UsageRecord(1400, 0, 60, None), "off_peak").cost_cny
+    assert abs(summary["overall"]["cost_cny_tiered"] - per_row * 4) < 1e-9
+    peak_row = cost_for_usage(UsageRecord(1400, 0, 60, None), "peak").cost_cny
+    assert abs(summary["overall"]["cost_cny_peak"] - peak_row * 4) < 1e-9
 
 
 def test_local_rejection_costs_nothing_and_continues(tmp_path):

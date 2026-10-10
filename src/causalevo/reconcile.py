@@ -26,16 +26,32 @@ from .usage import UsageRecord
 COST_TOLERANCE_CNY = 1e-6
 
 
+def _bucket_value(row: dict[str, str], base: str) -> str | None:
+    """All-attempts column preferred; legacy final-attempt column as fallback
+    (lossless for the stored 100-row CSV: every row is a single attempt)."""
+    value = row.get(f"{base}_all_attempts")
+    if value not in (None, ""):
+        return value
+    return row.get(base)
+
+
 def _row_usage(row: dict[str, str]) -> UsageRecord:
+    write_raw = _bucket_value(row, "cache_write_tokens")
     return UsageRecord(
-        uncached_input_tokens=int(row["uncached_input_tokens"]),
-        cache_read_tokens=int(row["cache_read_tokens"]),
-        cache_write_tokens=int(row["cache_write_tokens"]) if row.get("cache_write_tokens") else None,
-        output_tokens=int(row["output_tokens"]),
+        uncached_input_tokens=int(_bucket_value(row, "uncached_input_tokens")),
+        cache_read_tokens=int(_bucket_value(row, "cache_read_tokens")),
+        cache_write_tokens=int(write_raw) if write_raw not in (None, "") else None,
+        output_tokens=int(_bucket_value(row, "output_tokens")),
     )
 
 
-def reconcile(csv_path: Path, *, usd_cny: float = 7.10) -> dict[str, Any]:
+def reconcile(
+    csv_path: Path,
+    *,
+    usd_cny: float = 7.10,
+    expected_rows: int | None = None,
+    expected_per_group: int | None = None,
+) -> dict[str, Any]:
     csv_bytes = csv_path.read_bytes()
     csv_sha256 = hashlib.sha256(csv_bytes).hexdigest()
     rows = list(csv.DictReader(csv_bytes.decode("utf-8").splitlines()))
@@ -45,13 +61,23 @@ def reconcile(csv_path: Path, *, usd_cny: float = 7.10) -> dict[str, Any]:
     def check(name: str, ok: bool, detail: str = "") -> None:
         checks.append({"check": name, "ok": bool(ok), "detail": detail})
 
-    # Per-row identity: total_prompt == uncached + cache_read (+ cache_write)
+    # Per-row identity: total_prompt == uncached + cache_read (+ cache_write),
+    # checked on the ALL-ATTEMPTS billed buckets (legacy columns for old CSV).
     identity_ok = True
     for r in rows:
         u = _row_usage(r)
-        if u.total_prompt_tokens != int(r["total_prompt_tokens"]):
+        if u.total_prompt_tokens != int(_bucket_value(r, "total_prompt_tokens")):
             identity_ok = False
     check("per_row_total_prompt_equals_bucket_sum", identity_ok)
+
+    # All-attempts buckets must never be smaller than the final attempt's.
+    ge_ok = True
+    for r in rows:
+        if r.get("total_prompt_tokens_all_attempts") not in (None, "") and \
+                r.get("total_prompt_tokens") not in (None, ""):
+            if int(r["total_prompt_tokens_all_attempts"]) < int(r["total_prompt_tokens"]):
+                ge_ok = False
+    check("all_attempts_buckets_cover_final_attempt", ge_ok)
 
     # Cost re-derivation per row (buckets x recorded tier rates)
     cost_ok = True
@@ -74,8 +100,13 @@ def reconcile(csv_path: Path, *, usd_cny: float = 7.10) -> dict[str, Any]:
             group_sum_ok = False
     check("group_sums_equal_overall", group_sum_ok)
 
-    check("row_count_100", len(rows) == 100, f"rows={len(rows)}")
-    check("groups_25_each", all(groups[g]["logical_calls"] == 25 for g in groups))
+    if expected_rows is not None:
+        check("row_count_matches_expected", len(rows) == expected_rows,
+              f"rows={len(rows)} expected={expected_rows}")
+    if expected_per_group is not None:
+        check("groups_match_expected_quota",
+              all(groups[g]["logical_calls"] == expected_per_group for g in groups),
+              f"per-group={[groups[g]['logical_calls'] for g in groups]} expected={expected_per_group}")
 
     return {
         "source_csv": str(csv_path),
@@ -97,7 +128,7 @@ def reconcile(csv_path: Path, *, usd_cny: float = 7.10) -> dict[str, Any]:
 def backfill_summary(output_dir: Path, *, usd_cny: float = 7.10) -> dict[str, Any]:
     """Regenerate summary.json from calls.csv without touching the CSV."""
     csv_path = output_dir / "calls.csv"
-    recon = reconcile(csv_path, usd_cny=usd_cny)
+    recon = reconcile(csv_path, usd_cny=usd_cny, expected_rows=100, expected_per_group=25)
     (output_dir / "reconciliation.json").write_text(
         json.dumps(recon, indent=2, ensure_ascii=False), encoding="utf-8"
     )

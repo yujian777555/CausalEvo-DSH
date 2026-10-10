@@ -141,6 +141,10 @@ def _usage_from_message_event(event: Mapping[str, Any]) -> UsageRecord | None:
     data = event.get("data")
     if not isinstance(data, Mapping):
         return None
+    return _usage_from_data(data)
+
+
+def _usage_from_data(data: Mapping[str, Any]) -> UsageRecord | None:
     direct = data.get("usage")
     if isinstance(direct, Mapping):
         return parse_usage_mapping(direct)
@@ -157,20 +161,99 @@ def _usage_from_message_event(event: Mapping[str, Any]) -> UsageRecord | None:
     return None
 
 
-def extract_settled_usage(events: Iterable[Mapping[str, Any]]) -> UsageRecord:
-    """Aggregate settled usage for one attempt's session events.
+def _event_identity(event: Mapping[str, Any], source: str) -> tuple[Any, ...]:
+    """Provable request identity for dedup (R1.2-F2.2).
 
-    One UsageRecord per assistant/message event (shards within a message are
-    never summed; only the settled frame counts). Multiple assistant/message
-    events mean multiple provider requests (multi-step turn): their settled
-    usages are summed because each request bills separately. Raises
-    UsageUnavailable when no parseable settled usage exists (fail-closed).
+    assistant/message identifies its provider request by (turn, step); the
+    committed message of a step is the request that produced it.
+    assistant/attempt identifies by (turn, step, attempt-id) when the event
+    carries one. Missing identity fields make dedup unprovable -> UsageUnavailable.
+    """
+    data = event.get("data")
+    if not isinstance(data, Mapping):
+        raise UsageUnavailable(f"{source} event has no data mapping")
+    turn = data.get("turn")
+    step = data.get("step")
+    if turn is None or step is None:
+        raise UsageUnavailable(
+            f"{source} event lacks turn/step identity; refusing to guess at dedup"
+        )
+    if source == "attempt":
+        attempt_id = data.get("attempt", data.get("attemptId"))
+        return ("attempt", turn, step, attempt_id)
+    return ("message", turn, step)
+
+
+def extract_settled_usage(events: Iterable[Mapping[str, Any]]) -> UsageRecord:
+    """Aggregate settled usage for one logical call's session events.
+
+    Rules (R1.2-F2.2):
+    - assistant/message: one committed provider request per (turn, step); its
+      usage is counted once. Multiple assistant/message events at DISTINCT
+      (turn, step) are distinct billed requests (multi-step turn) and sum.
+    - assistant/attempt: failed/retried model attempts may carry settled usage
+      (data.usage or the final stream chunk:usage frame) even when no message
+      was ever committed. They bill too and are counted.
+    - Dedup: an attempt event is dropped only when its identity provably
+      duplicates an already-counted request — same (turn, step, attempt-id)
+      seen twice, or an attempt without id whose (turn, step) matches a
+      committed message with EQUAL usage (same request, reported twice).
+      An attempt whose usage differs from the step's committed message is a
+      distinct billed request (e.g. a retried provider call) and is counted.
+    - Events lacking provable identity raise UsageUnavailable (fail-closed);
+      nothing is blindly summed.
+    - Streaming shards within one event are never summed; only the settled
+      frame counts.
     """
     per_request: list[UsageRecord] = []
-    for event in events:
+    counted_messages: dict[tuple[Any, ...], UsageRecord] = {}
+    counted_attempts: dict[tuple[Any, ...], UsageRecord] = {}
+    event_list = list(events)
+
+    # Pass 1: committed messages are authoritative for their (turn, step).
+    for event in event_list:
+        if event.get("type") != "assistant/message":
+            continue
         usage = _usage_from_message_event(event)
-        if usage is not None:
-            per_request.append(usage)
+        if usage is None:
+            continue
+        key = _event_identity(event, "message")
+        if key in counted_messages:
+            if counted_messages[key] != usage:
+                raise UsageUnavailable(
+                    f"conflicting usages for the same committed request {key}"
+                )
+            continue  # duplicate report of the same request
+        counted_messages[key] = usage
+        per_request.append(usage)
+
+    # Pass 2: attempts (incl. failed ones that never committed a message).
+    for event in event_list:
+        if event.get("type") != "assistant/attempt":
+            continue
+        data = event.get("data")
+        if not isinstance(data, Mapping):
+            raise UsageUnavailable("assistant/attempt event has no data mapping")
+        usage = _usage_from_data(data)
+        if usage is None:
+            continue  # attempt without usage: handled by caller's fail-closed path
+        key = _event_identity(event, "attempt")
+        if key in counted_attempts:
+            if counted_attempts[key] != usage:
+                raise UsageUnavailable(
+                    f"conflicting usages for the same attempt {key}"
+                )
+            continue  # duplicate report
+        counted_attempts[key] = usage
+        if key[3] is None:
+            # No attempt id: the only provable duplicate is an equal-usage
+            # committed message at the same (turn, step) — regardless of
+            # event order, since messages were collected in pass 1.
+            message_key = ("message", key[1], key[2])
+            if counted_messages.get(message_key) == usage:
+                continue
+        per_request.append(usage)
+
     if not per_request:
         raise UsageUnavailable("no settled usage found in attempt events")
     if len(per_request) == 1:

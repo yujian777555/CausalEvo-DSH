@@ -70,6 +70,8 @@ class FakeRunner:
             {
                 "type": "assistant/message",
                 "data": {
+                    "turn": 1,
+                    "step": 1,
                     "message": {
                         "role": "assistant",
                         "content": [{"type": "text", "text": '{"task":"T000","status":"ok"}'}],

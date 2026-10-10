@@ -30,6 +30,7 @@
 - 重试与失败 attempt 单独记录（attempts 计数 + 各自 usage），成本永不忽略。
 - 缺失/畸形 usage → fail-closed：标记 fail_closed、停止后续 live 调用、保留已发生成本（`tests/test_benchmark.py::test_missing_usage_fails_closed_and_stops_run`）。
 - R1.1 补充：失败 attempt 带 usage → 照常计费（metered error）；失败且无 usage 且不能证实未发出 → `unknown_cost` 立即停机，费用标未知而非 0；`local_rejected`（证实未发出）零成本可继续。gate 预检按 attempt 上界（含重试）计价。
+- R1.2 补充：CSV 主账一律使用 `*_all_attempts` 列（全部已计量 attempt 的桶和；legacy 列保留最终 attempt 语义）；`cache_write_reported_all_attempts` 要求所有 attempt 均上报才算 true；overall 记录 unknown_spend_attempts 与 cost_completeness。assistant/attempt 事件的 settled usage 纳入解析，按 (turn, step, attempt-id) 身份去重，缺身份 fail-closed（契约 fixture 锁定，见 docs/PHASE0_R1_2_FIX_REPORT.md）。
 
 ### 2.4 价格与预算（P0.4）
 - 价格表快照：官方价格页 2026-10-10（docs 记录 URL 与日期）；峰时 01:00–04:00、06:00–10:00 UTC 周一至周五（中国法定节假日除外），周末全天谷价。

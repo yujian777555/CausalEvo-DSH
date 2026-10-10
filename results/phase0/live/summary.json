@@ -13,6 +13,7 @@
     "provider_attempts": 100,
     "metered_attempts": 100,
     "unknown_spend_calls": 0,
+    "unknown_spend_attempts": 0,
     "response_accepted": 100,
     "task_valid_counts": {
       "unknown": 100
@@ -30,7 +31,8 @@
       "max-tokens": 41
     },
     "cost_cny_peak": 0.0920834784,
-    "cost_cny_tiered": 0.0460417392
+    "cost_cny_tiered": 0.0460417392,
+    "cost_completeness": "complete"
   },
   "groups": {
     "A": {

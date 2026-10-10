@@ -17,6 +17,8 @@ def usage_event(uncached: int, cache_read: int, output: int) -> dict:
     return {
         "type": "assistant/message",
         "data": {
+            "turn": 1,
+            "step": 1,
             "message": {"role": "assistant", "content": [{"type": "text", "text": "x"}]},
             "usage": {
                 "inputTokens": uncached,
