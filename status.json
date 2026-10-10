@@ -19,8 +19,8 @@
   "fix_report_path": "docs/PHASE1_RESULTS.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "PENDING_FINAL_COMMIT",
-    "github_commit_verified": false,
+    "latest_executor_commit": "734aa16efa6f007ce4ee6ca5941a593e6792f8b2",
+    "github_commit_verified": true,
     "executor_reports_local_clean": true,
     "note": "verified via git ls-remote after push; housekeeping commit on top records this"
   },
@@ -154,6 +154,7 @@
       "note": "fake agent outcomes are pipeline evidence, not model performance"
     },
     "external_benchmark": "metadata audit only; SWE-bench Verified selected as primary candidate; nothing downloaded or run",
-    "review": "PENDING"
+    "review": "PENDING",
+    "executor_commit": "734aa16efa6f007ce4ee6ca5941a593e6792f8b2"
   }
 }
