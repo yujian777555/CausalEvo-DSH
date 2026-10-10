@@ -5,35 +5,75 @@
   "role_protocol": "GPT-Planner/Kimi-Executor",
   "plan_id": "CE-DSH-P0-R1",
   "phase": "Phase 0",
-  "phase_status": "PLANNED",
-  "planner_review": "NOT_STARTED",
-  "next_actor": "Kimi-Executor",
+  "phase_status": "READY_FOR_REVIEW",
+  "planner_review": "PENDING",
+  "next_actor": "GPT-Planner",
   "created_date": "2026-10-10",
+  "executed_date": "2026-10-10",
   "baseline_main_sha": "a9bef642e35eeed398f5578890a00f8872af2af0",
   "planner_plan_path": "planner/latest_plan.md",
   "executor_report_path": "planner/executor_report.md",
   "implementation": {
-    "started": false,
-    "latest_executor_commit": null,
+    "started": true,
+    "latest_executor_commit": "PENDING_FINAL_COMMIT",
     "remote_verified": false
   },
   "tests": {
-    "run": false,
-    "passed": null,
-    "failed": null,
-    "skipped": null
+    "run": true,
+    "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
+    "passed": 42,
+    "failed": 0,
+    "skipped": 0,
+    "includes_failure_injection": true
   },
   "live_api": {
-    "run": false,
-    "attempted_calls": 0,
-    "successful_calls": 0,
+    "run": true,
+    "run_id": "p0live02",
+    "config_hash": "a4f11755ea27380c",
+    "model_wire_id": "deepseek-flash",
+    "model_version": "DeepSeek-V4.1-Flash",
+    "reasoning_effort": "low",
+    "max_tokens": 64,
+    "attempted_calls": 100,
+    "successful_calls": 100,
+    "retried_calls": 0,
     "target_successful_calls": 100,
     "budget_cap_cny": 10,
-    "actual_billed_cost_cny": null,
-    "estimated_cost_cny": null,
-    "cache_hit_rate": null
+    "effective_cap_cny": 4.83,
+    "actual_billed_cost_cny": 0.0,
+    "billing_note": "/user/balance 4.83->4.83 CNY; delta below 0.01 CNY display resolution or billing lag",
+    "estimated_cost_cny_off_peak": 0.046,
+    "estimated_cost_cny_peak_upper_bound": 0.0921,
+    "cache_hit_rate": {
+      "overall_cache_read_share": 0.5006,
+      "group_A_mean": 0.7477,
+      "group_B_mean": 0.5458,
+      "group_C_mean": 0.5458,
+      "group_D_mean": 0.0
+    },
+    "cache_write_tokens_reported": false,
+    "extra_dev_calls": 2
   },
   "blockers": [],
-  "evidence": [],
-  "notes": "Plan published only; no code implementation or live API benchmark is claimed."
+  "limitations": [
+    "Balance reconciliation resolution (0.01 CNY) too coarse to confirm billed delta",
+    "Upstream does not report cacheWriteTokens in this configuration",
+    "100 calls concentrated in a ~70 s window (groups interleaved)"
+  ],
+  "evidence": [
+    "docs/HARNESS_INTEGRATION.md",
+    "docs/PHASE0_AUDIT.md",
+    "docs/PHASE0_RESULTS.md",
+    "results/phase0/live/summary.json",
+    "results/phase0/live/calls.csv",
+    "results/phase0/live/preflight.json",
+    "results/phase0/live/config_snapshot.json",
+    "results/phase0/dry-run/summary.json",
+    "results/phase0/dry-run/calls.csv",
+    "configs/cache_benchmark.yaml",
+    "configs/dsh_bench_patch.yml",
+    "requirements-lock.txt",
+    "tests/"
+  ],
+  "notes": "Phase 0 engineering + live cache benchmark complete (100/100). No causal-evolution or cache-savings claims are made; measurements only."
 }

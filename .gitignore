@@ -1,0 +1,30 @@
+# --- secrets & credentials ---
+.env
+.env.*
+*.key
+*.pem
+*secret*
+*token*
+
+# --- python ---
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+build/
+
+# --- harness runtime state (isolated benchmark home; may contain raw session logs) ---
+.dsh-bench/
+dsh_home/
+results/**/dsh_home/
+results/**/workspace/
+
+# --- raw / oversized logs ---
+*.log
+*.jsonl
+logs/
+
+# --- benchmark scratch ---
+results/phase0/tmp/
+.pytest_cache/

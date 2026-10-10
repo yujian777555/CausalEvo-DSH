@@ -1,0 +1,32 @@
+# Phase 0 cache benchmark configuration (plan CE-DSH-P0-R1).
+# Every field is part of the recorded configuration hash.
+benchmark:
+  # Canonical wire model id verified against GET /models on 2026-10-10
+  # (deepseek-flash == DeepSeek-V4.1-Flash; the SDK default deepseek-v4-flash
+  # is a retired alias served by the same model).
+  model: deepseek-flash
+  # Fixed for the whole phase. /models (2026-10-10) lists supported effort
+  # levels [low, high, max], default high; "low" minimises reasoning spend.
+  reasoning_effort: low
+  # Plan cap: <=256 output tokens per request. 64 suffices for the fixed
+  # short JSON replies and keeps the worst-case bill small.
+  max_tokens: 64
+  calls_per_group: 25
+  interleave: true          # round-robin A,B,C,D; exact order recorded in calls.csv
+  max_retries_per_call: 1   # retries are metered, never free
+  # Authorized Phase 0 API spend cap (plan P0.4). The platform balance
+  # observed at run time (4.83 CNY on 2026-10-10) is the binding external
+  # constraint and is reconciled separately via /user/balance deltas.
+  max_cny: 10.0
+  usd_cny: 7.10             # dated estimation assumption; balance delta is ground truth
+  # Added to the measured max prompt estimate for worst-case billing math
+  # (system prompt, tool envelope, tokenization slack).
+  prompt_overhead_tokens: 2000
+  stop:
+    fail_closed_on_missing_usage: true
+    abort_on_budget_breach: true
+groups:
+  A: {description: "continuous session, 25 sequential short tasks (history-growth confound documented)"}
+  B: {description: "new session per call, identical full prompt"}
+  C: {description: "new session per call, identical prefix, varying fixed-length suffix"}
+  D: {description: "new session per call, varying fixed-length early prefix, identical suffix"}

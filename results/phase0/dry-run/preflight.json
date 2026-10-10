@@ -1,0 +1,26 @@
+{
+  "live": false,
+  "model": "deepseek-flash",
+  "reasoning_effort": "low",
+  "max_tokens": 64,
+  "planned_calls": 100,
+  "calls_per_group": 25,
+  "max_retries_per_call": 1,
+  "interleave": true,
+  "config_hash": "a4f11755ea27380c",
+  "max_prompt_chars": 1508,
+  "worst_case_prompt_tokens_estimate": 2754,
+  "worst_case_cost_per_call_cny": 0.006411,
+  "worst_case_total_cny": 1.2823,
+  "budget_cap_cny": 10.0,
+  "budget_ok": true,
+  "price_table": {
+    "source_url": "https://api-docs.deepseek.com/quick_start/pricing",
+    "fetched_date": "2026-10-10",
+    "currency": "USD",
+    "unit": "per 1M tokens",
+    "model": "deepseek-flash",
+    "model_version": "DeepSeek-V4.1-Flash",
+    "cache_write_pricing": "not published; billed at cache-miss rate as upper bound"
+  }
+}

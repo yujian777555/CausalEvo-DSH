@@ -1,0 +1,63 @@
+{
+  "run_id": "dryrun002",
+  "live": false,
+  "config_hash": "a4f11755ea27380c",
+  "planned_calls": 100,
+  "executed_calls": 100,
+  "ok_calls": 100,
+  "failed_calls": 0,
+  "aborted_reason": null,
+  "total_cost_cny_peak": 0.135029,
+  "total_cost_cny_tiered": 0.067515,
+  "groups": {
+    "A": {
+      "ok_calls": 25,
+      "cache_hit_rate_mean": 0.9368026953869838,
+      "cache_read_tokens": "[REDACTED]",
+      "uncached_input_tokens": "[REDACTED]",
+      "cache_write_tokens": "[REDACTED]",
+      "output_tokens_all_attempts": "[REDACTED]",
+      "total_prompt_tokens": "[REDACTED]",
+      "cost_cny_peak": 0.00691,
+      "cost_cny_tiered": 0.003455
+    },
+    "B": {
+      "ok_calls": 25,
+      "cache_hit_rate_mean": 0.0,
+      "cache_read_tokens": "[REDACTED]",
+      "uncached_input_tokens": "[REDACTED]",
+      "cache_write_tokens": "[REDACTED]",
+      "output_tokens_all_attempts": "[REDACTED]",
+      "total_prompt_tokens": "[REDACTED]",
+      "cost_cny_peak": 0.042707,
+      "cost_cny_tiered": 0.021353
+    },
+    "C": {
+      "ok_calls": 25,
+      "cache_hit_rate_mean": 0.0,
+      "cache_read_tokens": "[REDACTED]",
+      "uncached_input_tokens": "[REDACTED]",
+      "cache_write_tokens": "[REDACTED]",
+      "output_tokens_all_attempts": "[REDACTED]",
+      "total_prompt_tokens": "[REDACTED]",
+      "cost_cny_peak": 0.042707,
+      "cost_cny_tiered": 0.021353
+    },
+    "D": {
+      "ok_calls": 25,
+      "cache_hit_rate_mean": 0.0,
+      "cache_read_tokens": "[REDACTED]",
+      "uncached_input_tokens": "[REDACTED]",
+      "cache_write_tokens": "[REDACTED]",
+      "output_tokens_all_attempts": "[REDACTED]",
+      "total_prompt_tokens": "[REDACTED]",
+      "cost_cny_peak": 0.042707,
+      "cost_cny_tiered": 0.021353
+    }
+  },
+  "confounds": [
+    "Group A reuses one session: hit-rate trend is confounded by growing history length.",
+    "Group D varies early prefix bytes: it measures prefix sensitivity, not the API's in-history system-prompt-update feature.",
+    "Costs labeled 'peak' are conservative upper bounds; 'tiered' uses per-call timestamps (weekend/off-peak rule)."
+  ]
+}

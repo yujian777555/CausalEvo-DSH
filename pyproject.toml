@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "causalevo-dsh"
+version = "0.0.0"
+description = "CausalEvo-DSH Phase 0: reproducible black-box LLM agent experiment platform on DeepSeek Harness"
+requires-python = ">=3.10"
+dependencies = [
+    "deepseek-harness-sdk==0.1.5rc1",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
