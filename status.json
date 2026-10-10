@@ -1,0 +1,39 @@
+{
+  "project": "CausalEvo-DSH",
+  "repository": "yujian777555/CausalEvo-DSH",
+  "branch": "main",
+  "role_protocol": "GPT-Planner/Kimi-Executor",
+  "plan_id": "CE-DSH-P0-R1",
+  "phase": "Phase 0",
+  "phase_status": "PLANNED",
+  "planner_review": "NOT_STARTED",
+  "next_actor": "Kimi-Executor",
+  "created_date": "2026-10-10",
+  "baseline_main_sha": "a9bef642e35eeed398f5578890a00f8872af2af0",
+  "planner_plan_path": "planner/latest_plan.md",
+  "executor_report_path": "planner/executor_report.md",
+  "implementation": {
+    "started": false,
+    "latest_executor_commit": null,
+    "remote_verified": false
+  },
+  "tests": {
+    "run": false,
+    "passed": null,
+    "failed": null,
+    "skipped": null
+  },
+  "live_api": {
+    "run": false,
+    "attempted_calls": 0,
+    "successful_calls": 0,
+    "target_successful_calls": 100,
+    "budget_cap_cny": 10,
+    "actual_billed_cost_cny": null,
+    "estimated_cost_cny": null,
+    "cache_hit_rate": null
+  },
+  "blockers": [],
+  "evidence": [],
+  "notes": "Plan published only; no code implementation or live API benchmark is claimed."
+}
