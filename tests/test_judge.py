@@ -23,7 +23,7 @@ TASK_ID = "micro-000-clamp_value"
 
 @pytest.fixture
 def judge() -> Judge:
-    return Judge(LocalTrustedExecutor())
+    return Judge(LocalTrustedExecutor.for_trusted_content())
 
 
 def _make_workspace(spec, tmp_path: Path):
@@ -105,7 +105,7 @@ class _RecordingExecutor:
     kind = "local-trusted"
 
     def __init__(self) -> None:
-        self._inner = LocalTrustedExecutor()
+        self._inner = LocalTrustedExecutor.for_trusted_content()
         self.results = []
 
     def run(self, workdir, argv, timeout_s):

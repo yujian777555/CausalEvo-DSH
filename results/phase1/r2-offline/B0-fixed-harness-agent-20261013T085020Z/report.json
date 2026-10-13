@@ -1,0 +1,40 @@
+{
+  "manifest": {
+    "run_id": "B0-fixed-harness-agent-20261013T085020Z",
+    "policy_id": "B0-fixed-harness",
+    "created_utc": "20261013T085038Z",
+    "split_seed": 20261010,
+    "task_count": 3,
+    "executor_kind": "docker",
+    "config": {
+      "scenario": "bad_tool_call",
+      "policy": "B0-fixed-harness",
+      "split": "all",
+      "tasks": 3
+    },
+    "config_sha256": "552866cc276314ff",
+    "notes": [
+      "R2 agent run through real DSH runtime over protocol-level fake provider",
+      "judge blinded; sealed tests never in agent workspace",
+      "fake provider usage is synthetic; not provider billing evidence"
+    ],
+    "provenance": {
+      "repo_head_sha": "5257592d85e0bdbee798d5a17e749be30542381e",
+      "deepseek_harness_sdk": "0.1.5rc1",
+      "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+      "recorded_utc": "2026-10-13T08:50:38.779504+00:00"
+    }
+  },
+  "summary": {
+    "requested": 3,
+    "executed": 3,
+    "scored": 3,
+    "visible_tests_passed": 0,
+    "sealed_tests_passed": 0,
+    "task_succeeded": 0,
+    "invalid": 0,
+    "timeouts": 0,
+    "success_rate_over_executed": 0.0,
+    "note": "offline pipeline validation; fake-policy outcomes are NOT model performance"
+  }
+}

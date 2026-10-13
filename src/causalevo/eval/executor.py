@@ -94,9 +94,26 @@ class DockerExecutor:
 
 class LocalTrustedExecutor:
     """Host subprocess for TRUSTED offline content only. Minimal environment:
-    no inherited credentials, fixed PYTHONHASHSEED, hard timeout."""
+    no inherited credentials, fixed PYTHONHASHSEED, hard timeout.
+
+    Runtime guard (R2-S0): this executor must never run model-generated or
+    otherwise untrusted content. The guard is programmatic: callers must
+    construct it via ``LocalTrustedExecutor.for_trusted_content()``, and
+    ``default_executor(for_untrusted=True)`` refuses to return it.
+    """
 
     kind = "local-trusted"
+
+    def __init__(self, *, _trusted_content: bool = False) -> None:
+        if not _trusted_content:
+            raise RuntimeError(
+                "LocalTrustedExecutor must be constructed via for_trusted_content(); "
+                "untrusted (model-generated) code requires DockerExecutor"
+            )
+
+    @classmethod
+    def for_trusted_content(cls) -> "LocalTrustedExecutor":
+        return cls(_trusted_content=True)
 
     def run(self, workdir: Path, argv: list[str], timeout_s: int) -> ExecResult:
         env = {
@@ -126,7 +143,17 @@ class LocalTrustedExecutor:
             )
 
 
-def default_executor(prefer_docker: bool = True) -> Executor:
+class ExecutorUnavailable(RuntimeError):
+    pass
+
+
+def default_executor(prefer_docker: bool = True, *, for_untrusted: bool = False) -> Executor:
+    """Pick an executor. Fail-closed: untrusted content never falls back to
+    the host; without Docker that is an error, not a downgrade."""
     if prefer_docker and docker_available():
         return DockerExecutor()
-    return LocalTrustedExecutor()
+    if for_untrusted:
+        raise ExecutorUnavailable(
+            "Docker is unavailable and the content is untrusted; refusing host execution"
+        )
+    return LocalTrustedExecutor.for_trusted_content()

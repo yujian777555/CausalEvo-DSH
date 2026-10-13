@@ -150,13 +150,19 @@ def test_two_metered_failures_both_bill(tmp_path):
     for r in rows:
         assert int(r["uncached_input_tokens_all_attempts"]) == 1400
         assert int(r["output_tokens_all_attempts"]) == 60
-    # off-peak: 1400 miss + 60 out per row, x4 rows
+    # cost must equal the bucket sum at EACH ROW's recorded price tier
+    # (weekday peak windows make a hard-coded tier calendar-dependent)
     from causalevo.pricing import cost_for_usage
     from causalevo.usage import UsageRecord
-    per_row = cost_for_usage(UsageRecord(1400, 0, 60, None), "off_peak").cost_cny
-    assert abs(summary["overall"]["cost_cny_tiered"] - per_row * 4) < 1e-9
-    peak_row = cost_for_usage(UsageRecord(1400, 0, 60, None), "peak").cost_cny
-    assert abs(summary["overall"]["cost_cny_peak"] - peak_row * 4) < 1e-9
+    for r in rows:
+        per_row = cost_for_usage(UsageRecord(1400, 0, 60, None), r["price_tier"]).cost_cny
+        assert abs(float(r["cost_cny_tiered"]) - per_row) < 1e-9
+        peak_row = cost_for_usage(UsageRecord(1400, 0, 60, None), "peak").cost_cny
+        assert abs(float(r["cost_cny_peak"]) - peak_row) < 1e-9
+    expected_tiered = sum(
+        cost_for_usage(UsageRecord(1400, 0, 60, None), r["price_tier"]).cost_cny for r in rows
+    )
+    assert abs(summary["overall"]["cost_cny_tiered"] - expected_tiered) < 1e-9
 
 
 def test_local_rejection_costs_nothing_and_continues(tmp_path):

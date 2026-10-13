@@ -18,7 +18,14 @@ from .judge import Judge
 from .metrics import summarize_traces
 from .policy import Policy
 from .task_spec import TaskSpec
-from .trace import RunManifest, TaskTrace, TraceWriter, config_sha256, new_run_id
+from .trace import (
+    RunManifest,
+    TaskTrace,
+    TraceWriter,
+    config_sha256,
+    new_run_id,
+    provenance_block,
+)
 from .workspace_factory import WorkspaceFactory
 
 
@@ -39,8 +46,13 @@ class FakeAgent:
         self.tool_calls = 0
 
     def act(self, spec: TaskSpec, workspace: Path, policy: Policy) -> dict[str, Any]:
-        """One task attempt. Returns state flags for the trace."""
-        states = {"api_response_observed": True, "tool_executed": False}
+        """One task attempt. Returns state flags for the trace.
+
+        R2-S3: a fake agent never produces a real API response, so
+        api_response_observed stays False; provider_kind/model_invoked are
+        recorded at the trace level by run_offline.
+        """
+        states = {"api_response_observed": False, "tool_executed": False}
         attempts = policy.max_attempts_per_task if policy.allow_reflection else 1
         for _ in range(attempts):  # B1 consumes its second-budget attempt here
             if self.mode == "oracle":
@@ -116,6 +128,8 @@ def run_offline(
                 executor=report.executor,
                 duration_ms=report.duration_ms,
                 created_utc=new_run_id(),
+                provider_kind="none",
+                model_invoked=False,
             )
             writer.write_trace(trace)
             traces.append(trace.as_dict())
@@ -134,6 +148,7 @@ def run_offline(
                 "judge receives no policy identity (blinded)",
                 "sealed tests never enter the agent-visible workspace",
             ],
+            provenance=provenance_block(),
         )
         writer.write_manifest(manifest)
         (run_dir / "report.json").write_text(

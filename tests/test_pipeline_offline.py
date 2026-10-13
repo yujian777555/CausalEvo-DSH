@@ -30,7 +30,7 @@ EXPECTED_STATES = {
 def _run(tmp_path_factory, mode):
     specs = load_all_tasks(TASKS_DIR)[:N_TASKS]
     assert len(specs) == N_TASKS
-    executor = LocalTrustedExecutor()
+    executor = LocalTrustedExecutor.for_trusted_content()
     result = run_offline(
         specs, B0, Judge(executor), executor,
         tmp_path_factory.mktemp(f"pipeline-{mode}"),

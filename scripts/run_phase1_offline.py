@@ -31,7 +31,7 @@ def main() -> int:
 
     specs = load_all_tasks(REPO_ROOT / "benchmarks" / "tasks")
     check_budget_parity(B0, B1)
-    executor = DockerExecutor() if args.executor == "docker" else LocalTrustedExecutor()
+    executor = DockerExecutor() if args.executor == "docker" else LocalTrustedExecutor.for_trusted_content()
     judge = Judge(executor)
     out_dir = Path(args.out)
 

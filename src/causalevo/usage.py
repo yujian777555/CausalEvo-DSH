@@ -184,31 +184,17 @@ def _event_identity(event: Mapping[str, Any], source: str) -> tuple[Any, ...]:
     return ("message", turn, step)
 
 
-def extract_settled_usage(events: Iterable[Mapping[str, Any]]) -> UsageRecord:
-    """Aggregate settled usage for one logical call's session events.
+def extract_request_usages(events: Iterable[Mapping[str, Any]]) -> list[UsageRecord]:
+    """One settled UsageRecord per distinct provider request, following the
+    identity doctrine in extract_settled_usage. Raises UsageUnavailable when
+    identity is unprovable; returns [] when no usage-bearing events exist."""
+    return _collect_request_usages(list(events))
 
-    Rules (R1.2-F2.2):
-    - assistant/message: one committed provider request per (turn, step); its
-      usage is counted once. Multiple assistant/message events at DISTINCT
-      (turn, step) are distinct billed requests (multi-step turn) and sum.
-    - assistant/attempt: failed/retried model attempts may carry settled usage
-      (data.usage or the final stream chunk:usage frame) even when no message
-      was ever committed. They bill too and are counted.
-    - Dedup: an attempt event is dropped only when its identity provably
-      duplicates an already-counted request — same (turn, step, attempt-id)
-      seen twice, or an attempt without id whose (turn, step) matches a
-      committed message with EQUAL usage (same request, reported twice).
-      An attempt whose usage differs from the step's committed message is a
-      distinct billed request (e.g. a retried provider call) and is counted.
-    - Events lacking provable identity raise UsageUnavailable (fail-closed);
-      nothing is blindly summed.
-    - Streaming shards within one event are never summed; only the settled
-      frame counts.
-    """
+
+def _collect_request_usages(event_list: list[Mapping[str, Any]]) -> list[UsageRecord]:
     per_request: list[UsageRecord] = []
     counted_messages: dict[tuple[Any, ...], UsageRecord] = {}
-    counted_attempts: dict[tuple[Any, ...], UsageRecord] = {}
-    event_list = list(events)
+    event_list = list(event_list)
 
     # Pass 1: committed messages are authoritative for their (turn, step).
     for event in event_list:
@@ -228,6 +214,15 @@ def extract_settled_usage(events: Iterable[Mapping[str, Any]]) -> UsageRecord:
         per_request.append(usage)
 
     # Pass 2: attempts (incl. failed ones that never committed a message).
+    # Identity doctrine (RISK-1 resolution, R2): usage VALUES can never prove
+    # two requests are the same. Distinct event `seq` values are distinct
+    # provider requests (observed 1:1 against logged HTTP requests in the
+    # offline fake-provider probe, 2026-10-10). The only skip allowed is the
+    # exact same event redelivered (same seq). An id-less attempt whose usage
+    # equals the committed message at its (turn, step) is AMBIGUOUS — it may
+    # be the same request or a different one that coincidentally cost the
+    # same — so we fail closed instead of guessing.
+    seen_attempt_seqs: dict[Any, UsageRecord] = {}
     for event in event_list:
         if event.get("type") != "assistant/attempt":
             continue
@@ -238,22 +233,48 @@ def extract_settled_usage(events: Iterable[Mapping[str, Any]]) -> UsageRecord:
         if usage is None:
             continue  # attempt without usage: handled by caller's fail-closed path
         key = _event_identity(event, "attempt")
-        if key in counted_attempts:
-            if counted_attempts[key] != usage:
+        seq = event.get("seq")
+        if key[3] is not None:
+            dedup_key: Any = key  # explicit attempt id identifies the request
+        elif seq is not None:
+            dedup_key = ("attempt-seq", seq)
+        else:
+            raise UsageUnavailable(
+                f"assistant/attempt at {key} has neither attempt id nor event seq; "
+                "cannot establish request identity"
+            )
+        if dedup_key in seen_attempt_seqs:
+            if seen_attempt_seqs[dedup_key] != usage:
                 raise UsageUnavailable(
-                    f"conflicting usages for the same attempt {key}"
+                    f"conflicting usages for the same attempt event {dedup_key}"
                 )
-            continue  # duplicate report
-        counted_attempts[key] = usage
-        if key[3] is None:
-            # No attempt id: the only provable duplicate is an equal-usage
-            # committed message at the same (turn, step) — regardless of
-            # event order, since messages were collected in pass 1.
-            message_key = ("message", key[1], key[2])
-            if counted_messages.get(message_key) == usage:
-                continue
+            continue  # same event redelivered
+        seen_attempt_seqs[dedup_key] = usage
+        message_key = ("message", key[1], key[2])
+        message_usage = counted_messages.get(message_key)
+        if message_usage is not None and message_usage == usage and key[3] is None:
+            raise UsageUnavailable(
+                f"ambiguous identity: id-less assistant/attempt at (turn={key[1]}, "
+                f"step={key[2]}) has usage equal to the committed message; cannot "
+                "prove whether it is the same provider request (fail-closed)"
+            )
         per_request.append(usage)
 
+    return per_request
+
+
+def extract_settled_usage(events: Iterable[Mapping[str, Any]]) -> UsageRecord:
+    """Aggregate settled usage for one logical call's session events.
+
+    Rules: one committed provider request per assistant/message (turn, step);
+    failed/retried assistant/attempt events with settled usage also bill;
+    dedup never uses usage VALUES (RISK-1) — distinct event `seq` values are
+    distinct requests, only identical seq redelivery is skipped, and an
+    id-less attempt matching the committed message's usage exactly is
+    ambiguous -> UsageUnavailable (fail-closed). Streaming shards within one
+    event are never summed; only the settled frame counts.
+    """
+    per_request = _collect_request_usages(list(events))
     if not per_request:
         raise UsageUnavailable("no settled usage found in attempt events")
     if len(per_request) == 1:

@@ -24,6 +24,13 @@ class TaskTrace:
     executor: str
     duration_ms: int
     created_utc: str
+    # R2-S3: provenance honesty. provider_kind: none|fake|replay|live;
+    # api_response_observed is live-only. Fake-agent (pipeline.py) runs set
+    # model_invoked=False; bridge runs through the real Harness agent loop set
+    # model_invoked=True even with a fake provider (the loop really ran).
+    provider_kind: str = "none"
+    model_invoked: bool = False
+    agent: dict[str, Any] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -40,6 +47,8 @@ class RunManifest:
     config: dict[str, Any]
     config_sha256: str
     notes: list[str] = field(default_factory=list)
+    # R2-S3: full provenance for auditability/replay.
+    provenance: dict[str, Any] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -53,6 +62,39 @@ def config_sha256(config: dict[str, Any]) -> str:
     return hashlib.sha256(
         json.dumps(config, sort_keys=True, ensure_ascii=False).encode("utf-8")
     ).hexdigest()[:16]
+
+
+def provenance_block() -> dict[str, Any]:
+    """Pinned run provenance (R2-S3): repo SHA, SDK/runtime versions, image
+    digest, timestamps. Missing values are None, never invented."""
+    import subprocess
+
+    def _git(field: str) -> str | None:
+        try:
+            return subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
+                                  text=True, timeout=10).stdout.strip() or None
+        except Exception:
+            return None
+
+    try:
+        from importlib.metadata import version
+        sdk = version("deepseek-harness-sdk")
+    except Exception:
+        sdk = None
+    image_digest = None
+    try:
+        out = subprocess.run(
+            ["docker", "inspect", "python:3.11-slim", "--format", "{{index .RepoDigests 0}}"],
+            capture_output=True, text=True, timeout=15)
+        image_digest = out.stdout.strip() or None
+    except Exception:
+        pass
+    return {
+        "repo_head_sha": _git("HEAD"),
+        "deepseek_harness_sdk": sdk,
+        "judge_image": image_digest,
+        "recorded_utc": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 class TraceWriter:
