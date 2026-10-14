@@ -1,0 +1,134 @@
+[
+  {
+    "genome": {
+      "tool_validation": 0,
+      "read_before_write": 1,
+      "verification_level": 0,
+      "stagnation_break": 0,
+      "reflection_step": 0,
+      "retry_strategy": 0
+    },
+    "train_fitness": [
+      0.5,
+      -0.0002420532,
+      -1.0,
+      0.5
+    ],
+    "test_fitness": [
+      0.0,
+      -0.0002420532,
+      -1.0,
+      0.0
+    ]
+  },
+  {
+    "genome": {
+      "tool_validation": 0,
+      "read_before_write": 1,
+      "verification_level": 0,
+      "stagnation_break": 0,
+      "reflection_step": 0,
+      "retry_strategy": 0
+    },
+    "train_fitness": [
+      0.5,
+      -0.0002420532,
+      -1.0,
+      0.5
+    ],
+    "test_fitness": [
+      0.0,
+      -0.0002420532,
+      -1.0,
+      0.0
+    ]
+  },
+  {
+    "genome": {
+      "tool_validation": 1,
+      "read_before_write": 1,
+      "verification_level": 0,
+      "stagnation_break": 1,
+      "reflection_step": 0,
+      "retry_strategy": 0
+    },
+    "train_fitness": [
+      0.5,
+      -0.0002420532,
+      -1.0,
+      0.5
+    ],
+    "test_fitness": [
+      0.0,
+      -0.0002420532,
+      -1.0,
+      0.0
+    ]
+  },
+  {
+    "genome": {
+      "tool_validation": 1,
+      "read_before_write": 0,
+      "verification_level": 2,
+      "stagnation_break": 0,
+      "reflection_step": 1,
+      "retry_strategy": 2
+    },
+    "train_fitness": [
+      1.0,
+      -0.0005373564,
+      -2.0,
+      1.0
+    ],
+    "test_fitness": [
+      1.0,
+      -0.0005373564,
+      -2.0,
+      1.0
+    ]
+  },
+  {
+    "genome": {
+      "tool_validation": 0,
+      "read_before_write": 1,
+      "verification_level": 0,
+      "stagnation_break": 0,
+      "reflection_step": 0,
+      "retry_strategy": 0
+    },
+    "train_fitness": [
+      0.5,
+      -0.0002420532,
+      -1.0,
+      0.5
+    ],
+    "test_fitness": [
+      0.0,
+      -0.0002420532,
+      -1.0,
+      0.0
+    ]
+  },
+  {
+    "genome": {
+      "tool_validation": 0,
+      "read_before_write": 0,
+      "verification_level": 1,
+      "stagnation_break": 1,
+      "reflection_step": 0,
+      "retry_strategy": 0
+    },
+    "train_fitness": [
+      1.0,
+      -0.0005373564,
+      -2.0,
+      1.0
+    ],
+    "test_fitness": [
+      1.0,
+      -0.0005373564,
+      -2.0,
+      1.0
+    ]
+  }
+]

@@ -1,0 +1,97 @@
+{
+  "B0-random-search": {
+    "best_train_fitness": [
+      1.0,
+      -0.0005373564,
+      -2.0,
+      1.0
+    ],
+    "best_genome": {
+      "tool_validation": 1,
+      "read_before_write": 0,
+      "verification_level": 1,
+      "stagnation_break": 1,
+      "reflection_step": 1,
+      "retry_strategy": 1
+    },
+    "test_fitness": [
+      1.0,
+      -0.0005373564,
+      -2.0,
+      1.0
+    ]
+  },
+  "B1-rule-library": {
+    "best_train_fitness": [
+      1.0,
+      -0.0005373564,
+      -2.0,
+      1.0
+    ],
+    "best_genome": {
+      "tool_validation": 0,
+      "read_before_write": 0,
+      "verification_level": 1,
+      "stagnation_break": 0,
+      "reflection_step": 0,
+      "retry_strategy": 0
+    },
+    "test_fitness": [
+      1.0,
+      -0.0005373564,
+      -2.0,
+      1.0
+    ]
+  },
+  "B2-cea-v0": {
+    "best_train_fitness": [
+      1.0,
+      -0.0005373564,
+      -2.0,
+      1.0
+    ],
+    "note": "state-conditioned policy; best per-state genome shown"
+  },
+  "B3-nsga3": {
+    "pareto_front_size": 6,
+    "pareto_train_fitness": [
+      [
+        0.5,
+        -0.0002420532,
+        -1.0,
+        0.5
+      ],
+      [
+        0.5,
+        -0.0002420532,
+        -1.0,
+        0.5
+      ],
+      [
+        0.5,
+        -0.0002420532,
+        -1.0,
+        0.5
+      ],
+      [
+        1.0,
+        -0.0005373564,
+        -2.0,
+        1.0
+      ],
+      [
+        0.5,
+        -0.0002420532,
+        -1.0,
+        0.5
+      ],
+      [
+        1.0,
+        -0.0005373564,
+        -2.0,
+        1.0
+      ]
+    ],
+    "hypervolume_train": 0.06901694352000001
+  }
+}

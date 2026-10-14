@@ -1,32 +1,34 @@
-# Executor Report — Phase 3.1 Causal Evolution Algorithm Foundation（CE-DSH-P3.1）
+# Executor Report — Phase 3.2 Multi-objective Causal Intervention Evolution（CE-DSH-P3.2）
 
-日期：2026-10-14。Executor：Kimi。本轮零 DeepSeek API 调用、零费用；冻结区（Phase 0/1/1.6/2.1/2.2/2.3）未触碰。
+日期：2026-10-14。Executor：Kimi。本轮零 DeepSeek API 调用、零费用；冻结区（含 Phase 3.1）未触碰。
 
 ## 交付项
 
 | 项 | 状态 | 证据 |
 |---|---|---|
-| S1 算法定义 | PASS | docs/PHASE3_CEA_ALGORITHM.md（state/action/reward/update 正式定义；reward 来自反事实差值） |
-| S2 Controller 架构 | PASS | src/causalevo/evolution/{controller,policy,bandit,reward,memory}.py；select_intervention 接口含 selected_action/confidence/policy_version |
-| S3 三基线 | PASS | B0 random / B1 rule / B2 CEA-v0（disjoint LinUCB，纯 numpy，可序列化） |
-| S4 离线演化仿真 | PASS | scripts/run_cea_simulation.py：60 episodes 严格时间序、评估窗不更新、EpisodeMemory 结构性防泄漏 |
-| S5 评估协议 | PASS | docs/PHASE3_CEA_EVAL.md（top-1/成功率/累计奖励/regret/学习曲线/时间切分） |
-| S6 消融 | PASS | A1 无历史 vs A2 有历史（历史无益，如实记录）；A3 普通奖励 vs A4 因果奖励（口径差异演示） |
-| S7 结果产物 | PASS | results/phase3/cea/ 五件 + results/phase3/replay_sweep/（42 行完整奖励矩阵，容器实跑） |
-| S8 测试 | PASS | **336 passed / 0 failed / 0 skipped**（300 回归 + 36 新增：bandit 8、policy 12、controller 9、仿真 7） |
-| 文档 | PASS | docs/PHASE3_CEA_{ALGORITHM,EVAL,DESIGN,RESULTS}.md |
+| S1 Genome | PASS | src/causalevo/evolution/genome.py（serialize/mutate/crossover/distance/表型映射） |
+| S2 Population | PASS | population.py（规则种子 + 随机组合、generation/individual_id/parent_ids 谱系） |
+| S3 多目标 fitness | PASS | fitness.py：success_gain / neg_cost / neg_steps / robustness 全部来自重放测量；FitnessCache 确定性 |
+| S4 NSGA-III | PASS | nsga3.py 纯 numpy：非支配排序、Das-Dennis 参考方向、归一化、niching；无外部优化库 |
+| S5 进化算子 | PASS | 逐基因变异 + 均匀交叉（测试锁定范围/确定性/父母基因来源） |
+| S6 基线 | PASS | B0 随机搜索 / B1 规则库 / B2 CEA-v0 / B3 NSGA-III 同预算对比 |
+| S7 评估协议 | PASS | docs/PHASE3_EVOLUTION_EVAL.md（含固定超体积参考点） |
+| S8 消融 | PASS | A1 无变异（best gain 0.0，证明变异必要）/ A2 单目标 vs 多目标 / A3 普通 vs A4 因果奖励 |
+| S9 结果产物 | PASS | results/phase3/evolution/ 七件（含谱系、前沿、缓存） |
+| 测试 | PASS | **377 passed / 0 failed / 0 skipped**（336 回归 + 41 新增） |
+| 文档 | PASS | docs/PHASE3_CEA_V1_DESIGN.md、PHASE3_CEA_V1_RESULTS.md |
 
-## 关键数字（评估窗）
+## 结果摘要（模拟重放，非真实模型证据）
 
-B0 奖励 0.370 / regret 0.594；B1 0.964 / 0；B2 0.964 / 0（top-1=1.0）。消融：A2 历史无益（0.949 vs 0.964），A3 普通奖励虚高（1.0）仅作口径演示。
+- Pareto 前沿 6 成员，呈现轻量(0.5 gain/便宜) vs 重量(1.0 gain/更贵) 权衡；B3 的独特价值是前沿而非单点。
+- 各臂在小空间均能到 1.0（如实记录）；held-out 案例上 verification 基因组泛化成功、轻量基因组失败。
 
 ## 事故与修复
 
-- sweep 首跑路径名含冒号+超长（WinError 123/267）→ run tag 短哈希化。
-- Docker Desktop 双开导致 API 500 → wsl --shutdown 恢复（环境运维记录，非代码问题）。
-- LinUCBPolicy 无 .alpha 属性（测试引用错误）→ 改指 .bandit.alpha。
-- eval 标记名不一致（none vs eval-no-update）→ 统一。
+- normalize() 初版返回元组错误、超体积初版实现错误 → 以已知答案的解析用例钉死（0.75 L 形等）。
+- Windows 路径冒号/超长再次 → slug 消毒。
+- population.py 漏 import GENES → 修复。
 
 ## 停止
 
-停在 Phase 3.1。status.json = READY_FOR_REVIEW，next_actor=GPT-Planner。未宣称自进化成功。
+停在 Phase 3.2。status.json = READY_FOR_REVIEW，next_actor=GPT-Planner。未宣称真实自进化。

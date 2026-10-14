@@ -1,0 +1,19 @@
+{
+  "A1_no_mutation": {
+    "front_size": 6,
+    "best_success_gain": 0.0
+  },
+  "A2_single_objective": {
+    "best_success_gain": 1.0
+  },
+  "A2_multi_objective": {
+    "best_success_gain": 1.0,
+    "front_size": 6
+  },
+  "A3_no_causal_reward": {
+    "best_robustness": 1.0
+  },
+  "A4_causal_reward": {
+    "best_success_gain": 1.0
+  }
+}

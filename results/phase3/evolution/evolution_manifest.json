@@ -1,0 +1,20 @@
+{
+  "seed": 20261014,
+  "pop": 6,
+  "generations": 3,
+  "mutation_p": 0.25,
+  "train_cases": [
+    "bad_tool_blocks_write",
+    "broken_write"
+  ],
+  "test_cases": [
+    "wrong_fix"
+  ],
+  "provenance": {
+    "repo_head_sha": "5428cbc67d257a6807d4eb651d3504b9aca55f73",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-14T10:15:22.499404+00:00"
+  },
+  "honesty": "replay-measured fitness; simulated interventions; zero API spend"
+}

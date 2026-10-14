@@ -1,0 +1,556 @@
+[
+ {
+  "generation": 0,
+  "individuals": [
+   {
+    "genome": {
+     "tool_validation": 1,
+     "read_before_write": 0,
+     "verification_level": 0,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 0,
+    "individual_id": "g0-i0",
+    "parent_ids": [],
+    "fitness": [
+     0.5,
+     -0.0,
+     0.0,
+     0.5
+    ],
+    "genome_id": "66dcbb925ba5"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 1,
+     "verification_level": 0,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 0,
+    "individual_id": "g0-i1",
+    "parent_ids": [],
+    "fitness": [
+     0.5,
+     -0.0002420532,
+     -1.0,
+     0.5
+    ],
+    "genome_id": "e015506f37fe"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 1,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 0,
+    "individual_id": "g0-i2",
+    "parent_ids": [],
+    "fitness": [
+     1.0,
+     -0.0005373564,
+     -2.0,
+     1.0
+    ],
+    "genome_id": "4f7295b43c99"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 0,
+     "stagnation_break": 1,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 0,
+    "individual_id": "g0-i3",
+    "parent_ids": [],
+    "fitness": [
+     0.0,
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "genome_id": "58249cec637a"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 1,
+     "verification_level": 1,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 0,
+    "individual_id": "g0-i4",
+    "parent_ids": [],
+    "fitness": [
+     1.0,
+     -0.0008859096,
+     -3.0,
+     1.0
+    ],
+    "genome_id": "32c5e363ad4a"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 0,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 0,
+    "individual_id": "g0-i5",
+    "parent_ids": [],
+    "fitness": [
+     0.0,
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "genome_id": "f374340b09f2"
+   }
+  ]
+ },
+ {
+  "generation": 1,
+  "individuals": [
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 0,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 1,
+    "individual_id": "g1-i0",
+    "parent_ids": [
+     "g0-i5",
+     "g0-i5"
+    ],
+    "fitness": [
+     0.0,
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "genome_id": "f374340b09f2"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 0,
+     "stagnation_break": 1,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 1,
+    "individual_id": "g1-i1",
+    "parent_ids": [
+     "g0-i3",
+     "g0-i5"
+    ],
+    "fitness": [
+     0.0,
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "genome_id": "58249cec637a"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 0,
+     "stagnation_break": 1,
+     "reflection_step": 0,
+     "retry_strategy": 1
+    },
+    "generation": 1,
+    "individual_id": "g1-i2",
+    "parent_ids": [
+     "g0-i3",
+     "g0-i3"
+    ],
+    "fitness": [
+     0.0,
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "genome_id": "d02f8dbf380b"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 1,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 1,
+    "individual_id": "g1-i3",
+    "parent_ids": [
+     "g0-i4",
+     "g0-i5"
+    ],
+    "fitness": [
+     1.0,
+     -0.0005373564,
+     -2.0,
+     1.0
+    ],
+    "genome_id": "4f7295b43c99"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 1,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 1,
+    "individual_id": "g1-i4",
+    "parent_ids": [
+     "g0-i2",
+     "g0-i3"
+    ],
+    "fitness": [
+     1.0,
+     -0.0005373564,
+     -2.0,
+     1.0
+    ],
+    "genome_id": "4f7295b43c99"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 0,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 1,
+    "individual_id": "g1-i5",
+    "parent_ids": [
+     "g0-i5",
+     "g0-i5"
+    ],
+    "fitness": [
+     0.0,
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "genome_id": "f374340b09f2"
+   }
+  ]
+ },
+ {
+  "generation": 2,
+  "individuals": [
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 0,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 2,
+    "individual_id": "g2-i0",
+    "parent_ids": [
+     "g1-i5",
+     "g1-i1"
+    ],
+    "fitness": [
+     0.0,
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "genome_id": "f374340b09f2"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 1,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 2,
+    "individual_id": "g2-i1",
+    "parent_ids": [
+     "g1-i4",
+     "g1-i1"
+    ],
+    "fitness": [
+     1.0,
+     -0.0005373564,
+     -2.0,
+     1.0
+    ],
+    "genome_id": "4f7295b43c99"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 1,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 2,
+    "individual_id": "g2-i2",
+    "parent_ids": [
+     "g1-i5",
+     "g1-i2"
+    ],
+    "fitness": [
+     1.0,
+     -0.0005373564,
+     -2.0,
+     1.0
+    ],
+    "genome_id": "4f7295b43c99"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 1,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 2,
+    "individual_id": "g2-i3",
+    "parent_ids": [
+     "g1-i3",
+     "g1-i3"
+    ],
+    "fitness": [
+     1.0,
+     -0.0005373564,
+     -2.0,
+     1.0
+    ],
+    "genome_id": "4f7295b43c99"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 1,
+     "verification_level": 0,
+     "stagnation_break": 0,
+     "reflection_step": 1,
+     "retry_strategy": 0
+    },
+    "generation": 2,
+    "individual_id": "g2-i4",
+    "parent_ids": [
+     "g1-i1",
+     "g1-i1"
+    ],
+    "fitness": [
+     0.5,
+     -0.0002420532,
+     -1.0,
+     0.5
+    ],
+    "genome_id": "88911bbd4cea"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 1,
+     "verification_level": 0,
+     "stagnation_break": 1,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 2,
+    "individual_id": "g2-i5",
+    "parent_ids": [
+     "g1-i1",
+     "g1-i1"
+    ],
+    "fitness": [
+     0.5,
+     -0.0002420532,
+     -1.0,
+     0.5
+    ],
+    "genome_id": "49d680ff6030"
+   }
+  ]
+ },
+ {
+  "generation": 3,
+  "individuals": [
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 1,
+     "verification_level": 0,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 3,
+    "individual_id": "g3-i0",
+    "parent_ids": [
+     "g2-i0",
+     "g2-i4"
+    ],
+    "fitness": [
+     0.5,
+     -0.0002420532,
+     -1.0,
+     0.5
+    ],
+    "genome_id": "e015506f37fe"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 1,
+     "verification_level": 0,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 3,
+    "individual_id": "g3-i1",
+    "parent_ids": [
+     "g2-i0",
+     "g2-i5"
+    ],
+    "fitness": [
+     0.5,
+     -0.0002420532,
+     -1.0,
+     0.5
+    ],
+    "genome_id": "e015506f37fe"
+   },
+   {
+    "genome": {
+     "tool_validation": 1,
+     "read_before_write": 1,
+     "verification_level": 0,
+     "stagnation_break": 1,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 3,
+    "individual_id": "g3-i2",
+    "parent_ids": [
+     "g2-i5",
+     "g2-i5"
+    ],
+    "fitness": [
+     0.5,
+     -0.0002420532,
+     -1.0,
+     0.5
+    ],
+    "genome_id": "e3738653ca40"
+   },
+   {
+    "genome": {
+     "tool_validation": 1,
+     "read_before_write": 0,
+     "verification_level": 2,
+     "stagnation_break": 0,
+     "reflection_step": 1,
+     "retry_strategy": 2
+    },
+    "generation": 3,
+    "individual_id": "g3-i3",
+    "parent_ids": [
+     "g2-i0",
+     "g2-i1"
+    ],
+    "fitness": [
+     1.0,
+     -0.0005373564,
+     -2.0,
+     1.0
+    ],
+    "genome_id": "ef0925c8870c"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 1,
+     "verification_level": 0,
+     "stagnation_break": 0,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 3,
+    "individual_id": "g3-i4",
+    "parent_ids": [
+     "g2-i4",
+     "g2-i0"
+    ],
+    "fitness": [
+     0.5,
+     -0.0002420532,
+     -1.0,
+     0.5
+    ],
+    "genome_id": "e015506f37fe"
+   },
+   {
+    "genome": {
+     "tool_validation": 0,
+     "read_before_write": 0,
+     "verification_level": 1,
+     "stagnation_break": 1,
+     "reflection_step": 0,
+     "retry_strategy": 0
+    },
+    "generation": 3,
+    "individual_id": "g3-i5",
+    "parent_ids": [
+     "g2-i3",
+     "g2-i1"
+    ],
+    "fitness": [
+     1.0,
+     -0.0005373564,
+     -2.0,
+     1.0
+    ],
+    "genome_id": "6bf09f6f0262"
+   }
+  ]
+ }
+]
