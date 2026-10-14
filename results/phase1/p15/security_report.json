@@ -1,0 +1,27 @@
+{
+  "created_by": "scripts/run_p15_gate.py",
+  "container_security_profile_v2_flags": [
+    "--network ceval-net (internal)",
+    "--read-only",
+    "--tmpfs /tmp:rw,noexec,nosuid,size=64m",
+    "--tmpfs /home/agent/.cache:rw,exec,nosuid,size=64m",
+    "--cap-drop ALL",
+    "--security-opt no-new-privileges",
+    "--memory 768m --memory-swap 768m",
+    "--cpus 1",
+    "--pids-limit 128"
+  ],
+  "battery": {
+    "files": [
+      "tests/test_container_security_v2.py",
+      "tests/test_agent_fs_isolation.py",
+      "tests/test_executor_isolation.py",
+      "tests/test_live_guard.py",
+      "tests/test_executor_guard.py"
+    ],
+    "command": "tests/test_container_security_v2.py tests/test_agent_fs_isolation.py tests/test_executor_isolation.py tests/test_live_guard.py tests/test_executor_guard.py",
+    "exit_code": 0,
+    "summary_line": "41 passed in 54.52s",
+    "passed": "41 passed in 54.52s"
+  }
+}

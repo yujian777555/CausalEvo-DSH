@@ -18,18 +18,17 @@ import pytest
 
 from causalevo.eval.agent_pipeline import run_agent_tasks
 from causalevo.eval.executor import DockerExecutor, docker_available
-from causalevo.eval.fake_provider import FakeProvider
+from causalevo.eval.scenarios import SCENARIOS
 from causalevo.eval.judge import Judge
 from causalevo.eval.policy import B0
 from causalevo.eval.runtime_budget import RuntimeBudget
-from causalevo.eval.scenarios import SCENARIOS
 from causalevo.eval.task_spec import load_all_tasks
 from causalevo.eval.trace import TaskTrace
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TASKS_DIR = REPO_ROOT / "benchmarks" / "tasks"
 PATCH_PATH = REPO_ROOT / "configs" / "dsh_task_patch.yml"
-AGENT_IMAGE = "causalevo-dsh-agent:0.1.0"
+AGENT_IMAGE = "causalevo-dsh-agent:0.2.0"
 JUDGE_IMAGE = "python:3.11-slim"
 N_TASKS = 2
 
@@ -62,18 +61,11 @@ def _run_scenario(tmp_path_factory, scenario: str, **budget_overrides):
             wall_time_s=budget.wall_time_s,
         )
 
-    providers: list[FakeProvider] = []
-
-    def provider_factory(spec) -> FakeProvider:
-        provider = FakeProvider(SCENARIOS[scenario](spec))
-        providers.append(provider)
-        return provider
-
     judge_executor = DockerExecutor()
     result = run_agent_tasks(
         specs, B0, Judge(judge_executor), judge_executor,
         tmp_path_factory.mktemp(f"agent-{scenario}"),
-        provider_factory=provider_factory,
+        scenario_factory=SCENARIOS[scenario],
         budget_factory=budget_factory,
         image=AGENT_IMAGE,
         patch_path=PATCH_PATH,
@@ -87,7 +79,6 @@ def _run_scenario(tmp_path_factory, scenario: str, **budget_overrides):
         for line in (run_dir / "traces.jsonl").read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    result["providers"] = providers
     return result
 
 
@@ -158,9 +149,8 @@ def test_bad_tool_call_is_surfaced_and_the_run_completes(bad_tool_run):
     summary = bad_tool_run["summary"]
     assert summary["executed"] == N_TASKS  # unknown tool -> tool error, loop goes on
     assert summary["task_succeeded"] == 0
-    for provider in bad_tool_run["providers"]:
-        assert provider.call_count == 2
-        assert any("unknown tool" in result for result in provider.tool_results())
+    for results in bad_tool_run["tool_results_by_task"]:
+        assert any("unknown tool" in result for result in results)
 
 
 def test_tool_over_budget_stops_mid_run(tool_budget_run):

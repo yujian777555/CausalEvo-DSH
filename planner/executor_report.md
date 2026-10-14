@@ -1,44 +1,37 @@
-# Executor Report — Plan CE-DSH-P1-R2（Phase 1 R2：安全边界 + Harness 桥接 + 运行时预算）
+# Executor Report — Phase 1.5 Live Readiness Gate（CE-DSH-P1.5）
 
-日期：2026-10-13。Executor：Kimi。本轮完全离线，**零新增 live API 调用、零费用**；Phase 0/Phase1-R1 历史数据未触碰。
-（历史轮次报告见 git 历史。）
+日期：2026-10-14。Executor：Kimi。本轮完全离线，**live API 调用 0 次、费用 ¥0**；Phase 0 / Phase 1 R1 / R2 冻结数据未触碰。
 
 ## 总览
 
-- S0–S4 全部交付；测试 **164 passed / 0 failed / 0 skipped**（123 回归 + 41 新增，全部真实运行，含真实容器的对抗性与 e2e 测试）。
-- S0-Gate：**通过（容器世界）**。宿主 runtime 读穿透已实测确认并判定不可用于任务执行；容器世界 8 类越界测试全过。
-- 无任何模型性能宣称；fake provider 数字为合成计量链路验证。
+- 测试：**193 passed / 0 failed / 0 skipped**（164 回归 + 29 新增：live_guard 10、protocol_freeze 10、container_security_v2 9）。
+- 安全专项电池（p15 gate）：41 passed，protocol checks 全过，artifacts 在 results/phase1/p15/。
+-  readiness 结论：**NOT READY**（唯一失败维度：外部基准可用性未验证；详见 docs/PHASE1_LIVE_READINESS_REPORT.md）。
 
-## 计划项状态
+## Gate 逐项
 
-| 项 | 状态 | 证据 |
+| Gate | 状态 | 证据 |
 |---|---|---|
-| S0 FS 读取隔离 | PASS | docs/PHASE1_R2_SECURITY_MODEL.md；probe_fs_escape.py（宿主泄漏实证）/ probe_fs_escape_container.py（容器阻断实证）；tests/test_agent_fs_isolation.py 8 项实测 |
-| S0 executor 守卫 | PASS | LocalTrustedExecutor 构造守卫 + default_executor for_untrusted fail-closed；tests/test_executor_guard.py 7 项 |
-| S1 Harness 桥接 | PASS | fake_provider.py（协议层）、harness_agent.py（容器 runner）、agent_pipeline.py、scenarios.py（7 场景）；tests/test_agent_bridge_e2e.py 8 项；wire format 实测记录 |
-| S2 运行时预算 | PASS | runtime_budget.py（预留/结算/五维上限/unknown fail-closed/墙钟 watchdog）；tests/test_runtime_budget.py 10 项；B0/B1 平价测试 |
-| S2 身份判重（RISK-1） | PASS | seq 身份 + 等量歧义 fail-closed；tests/test_usage_attempt_events.py 12 项（含 6 等量事件全计费回归） |
-| S3 轨迹/隔离 | PASS | provider_kind/model_invoked、events_slim、provenance_block（repo SHA/SDK/镜像 digest）；sealed 不进容器 |
-| S4 SWE-bench 可行性 | PASS（方案级） | docs/PHASE1_R2_PILOT_DESIGN.md；HF 不可达标 NOT_VERIFIED；零真实请求 |
-| live 授权门 | PASS | require_live_authorization 双条件拒绝，先于任何网络访问；`--live` 实测返回 2 |
+| G1 容器加固 v2 | PASS | --read-only rootfs、tmpfs /tmp(noexec)+.cache、cap-drop ALL、no-new-privileges、internal network ceval-net + provider 容器（唯一可达端点）；9 项 v2 测试 + 8 项 FS 越界回归实测通过；含 capability/metadata-service/ symlink 用例 |
+| G2 Provider 适配 + 授权门 | PASS | eval/provider.py：fake/live 同形 ProviderEndpoint；live_enabled 默认 False；无双凭证→拒绝；tests/test_live_guard.py 10 项（含 socket 拦截证明构造期零网络、CLI 退出码 2） |
+| G3 实验协议冻结 | PASS | docs/PHASE1_EXPERIMENT_PROTOCOL.md（B0/B1、预算包络、三轴指标、judge 盲化、trace 模式、修订规则，冻结 2026-10-13） |
+| G4 统计计划 | PASS | docs/PHASE1_STATISTICAL_PLAN.md（paired tasks、固定 seed 列表、McNemar exact + Clopper-Pearson + Wilson + paired bootstrap、反钓鱼条款、功效说明） |
+| G5 Readiness 报告 | PASS | docs/PHASE1_LIVE_READINESS_REPORT.md，结论 NOT READY（外部基准维度） |
+| 测试数 | PASS（29 ≥ 15） | 见上 |
+| p15 artifacts | PASS | manifest.json / security_report.json / protocol_check.json，由 scripts/run_p15_gate.py 真实运行生成 |
 
-## 验证命令（实际执行）
+## 事故与修复记录
 
-- `.venv/Scripts/python.exe -m pytest tests/ -q` → 164 passed（138s，含容器测试）
-- `scripts/run_agent_task.py --fake --scenario noop`（B0、B1 各 26 任务，容器桥接）→ 各 26/26 executed，0 succeeded（诚实 noop）
-- 场景证据 5 组（correct_fix 3/3、wrong_fix 0/3、bad_tool_call 0/3、provider_error fail-closed、tool_over_budget budget_stop）→ results/phase1/r2-offline/
-- `docker build docker/dsh-agent` → 成功；镜像 digest 与 wheels SHA256SUMS 已记录
-
-## 事故与修复
-
-1. swarm 测试发现 provider_error 路径下 6 次已发送 HTTP 请求未被计量（无 usage 帧）→ 修复：未计量 attempt 记 unknown_spend_attempts + unknown_cost fail-closed 停机，测试锁定。
-2. 测试日历 bug：硬编码 off-peak 断言在周二峰时窗口失败 → 改为按行内记录 tier 计算。
-3. Dockerfile pip 在线安装被宿主网络/代理拦截 → 改为 vendored wheels 离线构建（更可复现）。
+1. 硬化容器初版启动失败：runtime 插件加载器需在 $HOME/.cache 解包并 mmap 原生 sidecar（koffi/rg），read-only rootfs + nosuid tmpfs 阻断 → 增加专用 `.cache` exec tmpfs（/tmp 保持 noexec），最小权限定位经三个变体实验确定。
+2. 磁带 provider 长度不足曾使 provider_error 场景第 5 次重试落入"done"兜底并被计费一次 → tape 覆盖加长（+10 margin）并在 scenario_tape 文档中记录重试地平线约束。
+3. Docker Desktop 守护进程两次在会话间停止 → 测试跳过/失败为环境抖动，重启后全绿；已列入 readiness 注意项。
 
 ## 残留风险
 
-见 docs/PHASE1_R2_RESULTS.md §8（bridge 网络、容器 rootfs、反应式 mid-run 预算、HostHarnessRunner 保留为 probe 用途）。
+- 外部基准（SWE-bench Verified）未下载未运行，HF 元数据本机不可达（NOT_VERIFIED）。
+- 26 个 microtask sealed 已公开，不是论文 holdout。
+- Docker daemon 常驻需 live 前确认。
 
 ## 停止
 
-停在 Phase 1 R2。status.json = READY_FOR_REVIEW，next_actor=GPT-Planner。未进入付费 pilot / Phase 2。
+停在 Phase 1.5。status.json = READY_FOR_REVIEW，next_actor=GPT-Planner。未进入 Phase 2，未申请预算。

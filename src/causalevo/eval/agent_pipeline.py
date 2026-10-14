@@ -32,21 +32,28 @@ def run_agent_tasks(
     judge_executor: Executor,
     out_dir: Path,
     *,
-    provider_factory,  # TaskSpec -> FakeProvider (per-task provider instance)
+    scenario_factory,  # TaskSpec -> script (see scenarios.py)
     budget_factory,
     image: str,
     patch_path: Path,
     provider_kind: str = "fake",
+    network: str = "ceval-net",
     split_seed: int = 0,
     run_id: str | None = None,
     config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Run each task: fresh workspace -> agent (container) -> judge -> trace."""
+    """Run each task: fresh workspace -> provider container (internal net) ->
+    agent container (security profile v2) -> judge container -> trace."""
+    from .networks import ProviderContainer, ensure_internal_network
+    from .scenarios import scenario_tape
+
+    ensure_internal_network(network)
     run_id = run_id or f"{policy.policy_id}-agent-{new_run_id()}"
     run_dir = out_dir / run_id
     factory = WorkspaceFactory()
     writer = TraceWriter(run_dir)
     traces: list[dict[str, Any]] = []
+    observed_tool_results: list[list[str]] = []
     try:
         for spec in specs:
             ws = factory.create(spec, run_id)
@@ -62,18 +69,24 @@ def run_agent_tasks(
                 "timeout": False,
                 "budget_stop": False,
             }
-            with provider_factory(spec) as provider:
+            tape = scenario_tape(spec, scenario_factory,
+                                 max_calls=budget.max_provider_calls + 10)
+            with ProviderContainer(tape, network=network) as provider:
                 runner = ContainerHarnessRunner(
                     image=image,
                     patch_path=patch_path,
                     model="deepseek-flash", reasoning_effort="low", max_tokens=256,
                     provider_kind=provider_kind,
-                    host_base_url=provider.base_url.replace("127.0.0.1", "host.docker.internal"),
+                    provider_endpoint=provider.endpoint,
+                    network=network,
                 )
                 outcome: AgentRunOutcome = runner.run_task(
                     spec, ws.root, policy.policy_id, budget,
                     api_key="sk-fake-offline-no-cost",
                 )
+                # in-memory only (never persisted): lets tests assert on the
+                # tool results the provider observed; traces stay redacted
+                observed_tool_results.append(provider.tool_results())
             states["tool_executed"] = budget.ledger.tool_attempts > 0
             states["task_completed"] = outcome.finish_reason == "completed"
             states["budget_stop"] = outcome.failure_kind in ("budget_stop", "unknown_cost")
@@ -145,7 +158,8 @@ def run_agent_tasks(
             json.dumps({"manifest": manifest.as_dict(), "summary": summary},
                        indent=2, ensure_ascii=False),
             encoding="utf-8")
-        return {"run_id": run_id, "summary": summary, "run_dir": str(run_dir)}
+        return {"run_id": run_id, "summary": summary, "run_dir": str(run_dir),
+                "tool_results_by_task": observed_tool_results}
     finally:
         writer.close()
         factory.destroy_all()

@@ -1,0 +1,13 @@
+{
+  "gate": "CE-DSH-P1.5",
+  "created_by": "scripts/run_p15_gate.py",
+  "provenance": {
+    "repo_head_sha": "38eeabe2427baef05232180f63b2fc0ea51c2a66",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-14T03:02:06.782238+00:00"
+  },
+  "agent_image": "causalevo-dsh-agent:0.2.0",
+  "live_api_calls": 0,
+  "live_spend_cny": 0
+}

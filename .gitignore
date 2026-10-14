@@ -30,4 +30,5 @@ logs/
 # --- benchmark scratch ---
 results/phase0/tmp/
 results/phase1/r2-scratch/
+results/phase1/p15-scratch/
 .pytest_cache/

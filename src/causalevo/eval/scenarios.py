@@ -85,3 +85,21 @@ SCENARIOS: dict[str, ScenarioFactory] = {
     "provider_timeout": _provider_timeout,
     "tool_over_budget": _tool_over_budget,
 }
+
+
+def scenario_tape(spec: TaskSpec, factory: ScenarioFactory, max_calls: int) -> dict[str, Any]:
+    """Materialize a scenario into a JSON-serializable tape: {str(i): actions}.
+
+    Constraint: scenario scripts may depend only on call_index (ours do);
+    message-dependent branching is out of scope for tapes. Indices
+    0..max_calls-1 are materialized; the tape server answers out-of-range
+    calls with a plain text completion so the agent loop terminates. The
+    caller must size max_calls above the runtime's retry horizon (observed
+    5-6 internal retries) or error scenarios would leak into the fallback.
+    """
+    script = factory(spec)
+    tape: dict[str, Any] = {}
+    for i in range(max_calls):
+        actions = script([], i)
+        tape[str(i)] = [list(a) if isinstance(a, tuple) else a for a in actions]
+    return tape

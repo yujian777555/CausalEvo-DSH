@@ -256,16 +256,20 @@ class ContainerHarnessRunner:
 
     def __init__(self, *, image: str, patch_path: Path, model: str,
                  reasoning_effort: str | None, max_tokens: int,
-                 provider_kind: str = "fake", network: str = "bridge",
-                 host_base_url: str | None = None) -> None:
+                 provider_kind: str = "fake",
+                 provider_endpoint: str | None = None,
+                 network: str = "ceval-net") -> None:
+        """Container Security Profile v2: read-only rootfs, tmpfs /tmp,
+        cap-drop ALL, no-new-privileges, internal network only. The sole
+        reachable endpoint is `provider_endpoint` on the internal network."""
         self.image = image
         self.patch_path = patch_path
         self.model = model
         self.reasoning_effort = reasoning_effort
         self.max_tokens = max_tokens
         self.provider_kind = provider_kind
+        self.provider_endpoint = provider_endpoint
         self.network = network
-        self.host_base_url = host_base_url
 
     def run_task(
         self,
@@ -283,15 +287,25 @@ class ContainerHarnessRunner:
             "reasoning_effort": self.reasoning_effort,
             "max_tokens": self.max_tokens,
             "patch_yml": self.patch_path.read_text(encoding="utf-8"),
-            "base_url": self.host_base_url,
+            "base_url": self.provider_endpoint,
             "api_key": api_key,
             "request_timeout_s": max(60, budget.wall_time_s),
         }
         cmd = [
             "docker", "run", "--rm", "-i", "--name", name,
+            # Container Security Profile v2 (G1)
             "--network", self.network,
+            "--read-only",
+            "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
+            # the runtime's plugin loader unpacks and mmaps native sidecars
+            # (koffi/ripgrep) from its package cache; it needs exec. Scope is
+            # limited to this private tmpfs; the model has no shell to abuse it.
+            "--tmpfs", "/home/agent/.cache:rw,exec,nosuid,size=64m",
+            "--cap-drop", "ALL",
+            "--security-opt", "no-new-privileges",
             "--memory", "768m", "--memory-swap", "768m",
             "--cpus", "1", "--pids-limit", "128",
+            "-e", "PYTHONDONTWRITEBYTECODE=1",
             "-v", f"{workspace.resolve()}:/work",
             self.image,
         ]

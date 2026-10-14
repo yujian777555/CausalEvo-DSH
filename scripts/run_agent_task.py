@@ -60,7 +60,11 @@ def main() -> int:
         )
 
     if args.live:
-        require_live_authorization()  # refuses unless explicitly authorized
+        try:
+            require_live_authorization()
+        except PermissionError as exc:
+            print(f"REFUSED: {exc}")
+            return 2
         print("live mode is not scheduled in CE-DSH-P1-R2; aborting.")
         return 2
 
@@ -68,15 +72,12 @@ def main() -> int:
     judge = Judge(judge_executor)
     scenario_factory = SCENARIOS[args.scenario]
 
-    def provider_factory(spec):
-        return FakeProvider(scenario_factory(spec))
-
     result = run_agent_tasks(
         specs, policy, judge, judge_executor,
         Path(args.out),
-        provider_factory=provider_factory,
+        scenario_factory=scenario_factory,
         budget_factory=budget_factory,
-        image="causalevo-dsh-agent:0.1.0",
+        image="causalevo-dsh-agent:0.2.0",
         patch_path=REPO_ROOT / "configs" / "dsh_task_patch.yml",
         provider_kind="fake",
         split_seed=20261010,

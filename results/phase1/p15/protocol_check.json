@@ -1,0 +1,50 @@
+{
+  "checks": [
+    {
+      "check": "b0_b1_budget_parity",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "b0_no_persistent_updates",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "b1_no_persistent_updates",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "registry_split_seed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "registry_counts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "config_sha256:phase1_b0.yaml",
+      "ok": true,
+      "detail": "98536728d527fa3ee79f1f8b939acce0cf9d4167447d8e8c690a6f6014490985"
+    },
+    {
+      "check": "config_sha256:phase1_b1.yaml",
+      "ok": true,
+      "detail": "fba4ce5ad097d2472ff8aa291393bb5a5c714f3b1b5b2fe0f14e2e5ea4083235"
+    },
+    {
+      "check": "task_profile_patch_sha256",
+      "ok": true,
+      "detail": "26aa5f45ce47e39f1f576c38f4b553f7402ad3d0c96a5c1c851148611f817243"
+    },
+    {
+      "check": "security_battery_green",
+      "ok": true,
+      "detail": "41 passed in 54.52s"
+    }
+  ],
+  "all_ok": true
+}
