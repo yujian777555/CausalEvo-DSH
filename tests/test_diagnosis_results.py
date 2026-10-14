@@ -50,11 +50,13 @@ def test_sample_diagnosis_schema():
 
 
 def test_artifacts_regenerate_identically(tmp_path):
-    """Re-running the diagnosis pipeline must reproduce the same metrics."""
+    """Re-running the diagnosis pipeline into a TEMP dir reproduces metrics;
+    the committed artifacts are never overwritten by tests."""
     before = json.loads((OUT / "baseline_results.json").read_text(encoding="utf-8"))
-    proc = subprocess.run([sys.executable, str(REPO / "scripts" / "run_diagnosis.py")],
+    proc = subprocess.run([sys.executable, str(REPO / "scripts" / "run_diagnosis.py"),
+                           "--out", str(tmp_path)],
                           capture_output=True, text=True, cwd=REPO)
     assert proc.returncode == 0, proc.stderr[-500:]
-    after = json.loads((OUT / "baseline_results.json").read_text(encoding="utf-8"))
+    after = json.loads((tmp_path / "baseline_results.json").read_text(encoding="utf-8"))
     for name in before["results"]:
         assert before["results"][name]["accuracy"] == after["results"][name]["accuracy"]

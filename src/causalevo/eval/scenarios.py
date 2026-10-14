@@ -76,6 +76,35 @@ def _tool_over_budget(spec: TaskSpec) -> Script:
     return script
 
 
+def _bad_tool_blocks_write(spec: TaskSpec) -> Script:
+    """Failure depends on the tool error: the write is BLOCKED because the
+    bad tool call replaced the mandatory read (write requires prior read)."""
+    fixed = spec.reference_fixed.read_text(encoding="utf-8")
+
+    def script(messages, call_index):
+        if call_index == 0:
+            return [("tool_call", "definitely_not_a_tool", {"x": 1})]
+        if call_index == 1:
+            return [("tool_call", "write",
+                     {"file_path": spec.entry_file, "content": fixed})]
+        return [("text", "done")]
+    return script
+
+
+def _broken_write(spec: TaskSpec) -> Script:
+    """Reads, then writes syntactically broken code, then stops: a
+    verification failure (no read-back/self-check before finishing)."""
+
+    def script(messages, call_index):
+        if call_index == 0:
+            return [("tool_call", "read", {"file_path": spec.entry_file})]
+        if call_index == 1:
+            return [("tool_call", "write",
+                     {"file_path": spec.entry_file, "content": "def broken(:\n"})]
+        return [("text", "done")]
+    return script
+
+
 SCENARIOS: dict[str, ScenarioFactory] = {
     "noop": _noop,
     "correct_fix": _correct_fix,
@@ -84,6 +113,8 @@ SCENARIOS: dict[str, ScenarioFactory] = {
     "provider_error": _provider_error,
     "provider_timeout": _provider_timeout,
     "tool_over_budget": _tool_over_budget,
+    "bad_tool_blocks_write": _bad_tool_blocks_write,
+    "broken_write": _broken_write,
 }
 
 

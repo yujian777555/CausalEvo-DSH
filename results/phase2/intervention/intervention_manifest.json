@@ -1,0 +1,32 @@
+{
+  "created_by": "scripts/run_intervention_eval.py",
+  "cases": [
+    "case_tool",
+    "case_verification",
+    "case_ineffective"
+  ],
+  "arms": [
+    "B0-no-intervention",
+    "B1-random",
+    "B2-rule",
+    "B3-diagnosis-guided"
+  ],
+  "replay_budget_envelope": {
+    "provider_attempts": 0,
+    "tool_attempts": 0,
+    "known_input_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "known_cost_cny": 0.0,
+    "unknown_spend_attempts": 0,
+    "elapsed_s": 0.0,
+    "note": "identical across arms; separate from frozen B0/B1 agent envelope"
+  },
+  "provenance": {
+    "repo_head_sha": "a125a9b66a10a1df6b5f397b8a119891daf54f67",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-14T05:54:59.440946+00:00"
+  },
+  "honesty": "tape-transform simulated interventions; NOT evidence of real-model improvement"
+}

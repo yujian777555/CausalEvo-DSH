@@ -24,6 +24,8 @@ SCENARIO_GROUND_TRUTH = {
     "wrong_fix": FailureCategory.KNOWLEDGE.value,
     "noop": FailureCategory.PLANNING.value,
     "provider_timeout": FailureCategory.EXECUTION.value,
+    "bad_tool_blocks_write": FailureCategory.TOOL.value,
+    "broken_write": FailureCategory.VERIFICATION.value,
 }
 
 REPAIR_HINTS = {

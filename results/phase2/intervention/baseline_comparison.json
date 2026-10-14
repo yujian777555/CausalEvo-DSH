@@ -1,0 +1,37 @@
+{
+  "n_case_instances": 24,
+  "n_cases": 3,
+  "original_success_rate_B0": 0.0,
+  "intervention_gain": 0.5555555555555556,
+  "per_arm": {
+    "B0-no-intervention": {
+      "cases": 6,
+      "improved": 0,
+      "no_change": 6,
+      "regressed": 0,
+      "cost_delta_cny": 0.0
+    },
+    "B1-random": {
+      "cases": 6,
+      "improved": 2,
+      "no_change": 4,
+      "regressed": 0,
+      "cost_delta_cny": 0.0010214628
+    },
+    "B2-rule": {
+      "cases": 6,
+      "improved": 4,
+      "no_change": 2,
+      "regressed": 0,
+      "cost_delta_cny": 0.0010747128
+    },
+    "B3-diagnosis-guided": {
+      "cases": 6,
+      "improved": 4,
+      "no_change": 2,
+      "regressed": 0,
+      "cost_delta_cny": 0.0010747128
+    }
+  },
+  "note": "transform-simulated effects; paired comparison; NOT real-model evidence"
+}

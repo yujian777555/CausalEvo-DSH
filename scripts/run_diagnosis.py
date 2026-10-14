@@ -85,7 +85,10 @@ def _evidence_precision(results, traces_by_id, rows_by_id=None):
     return (hits / total) if total else None
 
 
-def main() -> int:
+def main(out_dir: Path | None = None) -> int:
+    global OUT
+    if out_dir is not None:
+        OUT = Path(out_dir)
     OUT.mkdir(parents=True, exist_ok=True)
     rows = build_dataset(REPO / "results" / "phase1", REPO / "benchmarks" / "tasks")
     splits = split_dataset(rows, seed=SPLIT_SEED)
@@ -197,4 +200,10 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", default=None,
+                        help="output dir override (tests use tmp dirs; default results/phase2/diagnosis)")
+    args = parser.parse_args()
+    raise SystemExit(main(Path(args.out) if args.out else None))

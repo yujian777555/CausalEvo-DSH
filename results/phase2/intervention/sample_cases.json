@@ -1,0 +1,208 @@
+[
+  {
+    "case_id": "case_tool--micro-000-clamp_value--B0-no-intervention",
+    "task_id": "micro-000-clamp_value",
+    "scenario": "bad_tool_blocks_write",
+    "baseline": "B0-no-intervention",
+    "intervention": {
+      "confidence": "high",
+      "description": "不改任何东西（原始轨迹重放）",
+      "expected_effect": "none",
+      "intervention_id": "no-op",
+      "intervention_type": "no_intervention",
+      "required_change": "none",
+      "tape_transform": "identity",
+      "target_failure": "unknown",
+      "transform_args": null,
+      "diagnosed_failure": null
+    },
+    "original_outcome": "none",
+    "counterfactual_outcome": "none",
+    "original_success": false,
+    "counterfactual_success": false,
+    "changed_steps": [],
+    "success_delta": 0,
+    "cost_delta_cny": 0.0,
+    "original_ledger": {
+      "provider_attempts": 3,
+      "tool_attempts": 2,
+      "known_input_tokens": 258,
+      "cache_read_tokens": 192,
+      "output_tokens": 30,
+      "known_cost_cny": 0.0004066596,
+      "unknown_spend_attempts": 0,
+      "elapsed_s": 4.344
+    },
+    "counterfactual_ledger": {
+      "provider_attempts": 3,
+      "tool_attempts": 2,
+      "known_input_tokens": 258,
+      "cache_read_tokens": 192,
+      "output_tokens": 30,
+      "known_cost_cny": 0.0004066596,
+      "unknown_spend_attempts": 0,
+      "elapsed_s": 4.453
+    },
+    "confidence": "low",
+    "notes": [
+      "paired replay: same task, same base tape, same budget envelope",
+      "transform-simulated intervention; NOT evidence of real-model improvement"
+    ]
+  },
+  {
+    "case_id": "case_tool--micro-000-clamp_value--B1-random",
+    "task_id": "micro-000-clamp_value",
+    "scenario": "bad_tool_blocks_write",
+    "baseline": "B1-random",
+    "intervention": {
+      "confidence": "medium",
+      "description": "补充错误定位上下文（add_error_context）",
+      "expected_effect": "错误修复内容被替换为正确内容",
+      "intervention_id": "lib:knowledge_failure",
+      "intervention_type": "knowledge_intervention",
+      "required_change": "向 agent 追加失败测试定位信息",
+      "tape_transform": "inject_fix_after_write",
+      "target_failure": "knowledge_failure",
+      "transform_args": null,
+      "diagnosed_failure": null
+    },
+    "original_outcome": "none",
+    "counterfactual_outcome": "none",
+    "original_success": false,
+    "counterfactual_success": true,
+    "changed_steps": [
+      "after call 1: inserted read-back + corrected write"
+    ],
+    "success_delta": 1,
+    "cost_delta_cny": 0.0005373564,
+    "original_ledger": {
+      "provider_attempts": 3,
+      "tool_attempts": 2,
+      "known_input_tokens": 258,
+      "cache_read_tokens": 192,
+      "output_tokens": 30,
+      "known_cost_cny": 0.0004066596,
+      "unknown_spend_attempts": 0,
+      "elapsed_s": 4.468
+    },
+    "counterfactual_ledger": {
+      "provider_attempts": 5,
+      "tool_attempts": 4,
+      "known_input_tokens": 680,
+      "cache_read_tokens": 320,
+      "output_tokens": 50,
+      "known_cost_cny": 0.000944016,
+      "unknown_spend_attempts": 0,
+      "elapsed_s": 18.063
+    },
+    "confidence": "low",
+    "notes": [
+      "paired replay: same task, same base tape, same budget envelope",
+      "transform-simulated intervention; NOT evidence of real-model improvement"
+    ]
+  },
+  {
+    "case_id": "case_tool--micro-000-clamp_value--B2-rule",
+    "task_id": "micro-000-clamp_value",
+    "scenario": "bad_tool_blocks_write",
+    "baseline": "B2-rule",
+    "intervention": {
+      "confidence": "medium",
+      "description": "工具调用前增加名称/参数校验（add_path_validation）",
+      "expected_effect": "unknown-tool 类失败被拦截并转为合法 read/write",
+      "intervention_id": "rule:tool_failure",
+      "intervention_type": "tool_intervention",
+      "required_change": "tool-call dispatch 前校验工具名在注册表内且参数通过 schema",
+      "tape_transform": "replace_unknown_tool_with_read",
+      "target_failure": "tool_failure",
+      "transform_args": null,
+      "diagnosed_failure": null
+    },
+    "original_outcome": "none",
+    "counterfactual_outcome": "none",
+    "original_success": false,
+    "counterfactual_success": true,
+    "changed_steps": [
+      "call 0: unknown tool -> read(solution.py)"
+    ],
+    "success_delta": 1,
+    "cost_delta_cny": 0.0,
+    "original_ledger": {
+      "provider_attempts": 3,
+      "tool_attempts": 2,
+      "known_input_tokens": 258,
+      "cache_read_tokens": 192,
+      "output_tokens": 30,
+      "known_cost_cny": 0.0004066596,
+      "unknown_spend_attempts": 0,
+      "elapsed_s": 13.828
+    },
+    "counterfactual_ledger": {
+      "provider_attempts": 3,
+      "tool_attempts": 2,
+      "known_input_tokens": 258,
+      "cache_read_tokens": 192,
+      "output_tokens": 30,
+      "known_cost_cny": 0.0004066596,
+      "unknown_spend_attempts": 0,
+      "elapsed_s": 4.985
+    },
+    "confidence": "low",
+    "notes": [
+      "paired replay: same task, same base tape, same budget envelope",
+      "transform-simulated intervention; NOT evidence of real-model improvement"
+    ]
+  },
+  {
+    "case_id": "case_tool--micro-000-clamp_value--B3-diagnosis-guided",
+    "task_id": "micro-000-clamp_value",
+    "scenario": "bad_tool_blocks_write",
+    "baseline": "B3-diagnosis-guided",
+    "intervention": {
+      "confidence": "medium",
+      "description": "工具调用前增加名称/参数校验（add_path_validation）",
+      "expected_effect": "unknown-tool 类失败被拦截并转为合法 read/write",
+      "intervention_id": "rule:tool_failure",
+      "intervention_type": "tool_intervention",
+      "required_change": "tool-call dispatch 前校验工具名在注册表内且参数通过 schema",
+      "tape_transform": "replace_unknown_tool_with_read",
+      "target_failure": "tool_failure",
+      "transform_args": null,
+      "diagnosed_failure": "tool_failure"
+    },
+    "original_outcome": "none",
+    "counterfactual_outcome": "none",
+    "original_success": false,
+    "counterfactual_success": true,
+    "changed_steps": [
+      "call 0: unknown tool -> read(solution.py)"
+    ],
+    "success_delta": 1,
+    "cost_delta_cny": 0.0,
+    "original_ledger": {
+      "provider_attempts": 3,
+      "tool_attempts": 2,
+      "known_input_tokens": 258,
+      "cache_read_tokens": 192,
+      "output_tokens": 30,
+      "known_cost_cny": 0.0004066596,
+      "unknown_spend_attempts": 0,
+      "elapsed_s": 4.281
+    },
+    "counterfactual_ledger": {
+      "provider_attempts": 3,
+      "tool_attempts": 2,
+      "known_input_tokens": 258,
+      "cache_read_tokens": 192,
+      "output_tokens": 30,
+      "known_cost_cny": 0.0004066596,
+      "unknown_spend_attempts": 0,
+      "elapsed_s": 3.984
+    },
+    "confidence": "low",
+    "notes": [
+      "paired replay: same task, same base tape, same budget envelope",
+      "transform-simulated intervention; NOT evidence of real-model improvement"
+    ]
+  }
+]

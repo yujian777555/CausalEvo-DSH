@@ -3,9 +3,9 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P2.2",
-  "previous_plan_id": "CE-DSH-P2.1",
-  "phase": "Phase 2.2",
+  "plan_id": "CE-DSH-P2.3",
+  "previous_plan_id": "CE-DSH-P2.2",
+  "phase": "Phase 2.3",
   "phase_status": "READY_FOR_REVIEW",
   "planner_review": "PENDING",
   "next_actor": "GPT-Planner",
@@ -16,18 +16,18 @@
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P1-R1-final.md",
   "executor_report_path": "planner/executor_report.md",
-  "fix_report_path": "docs/PHASE2_DIAGNOSIS_RESULTS.md",
+  "fix_report_path": "docs/PHASE2_INTERVENTION_RESULTS.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "faf62cbf54b65e90baf42d1612d8c0091b464ea0",
-    "github_commit_verified": true,
+    "latest_executor_commit": "PENDING_FINAL_COMMIT",
+    "github_commit_verified": false,
     "executor_reports_local_clean": true,
     "note": "verified via git ls-remote after push; housekeeping commit on top records this"
   },
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 261,
+    "passed": 300,
     "failed": 0,
     "skipped": 0,
     "planner_reran": false
@@ -80,16 +80,17 @@
     "no-tools runtime evidence produced on executor machine only"
   ],
   "evidence": [
-    "docs/PHASE2_DIAGNOSIS_DESIGN.md",
-    "docs/PHASE2_DIAGNOSIS_RESULTS.md",
-    "src/causalevo/diagnosis/",
-    "results/phase2/diagnosis/",
-    "tests/test_diagnosis_features.py",
-    "tests/test_diagnosis_dataset.py",
-    "tests/test_diagnosis_models.py",
-    "tests/test_diagnosis_results.py"
+    "docs/PHASE2_INTERVENTION_DESIGN.md",
+    "docs/PHASE2_INTERVENTION_EVAL.md",
+    "docs/PHASE2_INTERVENTION_RESULTS.md",
+    "src/causalevo/intervention/",
+    "src/causalevo/counterfactual/",
+    "results/phase2/intervention/",
+    "tests/test_intervention_schema.py",
+    "tests/test_tape_transforms.py",
+    "tests/test_counterfactual.py"
   ],
-  "notes": "Phase 2.2 learning-based failure diagnosis complete offline: features, dataset with task-grouped split, 3 baselines, evidence attribution, abstention. Zero live spend. Awaiting Planner review.",
+  "notes": "Phase 2.3 counterfactual intervention foundation complete offline: schema, rule generator, replay engine, 4 arms, paired cases, false-causality controls. Zero live spend. Awaiting Planner review.",
   "next_goal": "Phase1 R2 offline Harness real-tool bridge, FS read isolation, run-time budget and repeat-dedup gate, no paid API",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
@@ -189,6 +190,27 @@
     "eval_rows": 22,
     "accuracy_note": "all 1.0 on construction-aligned labeled subset; sanity only, NOT generalization",
     "abstention": "confidence threshold; risk-coverage recorded",
+    "live_calls_made": 0,
+    "live_spend_cny": 0
+  },
+  "phase2_3": {
+    "intervention_schema": "src/causalevo/intervention/",
+    "replay_engine": "src/causalevo/counterfactual/ (tape transforms, paired arms, container world)",
+    "arms": [
+      "B0-no-intervention",
+      "B1-random",
+      "B2-rule",
+      "B3-diagnosis-guided"
+    ],
+    "paired_cases": 24,
+    "improved": {
+      "B0": 0,
+      "B1": 2,
+      "B2": 4,
+      "B3": 4
+    },
+    "control_case": "case_ineffective: no improvement (mismatched intervention)",
+    "honesty": "tape-transform simulated mechanisms; NOT real-model evidence",
     "live_calls_made": 0,
     "live_spend_cny": 0
   }
