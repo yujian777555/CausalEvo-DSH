@@ -1,0 +1,64 @@
+{
+  "stats": {
+    "total_records": 124,
+    "by_category": {
+      "planning_failure": 104,
+      "execution_failure": 4,
+      "unknown": 7,
+      "knowledge_failure": 3,
+      "tool_failure": 3,
+      "strategy_failure": 3
+    },
+    "by_confidence": {
+      "medium": 107,
+      "high": 14,
+      "low": 3
+    },
+    "ground_truth_agreement": {
+      "matched": 63,
+      "mismatched": 0,
+      "unlabeled": 61
+    }
+  },
+  "evaluation": {
+    "n_records": 124,
+    "n_labeled": 63,
+    "accuracy_labeled": 1.0,
+    "macro_f1_labeled": 1.0,
+    "per_class": {
+      "planning_failure": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 52
+      },
+      "tool_failure": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "knowledge_failure": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "execution_failure": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "strategy_failure": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      }
+    },
+    "evidence_coverage_non_unknown": 1.0,
+    "unknown_rate": 0.056451612903225805,
+    "abstention_rate": 0.056451612903225805
+  }
+}

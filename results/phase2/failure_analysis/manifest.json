@@ -1,0 +1,15 @@
+{
+  "created_by": "scripts/build_failure_dataset.py",
+  "source": "results/phase1/**/traces.jsonl (committed offline runs)",
+  "record_count": 124,
+  "provenance": {
+    "repo_head_sha": "f9445e57f952a960304fe1ee2168d1b613a67eae",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-14T03:42:14.711404+00:00"
+  },
+  "notes": [
+    "records derive only from committed offline traces; nothing fabricated",
+    "evidence refs point at trace fields; no CoT, no sealed content"
+  ]
+}

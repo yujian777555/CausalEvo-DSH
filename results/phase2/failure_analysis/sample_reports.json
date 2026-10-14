@@ -1,0 +1,248 @@
+{
+  "execution_failure": [
+    {
+      "trace_id": "b672c2f673cc4a7e",
+      "task_id": "micro-000-clamp_value",
+      "failure_category": "execution_failure",
+      "outcome": "failed",
+      "evidence": [
+        {
+          "kind": "provider_error",
+          "ref": "agent.failure_kind",
+          "detail": "provider_error"
+        }
+      ],
+      "confidence": "high",
+      "repair_hint": "修复基础设施后重跑；不计入模型失败",
+      "source_run": "B0-fixed-harness-agent-20261013T092359Z",
+      "provider_kind": "fake",
+      "ground_truth": null
+    },
+    {
+      "trace_id": "bf2108aba26e4a36",
+      "task_id": "micro-000-clamp_value",
+      "failure_category": "execution_failure",
+      "outcome": "failed",
+      "evidence": [
+        {
+          "kind": "provider_error",
+          "ref": "agent.failure_kind",
+          "detail": "provider_error"
+        }
+      ],
+      "confidence": "high",
+      "repair_hint": "修复基础设施后重跑；不计入模型失败",
+      "source_run": "B0-fixed-harness-agent-20261013T092455Z",
+      "provider_kind": "fake",
+      "ground_truth": null
+    }
+  ],
+  "knowledge_failure": [
+    {
+      "trace_id": "0763e9a3c4474ed6",
+      "task_id": "micro-000-clamp_value",
+      "failure_category": "knowledge_failure",
+      "outcome": "failed",
+      "evidence": [
+        {
+          "kind": "judge_fail",
+          "ref": "judge.visible_passed",
+          "detail": "false"
+        },
+        {
+          "kind": "state",
+          "ref": "agent.ledger.tool_attempts",
+          "detail": "2"
+        }
+      ],
+      "confidence": "low",
+      "repair_hint": "提供错误定位上下文",
+      "source_run": "B0-fixed-harness-agent-20261013T085001Z",
+      "provider_kind": "fake",
+      "ground_truth": "knowledge_failure"
+    },
+    {
+      "trace_id": "6fee184ab3614f7d",
+      "task_id": "micro-001-moving_average",
+      "failure_category": "knowledge_failure",
+      "outcome": "failed",
+      "evidence": [
+        {
+          "kind": "judge_fail",
+          "ref": "judge.visible_passed",
+          "detail": "false"
+        },
+        {
+          "kind": "state",
+          "ref": "agent.ledger.tool_attempts",
+          "detail": "2"
+        }
+      ],
+      "confidence": "low",
+      "repair_hint": "提供错误定位上下文",
+      "source_run": "B0-fixed-harness-agent-20261013T085001Z",
+      "provider_kind": "fake",
+      "ground_truth": "knowledge_failure"
+    }
+  ],
+  "planning_failure": [
+    {
+      "trace_id": "ed724f12dbbd4241",
+      "task_id": "micro-000-clamp_value",
+      "failure_category": "planning_failure",
+      "outcome": "failed",
+      "evidence": [
+        {
+          "kind": "no_tool_use",
+          "ref": "agent.ledger.tool_attempts",
+          "detail": "0"
+        },
+        {
+          "kind": "state",
+          "ref": "judge.sealed_passed",
+          "detail": "false"
+        }
+      ],
+      "confidence": "medium",
+      "repair_hint": "强制 定位→修改→验证 步骤结构",
+      "source_run": "B0-fixed-harness-20261010T071212Z",
+      "provider_kind": "none",
+      "ground_truth": null
+    },
+    {
+      "trace_id": "bee3a6057c054dfd",
+      "task_id": "micro-001-moving_average",
+      "failure_category": "planning_failure",
+      "outcome": "failed",
+      "evidence": [
+        {
+          "kind": "no_tool_use",
+          "ref": "agent.ledger.tool_attempts",
+          "detail": "0"
+        },
+        {
+          "kind": "state",
+          "ref": "judge.sealed_passed",
+          "detail": "false"
+        }
+      ],
+      "confidence": "medium",
+      "repair_hint": "强制 定位→修改→验证 步骤结构",
+      "source_run": "B0-fixed-harness-20261010T071212Z",
+      "provider_kind": "none",
+      "ground_truth": null
+    }
+  ],
+  "strategy_failure": [
+    {
+      "trace_id": "456fbe986188490c",
+      "task_id": "micro-000-clamp_value",
+      "failure_category": "strategy_failure",
+      "outcome": "budget_stop",
+      "evidence": [
+        {
+          "kind": "budget",
+          "ref": "agent.budget_stop_reason",
+          "detail": "tool_calls exhausted: 21 > 20"
+        },
+        {
+          "kind": "repeat_pattern",
+          "ref": "agent.events_slim.tool_call_seq",
+          "detail": "same tool repeated: ['glob', 'glob', 'glob', 'glob', 'glob', 'glob']"
+        }
+      ],
+      "confidence": "medium",
+      "repair_hint": "停滞检测 + 动作多样性",
+      "source_run": "B0-fixed-harness-agent-20261013T085101Z",
+      "provider_kind": "fake",
+      "ground_truth": "strategy_failure"
+    },
+    {
+      "trace_id": "d4cbb8c2c6a04329",
+      "task_id": "micro-001-moving_average",
+      "failure_category": "strategy_failure",
+      "outcome": "budget_stop",
+      "evidence": [
+        {
+          "kind": "budget",
+          "ref": "agent.budget_stop_reason",
+          "detail": "tool_calls exhausted: 21 > 20"
+        },
+        {
+          "kind": "repeat_pattern",
+          "ref": "agent.events_slim.tool_call_seq",
+          "detail": "same tool repeated: ['glob', 'glob', 'glob', 'glob', 'glob', 'glob']"
+        }
+      ],
+      "confidence": "medium",
+      "repair_hint": "停滞检测 + 动作多样性",
+      "source_run": "B0-fixed-harness-agent-20261013T085101Z",
+      "provider_kind": "fake",
+      "ground_truth": "strategy_failure"
+    }
+  ],
+  "tool_failure": [
+    {
+      "trace_id": "9ca3d67e342845c8",
+      "task_id": "micro-000-clamp_value",
+      "failure_category": "tool_failure",
+      "outcome": "failed",
+      "evidence": [
+        {
+          "kind": "tool_error",
+          "ref": "agent.events_slim.tool_call",
+          "detail": "unknown tool name(s): ['definitely_not_a_tool']"
+        }
+      ],
+      "confidence": "high",
+      "repair_hint": "工具调用前 schema 校验",
+      "source_run": "B0-fixed-harness-agent-20261013T085020Z",
+      "provider_kind": "fake",
+      "ground_truth": "tool_failure"
+    },
+    {
+      "trace_id": "b0c1336f5abd4b1c",
+      "task_id": "micro-001-moving_average",
+      "failure_category": "tool_failure",
+      "outcome": "failed",
+      "evidence": [
+        {
+          "kind": "tool_error",
+          "ref": "agent.events_slim.tool_call",
+          "detail": "unknown tool name(s): ['definitely_not_a_tool']"
+        }
+      ],
+      "confidence": "high",
+      "repair_hint": "工具调用前 schema 校验",
+      "source_run": "B0-fixed-harness-agent-20261013T085020Z",
+      "provider_kind": "fake",
+      "ground_truth": "tool_failure"
+    }
+  ],
+  "unknown": [
+    {
+      "trace_id": "8ba678427850411b",
+      "task_id": "micro-000-clamp_value",
+      "failure_category": "unknown",
+      "outcome": "success",
+      "evidence": [],
+      "confidence": "high",
+      "repair_hint": "保持 unknown",
+      "source_run": "B0-fixed-harness-agent-20261013T092813Z",
+      "provider_kind": "fake",
+      "ground_truth": null
+    },
+    {
+      "trace_id": "ede762a3c44f490c",
+      "task_id": "micro-001-moving_average",
+      "failure_category": "unknown",
+      "outcome": "success",
+      "evidence": [],
+      "confidence": "high",
+      "repair_hint": "保持 unknown",
+      "source_run": "B0-fixed-harness-agent-20261013T092813Z",
+      "provider_kind": "fake",
+      "ground_truth": null
+    }
+  ]
+}
