@@ -1,0 +1,34 @@
+{
+  "A1_no_history": {
+    "n_eval": 18,
+    "top1_accuracy": 1.0,
+    "successful_intervention_rate": 1.0,
+    "mean_eval_reward": 0.9641762400000002,
+    "mean_eval_regret": 0.0,
+    "cum_reward_all": 54.98757600000002
+  },
+  "A2_with_history": {
+    "n_eval": 18,
+    "top1_accuracy": 0.7222222222222222,
+    "successful_intervention_rate": 1.0,
+    "mean_eval_reward": 0.9492496733333335,
+    "mean_eval_regret": 0.01492656666666666,
+    "cum_reward_all": 54.557690880000024
+  },
+  "A3_plain_outcome_reward": {
+    "n_eval": 18,
+    "top1_accuracy": 1.0,
+    "successful_intervention_rate": 1.0,
+    "mean_eval_reward": 1.0,
+    "mean_eval_regret": -0.03582375999999998,
+    "cum_reward_all": 57.0
+  },
+  "A4_causal_reward": {
+    "n_eval": 18,
+    "top1_accuracy": 1.0,
+    "successful_intervention_rate": 1.0,
+    "mean_eval_reward": 0.9641762400000002,
+    "mean_eval_regret": 0.0,
+    "cum_reward_all": 54.98757600000002
+  }
+}

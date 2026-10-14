@@ -1,0 +1,33 @@
+{
+  "seed": 20261014,
+  "rounds": 10,
+  "train_rounds": 7,
+  "lambda_cny": 100.0,
+  "results": {
+    "B0-random": {
+      "n_eval": 18,
+      "top1_accuracy": 0.05555555555555555,
+      "successful_intervention_rate": 0.3888888888888889,
+      "mean_eval_reward": 0.3699281022222222,
+      "mean_eval_regret": 0.5942481377777779,
+      "cum_reward_all": 17.078263800000002
+    },
+    "B1-rule": {
+      "n_eval": 18,
+      "top1_accuracy": 0.6666666666666666,
+      "successful_intervention_rate": 1.0,
+      "mean_eval_reward": 0.9641762400000002,
+      "mean_eval_regret": 0.0,
+      "cum_reward_all": 57.85057440000002
+    },
+    "B2-cea-v0": {
+      "n_eval": 18,
+      "top1_accuracy": 1.0,
+      "successful_intervention_rate": 1.0,
+      "mean_eval_reward": 0.9641762400000002,
+      "mean_eval_regret": 0.0,
+      "cum_reward_all": 54.98757600000002
+    }
+  },
+  "note": "rewards from replay sweep matrix (simulated interventions); not real-model evidence"
+}

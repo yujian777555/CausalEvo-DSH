@@ -1,0 +1,29 @@
+{
+  "created_by": "scripts/run_replay_sweep.py",
+  "cases": [
+    "bad_tool_blocks_write",
+    "broken_write",
+    "wrong_fix"
+  ],
+  "tasks": [
+    "micro-000-clamp_value",
+    "micro-001-moving_average"
+  ],
+  "interventions": [
+    "lib:tool_failure",
+    "lib:planning_failure",
+    "lib:verification_failure",
+    "lib:strategy_failure",
+    "lib:knowledge_failure",
+    "lib:execution_failure",
+    "lib:unknown"
+  ],
+  "rows": 42,
+  "provenance": {
+    "repo_head_sha": "97fdb5cd958d02fde1b9913d3c522888b7d90951",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-14T06:48:48.206582+00:00"
+  },
+  "honesty": "tape-transform simulated mechanisms; zero API spend; not real-model evidence"
+}

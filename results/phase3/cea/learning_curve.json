@@ -1,0 +1,1628 @@
+{
+ "B0-random": [
+  {
+   "episode_id": 0,
+   "round": 0,
+   "reward": 0.94626436,
+   "cum_reward": 0.94626436,
+   "cum_regret": 0.05373563999999997,
+   "eval": false,
+   "policy_version": "B0-random@60c35ff897e6"
+  },
+  {
+   "episode_id": 1,
+   "round": 0,
+   "reward": 0.0,
+   "cum_reward": 0.94626436,
+   "cum_regret": 1.05373564,
+   "eval": false,
+   "policy_version": "B0-random@57b7fe8537ff"
+  },
+  {
+   "episode_id": 2,
+   "round": 0,
+   "reward": 0.94626436,
+   "cum_reward": 1.89252872,
+   "cum_regret": 1.05373564,
+   "eval": false,
+   "policy_version": "B0-random@d59e35189da7"
+  },
+  {
+   "episode_id": 3,
+   "round": 0,
+   "reward": 0.0,
+   "cum_reward": 1.89252872,
+   "cum_regret": 2.0,
+   "eval": false,
+   "policy_version": "B0-random@2c0e6016af49"
+  },
+  {
+   "episode_id": 4,
+   "round": 0,
+   "reward": -0.024205320000000002,
+   "cum_reward": 1.8683234,
+   "cum_regret": 2.97046968,
+   "eval": false,
+   "policy_version": "B0-random@0d055d8749ac"
+  },
+  {
+   "episode_id": 5,
+   "round": 0,
+   "reward": 0.0,
+   "cum_reward": 1.8683234,
+   "cum_regret": 3.9167340399999997,
+   "eval": false,
+   "policy_version": "B0-random@ac959a9372ab"
+  },
+  {
+   "episode_id": 6,
+   "round": 1,
+   "reward": 0.0,
+   "cum_reward": 1.8683234,
+   "cum_regret": 4.91673404,
+   "eval": false,
+   "policy_version": "B0-random@bd08ff5e04c3"
+  },
+  {
+   "episode_id": 7,
+   "round": 1,
+   "reward": 0.0,
+   "cum_reward": 1.8683234,
+   "cum_regret": 5.91673404,
+   "eval": false,
+   "policy_version": "B0-random@95e4041a5d0c"
+  },
+  {
+   "episode_id": 8,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 2.81458776,
+   "cum_regret": 5.91673404,
+   "eval": false,
+   "policy_version": "B0-random@424458cc3a9f"
+  },
+  {
+   "episode_id": 9,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 3.76085212,
+   "cum_regret": 5.91673404,
+   "eval": false,
+   "policy_version": "B0-random@bd7f6c656aa6"
+  },
+  {
+   "episode_id": 10,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 4.70711648,
+   "cum_regret": 5.91673404,
+   "eval": false,
+   "policy_version": "B0-random@9d0fe8dbcddd"
+  },
+  {
+   "episode_id": 11,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 5.65338084,
+   "cum_regret": 5.91673404,
+   "eval": false,
+   "policy_version": "B0-random@2aeb95282b27"
+  },
+  {
+   "episode_id": 12,
+   "round": 2,
+   "reward": 0.0,
+   "cum_reward": 5.65338084,
+   "cum_regret": 6.91673404,
+   "eval": false,
+   "policy_version": "B0-random@52843dcafcbe"
+  },
+  {
+   "episode_id": 13,
+   "round": 2,
+   "reward": 0.0,
+   "cum_reward": 5.65338084,
+   "cum_regret": 7.91673404,
+   "eval": false,
+   "policy_version": "B0-random@4fb6efa14521"
+  },
+  {
+   "episode_id": 14,
+   "round": 2,
+   "reward": 0.0,
+   "cum_reward": 5.65338084,
+   "cum_regret": 8.8629984,
+   "eval": false,
+   "policy_version": "B0-random@f0004c9034f7"
+  },
+  {
+   "episode_id": 15,
+   "round": 2,
+   "reward": 0.0,
+   "cum_reward": 5.65338084,
+   "cum_regret": 9.809262760000001,
+   "eval": false,
+   "policy_version": "B0-random@ada71eb6743e"
+  },
+  {
+   "episode_id": 16,
+   "round": 2,
+   "reward": 0.0,
+   "cum_reward": 5.65338084,
+   "cum_regret": 10.755527120000002,
+   "eval": false,
+   "policy_version": "B0-random@d4f8d6ec051b"
+  },
+  {
+   "episode_id": 17,
+   "round": 2,
+   "reward": 0.0,
+   "cum_reward": 5.65338084,
+   "cum_regret": 11.701791480000002,
+   "eval": false,
+   "policy_version": "B0-random@0d765f7372f7"
+  },
+  {
+   "episode_id": 18,
+   "round": 3,
+   "reward": 0.0,
+   "cum_reward": 5.65338084,
+   "cum_regret": 12.701791480000002,
+   "eval": false,
+   "policy_version": "B0-random@4c127917da44"
+  },
+  {
+   "episode_id": 19,
+   "round": 3,
+   "reward": 0.94626436,
+   "cum_reward": 6.599645199999999,
+   "cum_regret": 12.755527120000002,
+   "eval": false,
+   "policy_version": "B0-random@d957bc46b4c8"
+  },
+  {
+   "episode_id": 20,
+   "round": 3,
+   "reward": -0.024205320000000002,
+   "cum_reward": 6.575439879999999,
+   "cum_regret": 13.725996800000003,
+   "eval": false,
+   "policy_version": "B0-random@9fb730b2a599"
+  },
+  {
+   "episode_id": 21,
+   "round": 3,
+   "reward": 0.0,
+   "cum_reward": 6.575439879999999,
+   "cum_regret": 14.672261160000003,
+   "eval": false,
+   "policy_version": "B0-random@e4aab3004a23"
+  },
+  {
+   "episode_id": 22,
+   "round": 3,
+   "reward": 0.0,
+   "cum_reward": 6.575439879999999,
+   "cum_regret": 15.618525520000004,
+   "eval": false,
+   "policy_version": "B0-random@0ec8c83b4499"
+  },
+  {
+   "episode_id": 23,
+   "round": 3,
+   "reward": 0.0,
+   "cum_reward": 6.575439879999999,
+   "cum_regret": 16.564789880000003,
+   "eval": false,
+   "policy_version": "B0-random@69aa16f8c2a5"
+  },
+  {
+   "episode_id": 24,
+   "round": 4,
+   "reward": 0.97579468,
+   "cum_reward": 7.551234559999999,
+   "cum_regret": 16.588995200000003,
+   "eval": false,
+   "policy_version": "B0-random@49257259522d"
+  },
+  {
+   "episode_id": 25,
+   "round": 4,
+   "reward": 0.94626436,
+   "cum_reward": 8.49749892,
+   "cum_regret": 16.642730840000002,
+   "eval": false,
+   "policy_version": "B0-random@db6b5b3e7745"
+  },
+  {
+   "episode_id": 26,
+   "round": 4,
+   "reward": 0.0,
+   "cum_reward": 8.49749892,
+   "cum_regret": 17.588995200000003,
+   "eval": false,
+   "policy_version": "B0-random@14f8e444bbea"
+  },
+  {
+   "episode_id": 27,
+   "round": 4,
+   "reward": 0.0,
+   "cum_reward": 8.49749892,
+   "cum_regret": 18.535259560000004,
+   "eval": false,
+   "policy_version": "B0-random@1490edad96a4"
+  },
+  {
+   "episode_id": 28,
+   "round": 4,
+   "reward": 0.0,
+   "cum_reward": 8.49749892,
+   "cum_regret": 19.481523920000004,
+   "eval": false,
+   "policy_version": "B0-random@2174d5d48232"
+  },
+  {
+   "episode_id": 29,
+   "round": 4,
+   "reward": 0.0,
+   "cum_reward": 8.49749892,
+   "cum_regret": 20.427788280000005,
+   "eval": false,
+   "policy_version": "B0-random@3af1e8a0f5e3"
+  },
+  {
+   "episode_id": 30,
+   "round": 5,
+   "reward": 1.0,
+   "cum_reward": 9.49749892,
+   "cum_regret": 20.427788280000005,
+   "eval": false,
+   "policy_version": "B0-random@ec9d2bc4941f"
+  },
+  {
+   "episode_id": 31,
+   "round": 5,
+   "reward": 0.0,
+   "cum_reward": 9.49749892,
+   "cum_regret": 21.427788280000005,
+   "eval": false,
+   "policy_version": "B0-random@1a36789d25be"
+  },
+  {
+   "episode_id": 32,
+   "round": 5,
+   "reward": 0.0,
+   "cum_reward": 9.49749892,
+   "cum_regret": 22.374052640000006,
+   "eval": false,
+   "policy_version": "B0-random@fe884da256c5"
+  },
+  {
+   "episode_id": 33,
+   "round": 5,
+   "reward": 0.94626436,
+   "cum_reward": 10.44376328,
+   "cum_regret": 22.374052640000006,
+   "eval": false,
+   "policy_version": "B0-random@e1ea351112b2"
+  },
+  {
+   "episode_id": 34,
+   "round": 5,
+   "reward": 0.0,
+   "cum_reward": 10.44376328,
+   "cum_regret": 23.320317000000006,
+   "eval": false,
+   "policy_version": "B0-random@4650187ee632"
+  },
+  {
+   "episode_id": 35,
+   "round": 5,
+   "reward": -0.024205320000000002,
+   "cum_reward": 10.41955796,
+   "cum_regret": 24.290786680000007,
+   "eval": false,
+   "policy_version": "B0-random@6af9c9253483"
+  },
+  {
+   "episode_id": 36,
+   "round": 6,
+   "reward": 0.0,
+   "cum_reward": 10.41955796,
+   "cum_regret": 25.290786680000007,
+   "eval": false,
+   "policy_version": "B0-random@625e2479ec23"
+  },
+  {
+   "episode_id": 37,
+   "round": 6,
+   "reward": 0.0,
+   "cum_reward": 10.41955796,
+   "cum_regret": 26.290786680000007,
+   "eval": false,
+   "policy_version": "B0-random@4a2b3ed2116c"
+  },
+  {
+   "episode_id": 38,
+   "round": 6,
+   "reward": 0.0,
+   "cum_reward": 10.41955796,
+   "cum_regret": 27.237051040000008,
+   "eval": false,
+   "policy_version": "B0-random@56601e673ae5"
+  },
+  {
+   "episode_id": 39,
+   "round": 6,
+   "reward": 0.0,
+   "cum_reward": 10.41955796,
+   "cum_regret": 28.18331540000001,
+   "eval": false,
+   "policy_version": "B0-random@cd5d9300f0ed"
+  },
+  {
+   "episode_id": 40,
+   "round": 6,
+   "reward": 0.0,
+   "cum_reward": 10.41955796,
+   "cum_regret": 29.12957976000001,
+   "eval": false,
+   "policy_version": "B0-random@f0ace89bde46"
+  },
+  {
+   "episode_id": 41,
+   "round": 6,
+   "reward": 0.0,
+   "cum_reward": 10.41955796,
+   "cum_regret": 30.07584412000001,
+   "eval": false,
+   "policy_version": "B0-random@df6a92c1be62"
+  },
+  {
+   "episode_id": 42,
+   "round": 7,
+   "reward": 0.97579468,
+   "cum_reward": 11.39535264,
+   "cum_regret": 30.10004944000001,
+   "eval": true,
+   "policy_version": "B0-random@cfa79ae8f294"
+  },
+  {
+   "episode_id": 43,
+   "round": 7,
+   "reward": 0.0,
+   "cum_reward": 11.39535264,
+   "cum_regret": 31.10004944000001,
+   "eval": true,
+   "policy_version": "B0-random@ff9121700d43"
+  },
+  {
+   "episode_id": 44,
+   "round": 7,
+   "reward": 0.0,
+   "cum_reward": 11.39535264,
+   "cum_regret": 32.04631380000001,
+   "eval": true,
+   "policy_version": "B0-random@9f84aba780fb"
+  },
+  {
+   "episode_id": 45,
+   "round": 7,
+   "reward": 0.0,
+   "cum_reward": 11.39535264,
+   "cum_regret": 32.99257816000001,
+   "eval": true,
+   "policy_version": "B0-random@81c5e5782770"
+  },
+  {
+   "episode_id": 46,
+   "round": 7,
+   "reward": 0.94626436,
+   "cum_reward": 12.341617000000001,
+   "cum_regret": 32.99257816000001,
+   "eval": true,
+   "policy_version": "B0-random@62f801096081"
+  },
+  {
+   "episode_id": 47,
+   "round": 7,
+   "reward": -0.024205320000000002,
+   "cum_reward": 12.317411680000001,
+   "cum_regret": 33.96304784000001,
+   "eval": true,
+   "policy_version": "B0-random@d377775790f9"
+  },
+  {
+   "episode_id": 48,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 13.263676040000002,
+   "cum_regret": 34.01678348000001,
+   "eval": true,
+   "policy_version": "B0-random@3f16b244bcfa"
+  },
+  {
+   "episode_id": 49,
+   "round": 8,
+   "reward": 0.0,
+   "cum_reward": 13.263676040000002,
+   "cum_regret": 35.01678348000001,
+   "eval": true,
+   "policy_version": "B0-random@5cd367b1e350"
+  },
+  {
+   "episode_id": 50,
+   "round": 8,
+   "reward": 0.0,
+   "cum_reward": 13.263676040000002,
+   "cum_regret": 35.96304784000001,
+   "eval": true,
+   "policy_version": "B0-random@ab8a0b632000"
+  },
+  {
+   "episode_id": 51,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 14.209940400000002,
+   "cum_regret": 35.96304784000001,
+   "eval": true,
+   "policy_version": "B0-random@136d1a0c9747"
+  },
+  {
+   "episode_id": 52,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 15.156204760000003,
+   "cum_regret": 35.96304784000001,
+   "eval": true,
+   "policy_version": "B0-random@ed34158d13fe"
+  },
+  {
+   "episode_id": 53,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 16.102469120000002,
+   "cum_regret": 35.96304784000001,
+   "eval": true,
+   "policy_version": "B0-random@8bc6687938b8"
+  },
+  {
+   "episode_id": 54,
+   "round": 9,
+   "reward": 0.0,
+   "cum_reward": 16.102469120000002,
+   "cum_regret": 36.96304784000001,
+   "eval": true,
+   "policy_version": "B0-random@59a3fcba771d"
+  },
+  {
+   "episode_id": 55,
+   "round": 9,
+   "reward": 0.97579468,
+   "cum_reward": 17.078263800000002,
+   "cum_regret": 36.98725316000001,
+   "eval": true,
+   "policy_version": "B0-random@b19e30a910c4"
+  },
+  {
+   "episode_id": 56,
+   "round": 9,
+   "reward": 0.0,
+   "cum_reward": 17.078263800000002,
+   "cum_regret": 37.93351752000001,
+   "eval": true,
+   "policy_version": "B0-random@427862566399"
+  },
+  {
+   "episode_id": 57,
+   "round": 9,
+   "reward": 0.0,
+   "cum_reward": 17.078263800000002,
+   "cum_regret": 38.87978188000001,
+   "eval": true,
+   "policy_version": "B0-random@e157ce3021a4"
+  },
+  {
+   "episode_id": 58,
+   "round": 9,
+   "reward": 0.0,
+   "cum_reward": 17.078263800000002,
+   "cum_regret": 39.82604624000001,
+   "eval": true,
+   "policy_version": "B0-random@effde07f78b1"
+  },
+  {
+   "episode_id": 59,
+   "round": 9,
+   "reward": 0.0,
+   "cum_reward": 17.078263800000002,
+   "cum_regret": 40.77231060000001,
+   "eval": true,
+   "policy_version": "B0-random@38227fdfb8a9"
+  }
+ ],
+ "B1-rule": [
+  {
+   "episode_id": 0,
+   "round": 0,
+   "reward": 1.0,
+   "cum_reward": 1.0,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 1,
+   "round": 0,
+   "reward": 1.0,
+   "cum_reward": 2.0,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 2,
+   "round": 0,
+   "reward": 0.94626436,
+   "cum_reward": 2.94626436,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 3,
+   "round": 0,
+   "reward": 0.94626436,
+   "cum_reward": 3.8925287199999996,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 4,
+   "round": 0,
+   "reward": 0.94626436,
+   "cum_reward": 4.838793079999999,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 5,
+   "round": 0,
+   "reward": 0.94626436,
+   "cum_reward": 5.785057439999999,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 6,
+   "round": 1,
+   "reward": 1.0,
+   "cum_reward": 6.785057439999999,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 7,
+   "round": 1,
+   "reward": 1.0,
+   "cum_reward": 7.785057439999999,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 8,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 8.7313218,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 9,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 9.67758616,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 10,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 10.623850520000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 11,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 11.570114880000002,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 12,
+   "round": 2,
+   "reward": 1.0,
+   "cum_reward": 12.570114880000002,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 13,
+   "round": 2,
+   "reward": 1.0,
+   "cum_reward": 13.570114880000002,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 14,
+   "round": 2,
+   "reward": 0.94626436,
+   "cum_reward": 14.516379240000003,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 15,
+   "round": 2,
+   "reward": 0.94626436,
+   "cum_reward": 15.462643600000003,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 16,
+   "round": 2,
+   "reward": 0.94626436,
+   "cum_reward": 16.408907960000004,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 17,
+   "round": 2,
+   "reward": 0.94626436,
+   "cum_reward": 17.355172320000005,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 18,
+   "round": 3,
+   "reward": 1.0,
+   "cum_reward": 18.355172320000005,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 19,
+   "round": 3,
+   "reward": 1.0,
+   "cum_reward": 19.355172320000005,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 20,
+   "round": 3,
+   "reward": 0.94626436,
+   "cum_reward": 20.301436680000005,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 21,
+   "round": 3,
+   "reward": 0.94626436,
+   "cum_reward": 21.247701040000006,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 22,
+   "round": 3,
+   "reward": 0.94626436,
+   "cum_reward": 22.193965400000007,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 23,
+   "round": 3,
+   "reward": 0.94626436,
+   "cum_reward": 23.140229760000008,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 24,
+   "round": 4,
+   "reward": 1.0,
+   "cum_reward": 24.140229760000008,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 25,
+   "round": 4,
+   "reward": 1.0,
+   "cum_reward": 25.140229760000008,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 26,
+   "round": 4,
+   "reward": 0.94626436,
+   "cum_reward": 26.086494120000008,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 27,
+   "round": 4,
+   "reward": 0.94626436,
+   "cum_reward": 27.03275848000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 28,
+   "round": 4,
+   "reward": 0.94626436,
+   "cum_reward": 27.97902284000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 29,
+   "round": 4,
+   "reward": 0.94626436,
+   "cum_reward": 28.92528720000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 30,
+   "round": 5,
+   "reward": 1.0,
+   "cum_reward": 29.92528720000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 31,
+   "round": 5,
+   "reward": 1.0,
+   "cum_reward": 30.92528720000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 32,
+   "round": 5,
+   "reward": 0.94626436,
+   "cum_reward": 31.87155156000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 33,
+   "round": 5,
+   "reward": 0.94626436,
+   "cum_reward": 32.81781592000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 34,
+   "round": 5,
+   "reward": 0.94626436,
+   "cum_reward": 33.76408028000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 35,
+   "round": 5,
+   "reward": 0.94626436,
+   "cum_reward": 34.71034464000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 36,
+   "round": 6,
+   "reward": 1.0,
+   "cum_reward": 35.71034464000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 37,
+   "round": 6,
+   "reward": 1.0,
+   "cum_reward": 36.71034464000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 38,
+   "round": 6,
+   "reward": 0.94626436,
+   "cum_reward": 37.65660900000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 39,
+   "round": 6,
+   "reward": 0.94626436,
+   "cum_reward": 38.60287336000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 40,
+   "round": 6,
+   "reward": 0.94626436,
+   "cum_reward": 39.54913772000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 41,
+   "round": 6,
+   "reward": 0.94626436,
+   "cum_reward": 40.49540208000001,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 42,
+   "round": 7,
+   "reward": 1.0,
+   "cum_reward": 41.49540208000001,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 43,
+   "round": 7,
+   "reward": 1.0,
+   "cum_reward": 42.49540208000001,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 44,
+   "round": 7,
+   "reward": 0.94626436,
+   "cum_reward": 43.44166644000001,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 45,
+   "round": 7,
+   "reward": 0.94626436,
+   "cum_reward": 44.387930800000014,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 46,
+   "round": 7,
+   "reward": 0.94626436,
+   "cum_reward": 45.334195160000014,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 47,
+   "round": 7,
+   "reward": 0.94626436,
+   "cum_reward": 46.280459520000015,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 48,
+   "round": 8,
+   "reward": 1.0,
+   "cum_reward": 47.280459520000015,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 49,
+   "round": 8,
+   "reward": 1.0,
+   "cum_reward": 48.280459520000015,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 50,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 49.226723880000016,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 51,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 50.172988240000016,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 52,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 51.11925260000002,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 53,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 52.06551696000002,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 54,
+   "round": 9,
+   "reward": 1.0,
+   "cum_reward": 53.06551696000002,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 55,
+   "round": 9,
+   "reward": 1.0,
+   "cum_reward": 54.06551696000002,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 56,
+   "round": 9,
+   "reward": 0.94626436,
+   "cum_reward": 55.01178132000002,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 57,
+   "round": 9,
+   "reward": 0.94626436,
+   "cum_reward": 55.95804568000002,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 58,
+   "round": 9,
+   "reward": 0.94626436,
+   "cum_reward": 56.90431004000002,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  },
+  {
+   "episode_id": 59,
+   "round": 9,
+   "reward": 0.94626436,
+   "cum_reward": 57.85057440000002,
+   "cum_regret": 0.0,
+   "eval": true,
+   "policy_version": "B1-rule@c47c75d52023"
+  }
+ ],
+ "B2-cea-v0": [
+  {
+   "episode_id": 0,
+   "round": 0,
+   "reward": 1.0,
+   "cum_reward": 1.0,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@059655775315"
+  },
+  {
+   "episode_id": 1,
+   "round": 0,
+   "reward": 1.0,
+   "cum_reward": 2.0,
+   "cum_regret": 0.0,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@e165f480fbf7"
+  },
+  {
+   "episode_id": 2,
+   "round": 0,
+   "reward": 0.0,
+   "cum_reward": 2.0,
+   "cum_regret": 0.94626436,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@45f77bd95ed2"
+  },
+  {
+   "episode_id": 3,
+   "round": 0,
+   "reward": -0.024205320000000002,
+   "cum_reward": 1.97579468,
+   "cum_regret": 1.9167340400000001,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@45f77bd95ed2"
+  },
+  {
+   "episode_id": 4,
+   "round": 0,
+   "reward": 0.0,
+   "cum_reward": 1.97579468,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@fca68f4517d1"
+  },
+  {
+   "episode_id": 5,
+   "round": 0,
+   "reward": 0.94626436,
+   "cum_reward": 2.9220590399999997,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@fca68f4517d1"
+  },
+  {
+   "episode_id": 6,
+   "round": 1,
+   "reward": 1.0,
+   "cum_reward": 3.9220590399999997,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@9da44440f673"
+  },
+  {
+   "episode_id": 7,
+   "round": 1,
+   "reward": 1.0,
+   "cum_reward": 4.92205904,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@0df3d550515a"
+  },
+  {
+   "episode_id": 8,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 5.8683233999999995,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@341af86906ad"
+  },
+  {
+   "episode_id": 9,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 6.814587759999999,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@29ada1df628c"
+  },
+  {
+   "episode_id": 10,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 7.760852119999999,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@90002fb566b5"
+  },
+  {
+   "episode_id": 11,
+   "round": 1,
+   "reward": 0.94626436,
+   "cum_reward": 8.70711648,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@41163cc7d8ed"
+  },
+  {
+   "episode_id": 12,
+   "round": 2,
+   "reward": 1.0,
+   "cum_reward": 9.70711648,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@8ed90a11246f"
+  },
+  {
+   "episode_id": 13,
+   "round": 2,
+   "reward": 1.0,
+   "cum_reward": 10.70711648,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@3cba706b5a18"
+  },
+  {
+   "episode_id": 14,
+   "round": 2,
+   "reward": 0.94626436,
+   "cum_reward": 11.65338084,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@12abbd2eacba"
+  },
+  {
+   "episode_id": 15,
+   "round": 2,
+   "reward": 0.94626436,
+   "cum_reward": 12.599645200000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@3310ef8c996a"
+  },
+  {
+   "episode_id": 16,
+   "round": 2,
+   "reward": 0.94626436,
+   "cum_reward": 13.545909560000002,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@0d7ebb0d66c9"
+  },
+  {
+   "episode_id": 17,
+   "round": 2,
+   "reward": 0.94626436,
+   "cum_reward": 14.492173920000003,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@45ec31969ad3"
+  },
+  {
+   "episode_id": 18,
+   "round": 3,
+   "reward": 1.0,
+   "cum_reward": 15.492173920000003,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@e7477a611c89"
+  },
+  {
+   "episode_id": 19,
+   "round": 3,
+   "reward": 1.0,
+   "cum_reward": 16.492173920000003,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@f438969487a7"
+  },
+  {
+   "episode_id": 20,
+   "round": 3,
+   "reward": 0.94626436,
+   "cum_reward": 17.438438280000003,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@df5f91b92760"
+  },
+  {
+   "episode_id": 21,
+   "round": 3,
+   "reward": 0.94626436,
+   "cum_reward": 18.384702640000004,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@3eeee7ffc3dc"
+  },
+  {
+   "episode_id": 22,
+   "round": 3,
+   "reward": 0.94626436,
+   "cum_reward": 19.330967000000005,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@b65e9019ada0"
+  },
+  {
+   "episode_id": 23,
+   "round": 3,
+   "reward": 0.94626436,
+   "cum_reward": 20.277231360000005,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@056926b4c693"
+  },
+  {
+   "episode_id": 24,
+   "round": 4,
+   "reward": 1.0,
+   "cum_reward": 21.277231360000005,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@6c74e0150f88"
+  },
+  {
+   "episode_id": 25,
+   "round": 4,
+   "reward": 1.0,
+   "cum_reward": 22.277231360000005,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@e74f8122b9a4"
+  },
+  {
+   "episode_id": 26,
+   "round": 4,
+   "reward": 0.94626436,
+   "cum_reward": 23.223495720000006,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@1d2377499a50"
+  },
+  {
+   "episode_id": 27,
+   "round": 4,
+   "reward": 0.94626436,
+   "cum_reward": 24.169760080000007,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@2be1fe1529f4"
+  },
+  {
+   "episode_id": 28,
+   "round": 4,
+   "reward": 0.94626436,
+   "cum_reward": 25.116024440000007,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@abda3d64c5f7"
+  },
+  {
+   "episode_id": 29,
+   "round": 4,
+   "reward": 0.94626436,
+   "cum_reward": 26.062288800000008,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@7073e0f32c40"
+  },
+  {
+   "episode_id": 30,
+   "round": 5,
+   "reward": 1.0,
+   "cum_reward": 27.062288800000008,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@ae54d4eca14b"
+  },
+  {
+   "episode_id": 31,
+   "round": 5,
+   "reward": 1.0,
+   "cum_reward": 28.062288800000008,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@51f1561ea49f"
+  },
+  {
+   "episode_id": 32,
+   "round": 5,
+   "reward": 0.94626436,
+   "cum_reward": 29.00855316000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@32eab6e74583"
+  },
+  {
+   "episode_id": 33,
+   "round": 5,
+   "reward": 0.94626436,
+   "cum_reward": 29.95481752000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@0b051f51d2cf"
+  },
+  {
+   "episode_id": 34,
+   "round": 5,
+   "reward": 0.94626436,
+   "cum_reward": 30.90108188000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@0209276740fe"
+  },
+  {
+   "episode_id": 35,
+   "round": 5,
+   "reward": 0.94626436,
+   "cum_reward": 31.84734624000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@8d84fabf7a20"
+  },
+  {
+   "episode_id": 36,
+   "round": 6,
+   "reward": 1.0,
+   "cum_reward": 32.84734624000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@7fae2dda40d7"
+  },
+  {
+   "episode_id": 37,
+   "round": 6,
+   "reward": 1.0,
+   "cum_reward": 33.84734624000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@e7e4a40087b7"
+  },
+  {
+   "episode_id": 38,
+   "round": 6,
+   "reward": 0.94626436,
+   "cum_reward": 34.79361060000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@859fec9c7133"
+  },
+  {
+   "episode_id": 39,
+   "round": 6,
+   "reward": 0.94626436,
+   "cum_reward": 35.73987496000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@cbbc23f854a3"
+  },
+  {
+   "episode_id": 40,
+   "round": 6,
+   "reward": 0.94626436,
+   "cum_reward": 36.68613932000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@661504ad604e"
+  },
+  {
+   "episode_id": 41,
+   "round": 6,
+   "reward": 0.94626436,
+   "cum_reward": 37.63240368000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": false,
+   "policy_version": "B2-cea-v0-linucb@eab66546a07b"
+  },
+  {
+   "episode_id": 42,
+   "round": 7,
+   "reward": 1.0,
+   "cum_reward": 38.63240368000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 43,
+   "round": 7,
+   "reward": 1.0,
+   "cum_reward": 39.63240368000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 44,
+   "round": 7,
+   "reward": 0.94626436,
+   "cum_reward": 40.57866804000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 45,
+   "round": 7,
+   "reward": 0.94626436,
+   "cum_reward": 41.52493240000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 46,
+   "round": 7,
+   "reward": 0.94626436,
+   "cum_reward": 42.47119676000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 47,
+   "round": 7,
+   "reward": 0.94626436,
+   "cum_reward": 43.41746112000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 48,
+   "round": 8,
+   "reward": 1.0,
+   "cum_reward": 44.41746112000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 49,
+   "round": 8,
+   "reward": 1.0,
+   "cum_reward": 45.41746112000001,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 50,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 46.363725480000014,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 51,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 47.309989840000014,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 52,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 48.256254200000015,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 53,
+   "round": 8,
+   "reward": 0.94626436,
+   "cum_reward": 49.202518560000016,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 54,
+   "round": 9,
+   "reward": 1.0,
+   "cum_reward": 50.202518560000016,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 55,
+   "round": 9,
+   "reward": 1.0,
+   "cum_reward": 51.202518560000016,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 56,
+   "round": 9,
+   "reward": 0.94626436,
+   "cum_reward": 52.148782920000016,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 57,
+   "round": 9,
+   "reward": 0.94626436,
+   "cum_reward": 53.09504728000002,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 58,
+   "round": 9,
+   "reward": 0.94626436,
+   "cum_reward": 54.04131164000002,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  },
+  {
+   "episode_id": 59,
+   "round": 9,
+   "reward": 0.94626436,
+   "cum_reward": 54.98757600000002,
+   "cum_regret": 2.8629984000000004,
+   "eval": true,
+   "policy_version": "B2-cea-v0-linucb@08448c5acb16"
+  }
+ ]
+}

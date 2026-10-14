@@ -1,0 +1,22 @@
+{
+  "algorithm": "CEA-v0 disjoint LinUCB",
+  "alpha": 0.5,
+  "actions": [
+    "lib:tool_failure",
+    "lib:planning_failure",
+    "lib:verification_failure",
+    "lib:strategy_failure",
+    "lib:knowledge_failure",
+    "lib:execution_failure",
+    "lib:unknown"
+  ],
+  "state_layout": "onehot(failure_type=7) + prompt_chars/2000 + n_visible/10 (+history rates in A2)",
+  "reward": "success_delta - lambda*max(0,cost_delta_cny)",
+  "seed": 20261014,
+  "provenance": {
+    "repo_head_sha": "97fdb5cd958d02fde1b9913d3c522888b7d90951",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": null,
+    "recorded_utc": "2026-10-14T09:22:44.774117+00:00"
+  }
+}
