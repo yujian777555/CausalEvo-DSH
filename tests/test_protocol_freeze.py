@@ -168,3 +168,20 @@ def test_summary_metrics_schema_freeze(frozen_noop_run):
     assert set(frozen_noop_run["summary"]) == EXPECTED_SUMMARY_KEYS
     # The aggregator itself is pinned to the same schema on raw trace dicts.
     assert set(summarize_traces(frozen_noop_run["trace_rows"])) == EXPECTED_SUMMARY_KEYS
+
+
+def test_microtasks_relabeled_engineering_regression():
+    """P1.6: the 26 microtasks are engineering regression, never paper eval."""
+    registry = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
+    micro = registry["microtasks"]
+    assert micro["role"] == "engineering_regression"
+    assert micro["paper_eval_eligible"] is False
+
+
+def test_holdout_manifest_hashes_only():
+    path = REPO_ROOT / "benchmarks" / "holdout_manifest.json"
+    m = json.loads(path.read_text(encoding="utf-8"))
+    assert m["kind"] == "private-holdout"
+    text = path.read_text(encoding="utf-8")
+    assert "def " not in text, "holdout manifest must not contain task code"
+    assert m["count"] == 3

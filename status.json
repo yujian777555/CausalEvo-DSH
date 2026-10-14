@@ -3,9 +3,9 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P1.5",
-  "previous_plan_id": "CE-DSH-P1-R2",
-  "phase": "Phase 1.5",
+  "plan_id": "CE-DSH-P1.6",
+  "previous_plan_id": "CE-DSH-P1.5",
+  "phase": "Phase 1.6",
   "phase_status": "READY_FOR_REVIEW",
   "planner_review": "PENDING",
   "next_actor": "GPT-Planner",
@@ -16,22 +16,20 @@
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P1-R1-final.md",
   "executor_report_path": "planner/executor_report.md",
-  "fix_report_path": "docs/PHASE1_LIVE_READINESS_REPORT.md",
+  "fix_report_path": "docs/PHASE1_6_BENCHMARK_FREEZE.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "ac6c83c97f860797338dcb844b95d3fb821f3c25",
-    "github_commit_verified": true,
+    "latest_executor_commit": "PENDING_FINAL_COMMIT",
+    "github_commit_verified": false,
     "executor_reports_local_clean": true,
     "note": "verified via git ls-remote after push; housekeeping commit on top records this"
   },
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 193,
+    "passed": 202,
     "failed": 0,
     "skipped": 0,
-    "security_battery_passed": 41,
-    "includes_docker_adversarial": true,
     "planner_reran": false
   },
   "live_api": {
@@ -82,22 +80,15 @@
     "no-tools runtime evidence produced on executor machine only"
   ],
   "evidence": [
-    "docs/PHASE1_LIVE_READINESS_REPORT.md",
-    "docs/PHASE1_EXPERIMENT_PROTOCOL.md",
-    "docs/PHASE1_STATISTICAL_PLAN.md",
-    "results/phase1/p15/manifest.json",
-    "results/phase1/p15/security_report.json",
-    "results/phase1/p15/protocol_check.json",
-    "src/causalevo/eval/provider.py",
-    "src/causalevo/eval/networks.py",
-    "src/causalevo/eval/tape_server.py",
-    "src/causalevo/eval/harness_agent.py",
-    "docker/dsh-agent/Dockerfile",
-    "tests/test_container_security_v2.py",
-    "tests/test_live_guard.py",
+    "docs/PHASE1_6_BENCHMARK_FREEZE.md",
+    "docs/PHASE1_6_EVAL_PROTOCOL.md",
+    "benchmarks/holdout_manifest.json",
+    "src/causalevo/eval/holdout.py",
+    "scripts/create_holdout.py",
+    "tests/test_holdout.py",
     "tests/test_protocol_freeze.py"
   ],
-  "notes": "Phase 1.5 gate complete offline: container hardening v2, live double-gate, frozen protocol+stats plan. Verdict NOT READY solely on unverified external benchmark availability. Zero live spend.",
+  "notes": "Phase 1.6 benchmark freeze complete. Microtasks relabeled engineering regression; SWE-bench Verified acquirable with pinned revision+digests; private holdout outside git. Zero live spend. Awaiting Planner review.",
   "next_goal": "Phase1 R2 offline Harness real-tool bridge, FS read isolation, run-time budget and repeat-dedup gate, no paid API",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
@@ -168,5 +159,13 @@
     "live_calls_made": 0,
     "live_spend_cny": 0,
     "artifacts": "results/phase1/p15/"
+  },
+  "phase1_6": {
+    "microtasks_role": "engineering_regression (paper_eval_eligible=false)",
+    "swebench_freeze": "VERIFIED acquirable: HF revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a; 4 image digests pinned; 3 pilot instances field-verified; oracle smoke still pending (no window)",
+    "private_holdout": "3 tasks outside git; hashes in benchmarks/holdout_manifest.json; agent-inaccessible; judge-readable",
+    "eval_protocol": "docs/PHASE1_6_EVAL_PROTOCOL.md frozen 2026-10-14",
+    "live_calls_made": 0,
+    "live_spend_cny": 0
   }
 }

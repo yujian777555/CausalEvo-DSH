@@ -1,0 +1,41 @@
+{
+  "kind": "private-holdout",
+  "content_policy": "hashes only; task content lives outside git and is never mounted into the agent container",
+  "store_hint": "CE_DSH_HOLDOUT_DIR or sibling ../CausalEvo-DSH-holdout",
+  "count": 3,
+  "tasks": [
+    {
+      "task_id": "holdout-001-clamp01",
+      "split": "holdout",
+      "function": "clamp01",
+      "hashes": {
+        "workspace/solution.py": "a58c52cee5a888f9c0c1ad58e7955af48a7aa2c49f780af6d636d0d0fb90b074",
+        "visible_tests.py": "6384cabde888e1bd5f18edf4d74031e7917c3addd7a8d45491809e00aed672db",
+        "sealed/sealed_tests.py": "fc8e20abf8fcffa0d9586f249aaafe6c66b6b10051a1e8cf75525fde87d10ed2",
+        "reference/solution_fixed.py": "e24e8e4b62214174604bef12ccd8a21cb09226b04e2ad6316034678b927f5218"
+      }
+    },
+    {
+      "task_id": "holdout-002-count_consonants",
+      "split": "holdout",
+      "function": "count_consonants",
+      "hashes": {
+        "workspace/solution.py": "18c7f0ae43b4ef5f34893b9d3841224990e4c14f7dbbf58d354d26da9814183a",
+        "visible_tests.py": "50605713898bdf02b0e42a853e7161575b7fbfd25ff7097a37b280ac4e742935",
+        "sealed/sealed_tests.py": "f04d14667860869125747ec15e205dedc0dee1c531873a07d91443c7ec92e89d",
+        "reference/solution_fixed.py": "56d4507bb2a7f7f0a3ed6b0c3387efabb21fc07f0011b875e9d635f9074e2ed2"
+      }
+    },
+    {
+      "task_id": "holdout-003-lcm",
+      "split": "holdout",
+      "function": "lcm",
+      "hashes": {
+        "workspace/solution.py": "9de72d36c015ce2e714001adb55c984b6e0db05090d6bef8989df79b608ffd53",
+        "visible_tests.py": "9e670a6e4e7c68f7f4c1122ee59aa680d542d91b2e02c90e07da85db13ce3878",
+        "sealed/sealed_tests.py": "798b53da25174f29d524b57348d85de3be806fc6ae92476dc0d44aab31fccfc5",
+        "reference/solution_fixed.py": "75fb079a314b3192f50af40b04d6e51a9aa76ce0d9de96f30ec78f4776da9128"
+      }
+    }
+  ]
+}

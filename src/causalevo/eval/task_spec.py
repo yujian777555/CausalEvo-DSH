@@ -7,7 +7,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-VALID_SPLITS = ("train", "dev", "sealed_test")
+VALID_SPLITS = ("train", "dev", "sealed_test", "holdout")
 
 
 class TaskSpecError(ValueError):

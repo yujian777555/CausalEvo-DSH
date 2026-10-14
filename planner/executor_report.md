@@ -1,37 +1,24 @@
-# Executor Report — Phase 1.5 Live Readiness Gate（CE-DSH-P1.5）
+# Executor Report — Phase 1.6 Benchmark Freeze Gate（CE-DSH-P1.6）
 
-日期：2026-10-14。Executor：Kimi。本轮完全离线，**live API 调用 0 次、费用 ¥0**；Phase 0 / Phase 1 R1 / R2 冻结数据未触碰。
+日期：2026-10-14。Executor：Kimi。本轮零 DeepSeek API 调用、零费用；Phase 0 / 1 R1 / R2 / P1.5 冻结数据未触碰。
 
-## 总览
+## 交付项
 
-- 测试：**193 passed / 0 failed / 0 skipped**（164 回归 + 29 新增：live_guard 10、protocol_freeze 10、container_security_v2 9）。
-- 安全专项电池（p15 gate）：41 passed，protocol checks 全过，artifacts 在 results/phase1/p15/。
--  readiness 结论：**NOT READY**（唯一失败维度：外部基准可用性未验证；详见 docs/PHASE1_LIVE_READINESS_REPORT.md）。
-
-## Gate 逐项
-
-| Gate | 状态 | 证据 |
+| 要求 | 状态 | 证据 |
 |---|---|---|
-| G1 容器加固 v2 | PASS | --read-only rootfs、tmpfs /tmp(noexec)+.cache、cap-drop ALL、no-new-privileges、internal network ceval-net + provider 容器（唯一可达端点）；9 项 v2 测试 + 8 项 FS 越界回归实测通过；含 capability/metadata-service/ symlink 用例 |
-| G2 Provider 适配 + 授权门 | PASS | eval/provider.py：fake/live 同形 ProviderEndpoint；live_enabled 默认 False；无双凭证→拒绝；tests/test_live_guard.py 10 项（含 socket 拦截证明构造期零网络、CLI 退出码 2） |
-| G3 实验协议冻结 | PASS | docs/PHASE1_EXPERIMENT_PROTOCOL.md（B0/B1、预算包络、三轴指标、judge 盲化、trace 模式、修订规则，冻结 2026-10-13） |
-| G4 统计计划 | PASS | docs/PHASE1_STATISTICAL_PLAN.md（paired tasks、固定 seed 列表、McNemar exact + Clopper-Pearson + Wilson + paired bootstrap、反钓鱼条款、功效说明） |
-| G5 Readiness 报告 | PASS | docs/PHASE1_LIVE_READINESS_REPORT.md，结论 NOT READY（外部基准维度） |
-| 测试数 | PASS（29 ≥ 15） | 见上 |
-| p15 artifacts | PASS | manifest.json / security_report.json / protocol_check.json，由 scripts/run_p15_gate.py 真实运行生成 |
+| 26 microtasks 改标 engineering regression | PASS | registry.json: `role=engineering_regression`、`paper_eval_eligible=false`；tests/test_protocol_freeze.py 新增锁定测试 |
+| SWE-bench Verified 可行性冻结 | PASS（VERIFIED 可获取） | docs/PHASE1_6_BENCHMARK_FREEZE.md：dataset revision `c104f840cc67f8b6eec6f759ebc8b2693d585d4a`（HF API 经代理实测）、500 实例、字段清单、许可证如实区分（repo MIT / HF card 未声明）、4 个镜像 digest 经 `docker manifest inspect` 实测存在、3 个 pilot 实例全字段实测（base_commit/patch 大小/F2P/P2P/env_commit/difficulty）、选择标准冻结 |
+| Private holdout 方案 | PASS | src/causalevo/eval/holdout.py + scripts/create_holdout.py：内容在 Git 外（`../CausalEvo-DSH-holdout`）、agent 容器从不挂载、judge 按路径可读、哈希钉死、split 固定；benchmarks/holdout_manifest.json 仅存哈希；tests/test_holdout.py 7 项（含 manifest 无代码泄漏、篡改检测、judge 可判、agent workspace 无 sealed） |
+| docs/PHASE1_6_EVAL_PROTOCOL.md | PASS | 任务体系三层、B0/B1 引用冻结、holdout 机制、指标/统计/停止规则 |
+| pytest 全绿 | PASS | **202 passed / 0 failed / 0 skipped** |
+| 禁令遵守 | PASS | 无 API 调用、无冻结数据修改、未进入 Phase 2 |
 
-## 事故与修复记录
+## 如实披露
 
-1. 硬化容器初版启动失败：runtime 插件加载器需在 $HOME/.cache 解包并 mmap 原生 sidecar（koffi/rg），read-only rootfs + nosuid tmpfs 阻断 → 增加专用 `.cache` exec tmpfs（/tmp 保持 noexec），最小权限定位经三个变体实验确定。
-2. 磁带 provider 长度不足曾使 provider_error 场景第 5 次重试落入"done"兜底并被计费一次 → tape 覆盖加长（+10 margin）并在 scenario_tape 文档中记录重试地平线约束。
-3. Docker Desktop 守护进程两次在会话间停止 → 测试跳过/失败为环境抖动，重启后全绿；已列入 readiness 注意项。
-
-## 残留风险
-
-- 外部基准（SWE-bench Verified）未下载未运行，HF 元数据本机不可达（NOT_VERIFIED）。
-- 26 个 microtask sealed 已公开，不是论文 holdout。
-- Docker daemon 常驻需 live 前确认。
+- HF 访问经本机代理（127.0.0.1:7897）完成；直连昨天曾失败，今天经代理成功——元数据已记录实测日期。
+- Epoch 镜像为第三方重建（宣称 MIT），与官方 harness 的等价性未实跑验证（pilot 前置 smoke 要求已写入协议 §6）。
+- docker manifest inspect 只证明镜像存在与 digest，不等于拉取或运行成功。
 
 ## 停止
 
-停在 Phase 1.5。status.json = READY_FOR_REVIEW，next_actor=GPT-Planner。未进入 Phase 2，未申请预算。
+停在 Phase 1.6。status.json = READY_FOR_REVIEW，next_actor=GPT-Planner。未进入 Phase 2。

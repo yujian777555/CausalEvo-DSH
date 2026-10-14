@@ -44,7 +44,7 @@
   },
   "microtasks": {
     "count": 26,
-    "purpose": "engineering smoke only; NOT external benchmark performance evidence",
+    "purpose": "engineering regression only; NEVER a paper unseen test set — sealed tests and reference fixes are public in this repo since Phase 1 R1",
     "split_seed": 20261010,
     "split_quota": {
       "train": 13,
@@ -398,6 +398,12 @@
           "reference/solution_fixed.py": "483393b06ceebd59f48dc9bc26945e468ec33c7f8ce41c4adfedaf36ed74e691"
         }
       }
-    ]
+    ],
+    "role": "engineering_regression",
+    "paper_eval_eligible": false
+  },
+  "paper_eval_paths": {
+    "external_benchmark": "SWE-bench Verified (see docs/PHASE1_6_BENCHMARK_FREEZE.md)",
+    "private_holdout": "benchmarks/holdout_manifest.json (content outside git, judge-only)"
   }
 }
