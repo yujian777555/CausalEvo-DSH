@@ -1,29 +1,32 @@
-# Executor Report — Phase 2.1 Failure Attribution Foundation（CE-DSH-P2.1）
+# Executor Report — Phase 2.2 Failure Diagnosis Model（CE-DSH-P2.2）
 
-日期：2026-10-14。Executor：Kimi。本轮零 DeepSeek API 调用、零费用；Phase 0 / 1 / 1.5 / 1.6 冻结数据未触碰；未实现任何进化/RL/prompt-evolution 逻辑。
+日期：2026-10-14。Executor：Kimi。本轮零 DeepSeek API 调用、零费用；未触碰 Phase 0/1/1.6/2.1 冻结成果；未实现 intervention/evolution/RL。
 
 ## 交付项
 
 | 项 | 状态 | 证据 |
 |---|---|---|
-| S1 Failure Schema | PASS | docs/PHASE2_FAILURE_SCHEMA.md + src/causalevo/analysis/schema.py（唯一事实源；6 类 + unknown；evidence 只指轨迹字段，无 CoT） |
-| S2 Trace Analyzer | PASS | src/causalevo/analysis/trace_analyzer.py（仅用可观测轨迹 + judge 结果；基础设施故障优先归 execution_failure） |
-| S3 Failure Dataset Builder | PASS | src/causalevo/failure_dataset/builder.py；results/phase2/failure_analysis/（124 条记录，全部来自已提交真实离线 trace，零伪造；manifest/stats/sample_reports） |
-| S4 基线 B0/B1 | PASS | src/causalevo/analysis/baselines.py：B0 outcome-only（大量弃判的地板线）、B1 规则链 |
-| S5 评估协议 | PASS | docs/PHASE2_FAILURE_EVAL.md（accuracy/macro-F1/evidence coverage/unknown rate/abstention；允许 unknown；指标冻结） |
-| S6 CounterfactualCase | PASS | 结构 + 校验 + 序列化往返测试；未实现任何重放优化 |
-| 测试 | PASS | **231 passed / 0 failed / 0 skipped**（202 回归 + 29 新增：schema 11、analyzer 10、dataset 8） |
+| S1 FailureFeature 提取器 | PASS | src/causalevo/diagnosis/features.py（task/行为/错误/验证四组特征；无 CoT、无 sealed 内容、无 holdout） |
+| S2 Diagnosis Dataset | PASS | dataset.py + results/phase2/diagnosis/diagnosis_dataset.jsonl（124 行；task_id 分组切分；seed=20261014；label_source 分档） |
+| S3 三个 Baseline | PASS | B0 规则链（沿用 P2.1）、B1 DictVectorizer+LogReg（含序列化）、B2 哈希嵌入+LogReg（全离线，无需下载模型） |
+| S4 Evidence attribution | PASS | B1 evidence=top-特征（`feature:name=value @ref`，ref 不存在即剔除）；evidence precision/coverage 进入评估 |
+| S5 Unknown/Abstention | PASS | 置信阈值弃判；unknown rate、accuracy-after-abstention、risk-coverage 曲线入 baseline_results.json |
+| S6 评估协议 | PASS | docs/PHASE2_DIAGNOSIS_RESULTS.md + 冻结口径（split、指标、calibration、abstention） |
+| S7 Intervention 接口 | PASS | DiagnosisResult→CandidateIntervention（仅结构，序列化往返测试锁定） |
+| 文档 | PASS | docs/PHASE2_DIAGNOSIS_DESIGN.md、PHASE2_DIAGNOSIS_RESULTS.md |
+| 测试 | PASS | **261 passed / 0 failed / 0 skipped**（231 + 30 新增） |
 
-## Failure 数据集散点（真实 trace 派生）
+## 结果（如实）
 
-- 124 条：planning 104（noop 轨迹）、execution 4、knowledge 3、tool 3、strategy 3、unknown 7。
-- labeled 子集（场景注入 ground truth）accuracy = 1.0 —— 如实声明：这只说明规则链与注入故障对齐（构造性验证），**不是泛化准确率**；unknown_rate 5.6%。
+- eval rows=22（scenario_injected + judge_outcome 标签）；三个 baseline accuracy/macroF1 均 1.000 —— **构造性 sanity，非泛化能力**；B1/B2 ECE 0.019；无弃判触发。
+- 产物：results/phase2/diagnosis/{dataset_manifest, baseline_results, confusion_matrix, sample_diagnosis, models/}。
 
-## 纪律声明
+## 事故与修复
 
-- 无 chain-of-thought 作为证据；无 sealed/holdout 内容进入记录；无 API key 入产物（有测试扫描）。
-- 未宣称 CausalEvo 提升；未运行任何重放实验。
+- 特征 kwargs 不匹配（prompt_chars 键名）→ 修正。
+- B1 evidence 初版盲目引用 trace 字段，在无 agent 块的旧 trace 上失效 → 改为可回查 feature 条目 + 引用解析过滤。
+- split 泄漏测试初版误把"同 split 多 trace"当泄漏 → 修正为一致性校验。
 
 ## 停止
 
-停在 Phase 2.1。status.json = READY_FOR_REVIEW，next_actor=GPT-Planner。
+停在 Phase 2.2。status.json = READY_FOR_REVIEW，next_actor=GPT-Planner。

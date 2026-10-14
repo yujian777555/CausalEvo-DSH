@@ -1,0 +1,336 @@
+{
+  "eval_rows": 22,
+  "eval_label_sources": [
+    "judge_outcome",
+    "scenario_injected"
+  ],
+  "results": {
+    "B0-rules": {
+      "model": "B0-rules",
+      "n_eval": 22,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "labels": [
+        "planning_failure"
+      ],
+      "confusion_matrix": [
+        [
+          22
+        ]
+      ],
+      "ece": 0.0,
+      "unknown_rate": 0.0,
+      "risk_coverage": [
+        {
+          "threshold": 0.0,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.05,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.1,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.15,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.2,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.25,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.3,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.35,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.4,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.45,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.5,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.55,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        }
+      ],
+      "evidence_precision": 1.0,
+      "evidence_coverage": 1.0
+    },
+    "B1-feature-lr": {
+      "model": "B1-feature-lr",
+      "n_eval": 22,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "labels": [
+        "planning_failure"
+      ],
+      "confusion_matrix": [
+        [
+          22
+        ]
+      ],
+      "ece": 0.018720320728387585,
+      "unknown_rate": 0.0,
+      "risk_coverage": [
+        {
+          "threshold": 0.0,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.05,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.1,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.15,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.2,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.25,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.3,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.35,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.4,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.45,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.5,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.55,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.6,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.65,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.7,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.75,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.8,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.85,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.9,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.95,
+          "coverage": 0.9091,
+          "accuracy_covered": 1.0
+        }
+      ],
+      "evidence_precision": 1.0,
+      "evidence_coverage": 1.0
+    },
+    "B2-embedding-lr": {
+      "model": "B2-embedding-lr",
+      "n_eval": 22,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "labels": [
+        "planning_failure"
+      ],
+      "confusion_matrix": [
+        [
+          22
+        ]
+      ],
+      "ece": 0.01850540875357476,
+      "unknown_rate": 0.0,
+      "risk_coverage": [
+        {
+          "threshold": 0.0,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.05,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.1,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.15,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.2,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.25,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.3,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.35,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.4,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.45,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.5,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.55,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.6,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.65,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.7,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.75,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.8,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.85,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.9,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        },
+        {
+          "threshold": 0.95,
+          "coverage": 1.0,
+          "accuracy_covered": 1.0
+        }
+      ],
+      "evidence_precision": 1.0,
+      "evidence_coverage": 1.0
+    }
+  },
+  "provenance": {
+    "repo_head_sha": "95af5d8c092a07d9d54da70e5b075f4ceb1016a9",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-14T04:49:05.192265+00:00"
+  },
+  "note": "offline traces only; NOT model capability evidence"
+}

@@ -1,0 +1,32 @@
+{
+  "B0-rules": {
+    "labels": [
+      "planning_failure"
+    ],
+    "matrix": [
+      [
+        22
+      ]
+    ]
+  },
+  "B1-feature-lr": {
+    "labels": [
+      "planning_failure"
+    ],
+    "matrix": [
+      [
+        22
+      ]
+    ]
+  },
+  "B2-embedding-lr": {
+    "labels": [
+      "planning_failure"
+    ],
+    "matrix": [
+      [
+        22
+      ]
+    ]
+  }
+}

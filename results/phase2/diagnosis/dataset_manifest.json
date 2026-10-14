@@ -1,0 +1,36 @@
+{
+  "seed": 20261014,
+  "split_ratios": {
+    "train": 0.6,
+    "val": 0.2,
+    "test": 0.2
+  },
+  "grouped_by": "task_id",
+  "counts": {
+    "train": 80,
+    "val": 20,
+    "test": 24
+  },
+  "label_sources": [
+    "judge_outcome",
+    "rule_chain_silver",
+    "scenario_injected"
+  ],
+  "labeled_counts": {
+    "train": 80,
+    "val": 20,
+    "test": 24
+  },
+  "row_sha256": "792369bfac30f646ef18dadaf22dcf0c1b33754886d69ecd1dedb5f207ad6b32",
+  "eval_label_sources": [
+    "judge_outcome",
+    "scenario_injected"
+  ],
+  "note": "train may include rule_chain_silver labels (distant supervision); evaluation metrics use only scenario_injected + judge_outcome labels",
+  "provenance": {
+    "repo_head_sha": "95af5d8c092a07d9d54da70e5b075f4ceb1016a9",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-14T04:49:04.327237+00:00"
+  }
+}
