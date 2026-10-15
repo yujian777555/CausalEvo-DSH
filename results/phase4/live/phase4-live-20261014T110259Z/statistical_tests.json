@@ -1,0 +1,52 @@
+{
+  "mcnemar": [
+    {
+      "arm_a": "B5-cea-v1",
+      "arm_b": "B0-original",
+      "b01": 7,
+      "b10": 3,
+      "n_discordant": 10,
+      "p_value": 0.34375
+    },
+    {
+      "arm_a": "B5-cea-v1",
+      "arm_b": "B1-random",
+      "b01": 3,
+      "b10": 5,
+      "n_discordant": 8,
+      "p_value": 0.7265625
+    },
+    {
+      "arm_a": "B4-cea-v0",
+      "arm_b": "B5-cea-v1",
+      "b01": 3,
+      "b10": 5,
+      "n_discordant": 8,
+      "p_value": 0.7265625
+    }
+  ],
+  "bootstrap": [
+    {
+      "arm_a": "B5-cea-v1",
+      "arm_b": "B0-original",
+      "mean_diff": 0.07692307692307693,
+      "ci95": [
+        -0.0385,
+        0.1923
+      ],
+      "n_pairs": 52,
+      "n_boot": 10000
+    },
+    {
+      "arm_a": "B5-cea-v1",
+      "arm_b": "B1-random",
+      "mean_diff": -0.038461538461538464,
+      "ci95": [
+        -0.1538,
+        0.0577
+      ],
+      "n_pairs": 52,
+      "n_boot": 10000
+    }
+  ]
+}

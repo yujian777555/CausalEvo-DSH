@@ -16,6 +16,18 @@ REPO = Path(__file__).resolve().parents[1]
 OUT = REPO / "results" / "phase3" / "evolution"
 
 
+def shutil_which_docker_missing() -> bool:
+    import shutil
+    import subprocess
+    if shutil.which("docker") is None:
+        return True
+    try:
+        return subprocess.run(["docker", "info"], capture_output=True,
+                              timeout=15).returncode != 0
+    except Exception:
+        return True
+
+
 def test_artifacts_exist():
     for name in ("population_history.jsonl", "pareto_front.json",
                  "fitness_history.json", "baseline_comparison.json",
@@ -102,8 +114,10 @@ def test_mini_evolution_loop_progresses_without_docker():
 
 def test_evolution_rerun_deterministic(tmp_path):
     """Same seed + warm fitness cache -> same final Pareto front (train fitness).
-    The cache copy makes this a determinism check of the selection logic
-    without re-running containers."""
+    The cache copy makes this a determinism check of the selection logic;
+    held-out-state evaluation still needs docker, so the test skips without it."""
+    if shutil_which_docker_missing():
+        pytest.skip("docker unavailable")
     import shutil
     shutil.copyfile(OUT / "fitness_cache.jsonl", tmp_path / "fitness_cache.jsonl")
     before = json.loads((OUT / "baseline_comparison.json").read_text(encoding="utf-8"))

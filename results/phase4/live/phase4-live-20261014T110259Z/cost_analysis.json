@@ -1,0 +1,59 @@
+{
+  "per_arm": {
+    "B0-original": {
+      "runs": 52,
+      "cost_cny": 0.12345,
+      "input_tokens": 37833,
+      "output_tokens": 18251,
+      "cache_read_tokens": 253946,
+      "provider_calls": 166,
+      "mean_latency_ms": 11591.3
+    },
+    "B1-random": {
+      "runs": 52,
+      "cost_cny": 0.118619,
+      "input_tokens": 34000,
+      "output_tokens": 18091,
+      "cache_read_tokens": 250744,
+      "provider_calls": 162,
+      "mean_latency_ms": 13963.2
+    },
+    "B2-rule": {
+      "runs": 52,
+      "cost_cny": 0.119256,
+      "input_tokens": 34422,
+      "output_tokens": 18118,
+      "cache_read_tokens": 254195,
+      "provider_calls": 160,
+      "mean_latency_ms": 13414.6
+    },
+    "B3-reflexion": {
+      "runs": 52,
+      "cost_cny": 0.117362,
+      "input_tokens": 33437,
+      "output_tokens": 17977,
+      "cache_read_tokens": 242682,
+      "provider_calls": 153,
+      "mean_latency_ms": 13743.1
+    },
+    "B4-cea-v0": {
+      "runs": 52,
+      "cost_cny": 0.11842,
+      "input_tokens": 34547,
+      "output_tokens": 17893,
+      "cache_read_tokens": 253694,
+      "provider_calls": 160,
+      "mean_latency_ms": 15210.4
+    },
+    "B5-cea-v1": {
+      "runs": 52,
+      "cost_cny": 0.117816,
+      "input_tokens": 33651,
+      "output_tokens": 17981,
+      "cache_read_tokens": 252535,
+      "provider_calls": 164,
+      "mean_latency_ms": 15443.0
+    }
+  },
+  "total_cost_cny": 0.714923
+}

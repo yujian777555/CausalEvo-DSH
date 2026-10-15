@@ -278,11 +278,15 @@ class ContainerHarnessRunner:
         policy_id: str,
         budget: RuntimeBudget,
         api_key: str,
+        extra_prompt: str | None = None,
     ) -> AgentRunOutcome:
         name = f"ceval-agent-{uuid.uuid4().hex[:12]}"
+        prompt = spec.instructions
+        if extra_prompt:
+            prompt = f"{spec.instructions}\n\nADDITIONAL INSTRUCTION (retry policy): {extra_prompt}"
         request = {
             "session_id": f"task-{spec.task_id}-{uuid.uuid4().hex[:6]}",
-            "prompt": spec.instructions,
+            "prompt": prompt,
             "model": self.model,
             "reasoning_effort": self.reasoning_effort,
             "max_tokens": self.max_tokens,
