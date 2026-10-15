@@ -94,7 +94,7 @@ def main() -> int:
         "gate": "CE-DSH-P1.5",
         "created_by": "scripts/run_p15_gate.py",
         "provenance": provenance_block(),
-        "agent_image": "causalevo-dsh-agent:0.2.0",
+        "agent_image": "causalevo-dsh-agent:0.2.1",
         "live_api_calls": 0,
         "live_spend_cny": 0,
     }

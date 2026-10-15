@@ -28,7 +28,7 @@ from causalevo.eval.trace import TaskTrace
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TASKS_DIR = REPO_ROOT / "benchmarks" / "tasks"
 PATCH_PATH = REPO_ROOT / "configs" / "dsh_task_patch.yml"
-AGENT_IMAGE = "causalevo-dsh-agent:0.2.0"
+AGENT_IMAGE = "causalevo-dsh-agent:0.2.1"
 JUDGE_IMAGE = "python:3.11-slim"
 N_TASKS = 2
 

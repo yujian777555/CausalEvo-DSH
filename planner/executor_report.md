@@ -1,39 +1,44 @@
-# Executor Report — Phase 4 Real Agent Evolution Validation（CE-DSH-P4）
+# Executor Report — CE-DSH-P4-R1.1（Phase 4 证据与算法保真修复）
 
-日期：2026-10-15。Executor：Kimi。冻结历史结果未触碰。**本轮发生了真实 DeepSeek API 调用（已授权、已记录、已计费），如实报告。**
+日期：2026-10-14。Executor：Kimi。**本轮新增真实 API 调用 0 次、新增费用 ¥0。** 冻结数据（Phase 0–3、Phase 4 原始 312 行）未修改。
 
-## 交付项
+## Gate 结果
 
-| 项 | 状态 | 证据 |
+| Gate | 状态 | 证据 |
 |---|---|---|
-| P4.1 协议冻结 | PASS | docs/PHASE4_EXPERIMENT_PROTOCOL.md（live 前冻结；含 2026-10-15 口径澄清修订章节） |
-| P4.2 六臂基线 | PASS | src/causalevo/eval/live_pilot.py：B0/B1/B2/B3/B4/B5 + 冻结干预指令库 |
-| P4.3 真实评估（小规模 pilot） | PASS | 26 任务 × 6 臂 × 2 种子 = 312 run；results/phase4/live/phase4-live-20261014T110259Z/ |
-| P4.4 指标 | PASS | pass rate / recovery rate / evolution gain / 成本 / 步骤 |
-| P4.5 因果验证 | PASS | B5 vs B1 随机干预对照；消融映射（A1–A4 到 B2/B4 口径） |
-| P4.6 成本控制 | PASS | 预算上限 ¥3.00，实际 ¥0.715，逐臂 token/调用/费用记录；无 unknown_cost |
-| P4.7 API 规则 | PASS | 双授权门 + dry-run 先行 + 全量调用记录 |
-| P4.8 结果结构 | PASS | results/phase4/{live,dry-run(scratch)}：protocol.json、manifest.json、tasks.jsonl、baseline_results/statistical_tests/cost_analysis |
-| P4.9 统计 | PASS | McNemar exact + paired bootstrap 95% CI（不报裸均值） |
-| P4.10 论文证据报告 | PASS | docs/PHASE4_FINAL_EVALUATION.md（含负面/中性结果如实陈述） |
-| 测试 | PASS | **409 passed / 0 failed / 0 skipped**（377 + 32 新增） |
+| A 证据可复算 | PASS | tasks.jsonl 本地存在（SHA-256 `21dd5dc0…13bcbc`）；auditable_tasks.jsonl（schema v1 + 行哈希）已提交；scripts/reconcile_phase4_rows.py 从表重算全部指标与已提交分析逐项相等（实测） |
+| B 算法保真 | PASS | docs/PHASE4_ALGORITHM_FIDELITY_AUDIT.md 逐臂追踪；B4=heuristic proxy、B5=静态 bundle 如实披露；新 `CausalPolicyAdapter`（adapter_version r1.1）真实调用 LinUCB controller / 真实读取冻结 Pareto 前沿并校验 genome id + 文件 SHA；9 项测试 |
+| C 逐请求预算门 | PASS | src/causalevo/eval/budget_proxy.py：发送前 授权+去重+配额+最坏预留；usage 原子结算（FIFO 释放预留，疑似计费不释放）；fail-closed 停止且 ledger 逐事件落盘；tests/test_budget_proxy.py 10 项（cap 第 4 请求上游零调用、500/缺 usage/断流停机、直连证明等） |
+| D 统计 | PASS | legacy_iid_paired 原样保留 + 新 task_id cluster bootstrap（B5 vs B1 CI [-0.135,+0.058] 跨 0，负面结论不变）+ task-level sensitivity + retry 频率；写入 versioned statistical_tests_r1_1.json |
+| E 无泄漏/冻结完整 | PASS | 无 sk-/路径/holdout 内容入产物；Phase0–3 哈希不变；436 测试全绿 |
+| F 零新调用 | PASS | 本轮 API 调用 0、费用 ¥0 |
+| G 远端一致 | PASS | 见提交记录 |
 
-## 结果（如实，含中性/负面）
+## P0 Bug 修复位置
 
-pass rate：B0 0.808、B1 0.923、B2 0.885、B3 0.827、B4 0.846、B5 0.885。
-**B5 vs B0：+7.7pp 但不显著（McNemar p=0.34，CI [-0.04,+0.19]）；B5 vs B1 随机：无优势（p=0.73，CI [-0.15,+0.06]）。**
-RQ3 答案：本规模未能证明因果演化增益；随机干预数值最高。平台端到端成立，算法优越性未证实 —— 需要更难基准。
+- Bug1（unknown_cost 仍重试）：live_pilot.py `run_task_arm` — _STOP_KINDS（unknown_cost/budget_stop/transport/protocol）不再重试并记录 abort_reason；runner 层全局停止。
+- Bug2（异常退出误报 none）：harness_agent.py — 无 final 消息按 rc 区分 transport/protocol，绝不默认 none。
+- Bug3（状态混淆）：live_pilot.py — attempt_1_status / attempt_2_status / final_status / abort_reason / per-attempt provider_requests / actual_agent_attempts 全字段分离。
+- Bug4（预留泄漏）：runtime_budget.py — 逐请求预留 FIFO，结算原子转换，疑似计费不释放，unknown_cost 不继续。
 
-## 事故与修复
+## Genome/Phenotype 审计（S4）
 
-- analyze_phase4.py  docstring 残留引号语法错误 → 修复。
-- provider_calls 断言误用包络口径（LLM 请求 vs agent attempt）→ 协议补口径澄清章节（不改指标），测试改为钉住真实语义。
-- Docker daemon 会话间多次停止/WSL 后端 500 → 重启恢复；相关 flake 已记录。
+144 基因型 → 16 唯一表型（重复率 88.9%）；退化基因 reflection_step/retry_strategy（标 reserved）；verification_level 1=2。详见 docs/PHASE4_GENOME_PHENOTYPE_AUDIT.md。冻结 3.2 代码未改。
 
-## API 使用
+## DeepSeek Direct Connection Audit
 
-- 312 次任务 run（每 run 2–8 次 LLM 请求），总 ¥0.715；授权：用户 Phase 4 批准 + CE_DSH_LIVE_AUTH 门；全部记录在 results/phase4/live/。
+见 docs/PHASE4_R1_1_AUDIT_ADDENDUM.md §4：宿主与容器客户端均显式空 ProxyHandler 直连；容器 scrub 代理环境 + NO_PROXY 钉住；TUN 模式无法配置级证明 → 标记 `DIRECT_ROUTE_UNVERIFIED`；本轮零 live 调用故无路由级实测。GitHub 等其他流量代理不受影响。
+
+## 测试
+
+**436 passed / 0 failed / 0 skipped**（409 + 27 新增：budget_proxy 10、adapter 9、direct_connect 5、reservation 3 等）。
+
+## 未解决风险
+
+1. TUN 级直连未证（DIRECT_ROUTE_UNVERIFIED）。
+2. 新 adapter 只有离线行为证据；真实 CEA pilot 需新预算授权（预注册草案 docs/PHASE4_NEXT_PILOT_PREREG.md）。
+3. Docker daemon 会话间稳定性（运维项）。
 
 ## 停止
 
-停在 Phase 4。status.json = READY_FOR_REVIEW，next_actor=GPT-Planner。
+停在 Phase 4 R1.1。status.json = READY_FOR_REVIEW，next_actor=GPT-Planner。未进入 Phase 5。

@@ -25,7 +25,7 @@ from causalevo.intervention.generator import INTERVENTION_LIBRARY  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[1]
 OUT = REPO / "results" / "phase3" / "replay_sweep"
-IMAGE = "causalevo-dsh-agent:0.2.0"
+IMAGE = "causalevo-dsh-agent:0.2.1"
 PATCH = REPO / "configs" / "dsh_task_patch.yml"
 CASES = ["bad_tool_blocks_write", "broken_write", "wrong_fix"]
 

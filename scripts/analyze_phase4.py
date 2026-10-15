@@ -84,6 +84,47 @@ def cost_analysis(rows: list[dict]) -> dict[str, Any]:
     return {"per_arm": per_arm, "total_cost_cny": total}
 
 
+def cluster_bootstrap_diff_ci(rows: list[dict], arm_a: str, arm_b: str, *,
+                              n_boot: int = 10000, seed: int = 20261014) -> dict[str, Any]:
+    """Task-level cluster bootstrap (P4-R1.1-S4): resample TASKS with
+    replacement, keeping every (seed, arm) row of a task together — the two
+    seeds of one task are not independent."""
+    rng = np.random.default_rng(seed)
+    by_task_a: dict[str, list[int]] = {}
+    by_task_b: dict[str, list[int]] = {}
+    for r in rows:
+        if r["arm"] == arm_a:
+            by_task_a.setdefault(r["task_id"], []).append(int(r["final_success"]))
+        elif r["arm"] == arm_b:
+            by_task_b.setdefault(r["task_id"], []).append(int(r["final_success"]))
+    tasks = sorted(set(by_task_a) & set(by_task_b))
+    if not tasks:
+        return {"arm_a": arm_a, "arm_b": arm_b, "ci95": None, "note": "no shared tasks"}
+    def _diff(sample_tasks):
+        a_vals = [v for t in sample_tasks for v in by_task_a[t]]
+        b_vals = [v for t in sample_tasks for v in by_task_b[t]]
+        return float(np.mean(a_vals) - np.mean(b_vals))
+    boots = [_diff([tasks[i] for i in rng.integers(0, len(tasks), len(tasks))])
+             for _ in range(n_boot)]
+    lo, hi = np.percentile(boots, [2.5, 97.5])
+    return {"arm_a": arm_a, "arm_b": arm_b,
+            "mean_diff": _diff(tasks),
+            "ci95": [round(float(lo), 4), round(float(hi), 4)],
+            "n_task_clusters": len(tasks), "n_boot": n_boot}
+
+
+def task_level_summary(rows: list[dict]) -> dict[str, Any]:
+    """Per-task per-arm success means over seeds (sensitivity view)."""
+    by_task: dict[str, dict[str, list[int]]] = {}
+    for r in rows:
+        by_task.setdefault(r["task_id"], {}).setdefault(r["arm"], []).append(
+            int(r["final_success"]))
+    return {
+        t: {a: float(np.mean(v)) for a, v in arms_map.items()}
+        for t, arms_map in by_task.items()
+    }
+
+
 def analyze(run_dir: Path) -> dict[str, Any]:
     rows = load_rows(run_dir)
     arms = sorted({r["arm"] for r in rows})

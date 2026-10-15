@@ -25,17 +25,22 @@ def test_intervention_texts_nonempty_and_frozen_keys():
 
 def test_pilot_refuses_live_without_auth(monkeypatch):
     import os
+    import subprocess
+    import sys
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
     monkeypatch.delenv("CE_DSH_LIVE_AUTH", raising=False)
     env = dict(os.environ)
     env.pop("DEEPSEEK_API_KEY", None)
     env["NO_PROXY"] = "*"
-    import subprocess
     proc = subprocess.run(
-        [str(REPO / ".venv" / "Scripts" / "python.exe"),
-         str(REPO / "scripts" / "run_phase4_pilot.py"), "--live", "--tasks", "1"],
+        # sys.executable: portable across Linux/CI; never hardcode .venv paths
+        [sys.executable, str(REPO / "scripts" / "run_phase4_pilot.py"),
+         "--live", "--tasks", "1"],
         capture_output=True, text=True, env=env, timeout=120)
-    assert proc.returncode != 0  # PermissionError before any socket
+    # specific refusal, not just any non-zero exit
+    assert proc.returncode != 0
+    blob = (proc.stdout + proc.stderr).lower()
+    assert "permissionerror" in blob or "live mode requires" in blob
 
 
 def test_dry_run_smoke_two_tasks():

@@ -31,7 +31,7 @@ from causalevo.evolution.population import Population, RULE_SEED_GENOMES  # noqa
 
 REPO = Path(__file__).resolve().parents[1]
 OUT = REPO / "results" / "phase3" / "evolution"
-IMAGE = "causalevo-dsh-agent:0.2.0"
+IMAGE = "causalevo-dsh-agent:0.2.1"
 PATCH = REPO / "configs" / "dsh_task_patch.yml"
 TRAIN_CASES = ["bad_tool_blocks_write", "broken_write"]
 TEST_CASES = ["wrong_fix"]

@@ -383,7 +383,16 @@ class ContainerHarnessRunner:
                 proc.kill()
                 proc.wait()
         duration = int((time.monotonic() - started) * 1000)
-        if final is not None:
+        if final is None and failure_kind == "none":
+            # abnormal termination: no final message at all
+            rc = proc.returncode
+            if rc not in (0, None):
+                failure_kind = "transport"
+                stop_reason = f"container exited rc={rc} without final message"
+            else:
+                failure_kind = "protocol"
+                stop_reason = "clean exit but no final message (protocol violation)"
+        elif final is not None:
             if not final.get("ok"):
                 failure_kind = "provider_error" if failure_kind == "none" else failure_kind
                 stop_reason = stop_reason or final.get("error")

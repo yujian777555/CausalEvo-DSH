@@ -77,7 +77,7 @@ def main() -> int:
         Path(args.out),
         scenario_factory=scenario_factory,
         budget_factory=budget_factory,
-        image="causalevo-dsh-agent:0.2.0",
+        image="causalevo-dsh-agent:0.2.1",
         patch_path=REPO_ROOT / "configs" / "dsh_task_patch.yml",
         provider_kind="fake",
         split_seed=20261010,

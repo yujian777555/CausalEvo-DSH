@@ -18,7 +18,7 @@ from causalevo.eval.runtime_budget import RuntimeBudget
 from causalevo.eval.task_spec import load_task
 
 REPO = Path(__file__).resolve().parents[1]
-AGENT_IMAGE = "causalevo-dsh-agent:0.2.0"
+AGENT_IMAGE = "causalevo-dsh-agent:0.2.1"
 HELPER_IMAGE = "python:3.11-slim"
 TASK_DIR = REPO / "benchmarks" / "tasks" / "micro-000-clamp_value"
 

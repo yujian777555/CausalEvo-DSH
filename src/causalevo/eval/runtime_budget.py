@@ -49,6 +49,7 @@ class RuntimeBudget:
     wall_time_s: int
     max_cost_cny: float | None = None
     ledger: AttemptLedger = field(default_factory=AttemptLedger)
+    _reservations: list[float] = field(default_factory=list)
 
     def check_wall_time(self) -> None:
         elapsed = time.monotonic() - self.ledger.started_monotonic
@@ -69,12 +70,15 @@ class RuntimeBudget:
         ):
             raise BudgetStop("cost reservation would exceed max_cost_cny")
         self.ledger.reserved_cost_cny += reserved_cost_cny
+        self._reservations.append(reserved_cost_cny)
 
     def after_provider_request(
         self, usage: UsageRecord | None, *, price_tier: str, usd_cny: float
     ) -> None:
-        """Settle one provider attempt. usage=None means the request may have
-        left the machine unmeasured -> unknown spend, fail-closed stop."""
+        """Settle one provider attempt. Atomically converts the oldest
+        outstanding reservation into the settled amount. usage=None means the
+        request may have left the machine unmeasured -> unknown spend,
+        fail-closed stop, reservation NOT released."""
         self.ledger.provider_attempts += 1
         if usage is None:
             self.ledger.unknown_spend_attempts += 1
@@ -86,6 +90,11 @@ class RuntimeBudget:
         self.ledger.output_tokens += usage.output_tokens
         cost = cost_for_usage(usage, price_tier, usd_cny).cost_cny
         self.ledger.known_cost_cny += cost
+        # release the matching reservation (FIFO): settled reservations never
+        # count twice; a failed-but-maybe-billed request keeps its reservation
+        # (the unknown path above raises before this point).
+        if self._reservations:
+            self.ledger.reserved_cost_cny -= self._reservations.pop(0)
         if self.ledger.output_tokens > self.max_total_output_tokens:
             raise BudgetStop(
                 f"output tokens exceeded: {self.ledger.output_tokens} > "

@@ -40,7 +40,7 @@ from causalevo.intervention.generator import (  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[1]
 OUT = REPO / "results" / "phase2" / "intervention"
-IMAGE = "causalevo-dsh-agent:0.2.0"
+IMAGE = "causalevo-dsh-agent:0.2.1"
 PATCH = REPO / "configs" / "dsh_task_patch.yml"
 NETWORK = "ceval-net"
 

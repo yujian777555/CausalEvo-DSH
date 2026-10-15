@@ -59,9 +59,20 @@ class ArmResult:
     cost_cny: float
     latency_ms: int
     run_id: str
+    # R1.1-Bug3: per-attempt status separation (never conflate first/final)
+    attempt_1_status: str
+    attempt_2_status: str | None
+    final_status: str
+    abort_reason: str | None
+    attempt_1_provider_requests: int
+    attempt_2_provider_requests: int
+    actual_agent_attempts: int
 
     def as_dict(self) -> dict[str, Any]:
         return {f.name: getattr(self, f.name) for f in self.__dataclass_fields__.values()}
+
+
+_STOP_KINDS = ("unknown_cost", "budget_stop", "transport", "protocol")
 
 
 def _judge_success(report) -> bool:
@@ -88,10 +99,15 @@ def run_task_arm(
     factory = WorkspaceFactory()
     ws = factory.create(spec, run_id)
     t0 = time.monotonic()
+    abort_reason: str | None = None
+    attempt_2_status: str | None = None
+    outcome2 = None
+    calls_after_1 = 0
     try:
         runner1 = make_runner(0)
         outcome1 = runner1.run_task(spec, ws.root, arm, budget,
                                     api_key=_current_key())
+        calls_after_1 = budget.ledger.provider_attempts
         report1 = judge.grade(spec, ws.root)
         success1 = _judge_success(report1)
 
@@ -99,7 +115,11 @@ def run_task_arm(
         intervention_used: str | None = None
         final_report = report1
 
-        if not success1 and arm != "B0-original":
+        # R1.1-Bug1: accounting-abnormal outcomes are NEVER retried; they stop
+        # this task (and the caller stops the run) — fail closed.
+        if outcome1.failure_kind in _STOP_KINDS:
+            abort_reason = f"{outcome1.failure_kind}: {outcome1.budget_stop_reason}"
+        elif not success1 and arm != "B0-original":
             if arm == "B1-random":
                 key = rng.choice(sorted(INTERVENTION_TEXT))
             elif arm == "B3-reflexion":
@@ -129,17 +149,22 @@ def run_task_arm(
             runner2 = make_runner(1)
             outcome2 = runner2.run_task(spec, ws.root, arm, budget,
                                         api_key=_current_key(), extra_prompt=prompt2)
+            attempt_2_status = outcome2.failure_kind
             final_report = judge.grade(spec, ws.root)
+            if outcome2.failure_kind in _STOP_KINDS:
+                abort_reason = f"attempt2 {outcome2.failure_kind}: {outcome2.budget_stop_reason}"
 
         final_success = _judge_success(final_report)
         latency = int((time.monotonic() - t0) * 1000)
         if gate is not None:
             gate.record_spend(budget.ledger.known_cost_cny)
+        final_failure = (outcome2.failure_kind if outcome2 is not None
+                         else outcome1.failure_kind)
         return ArmResult(
             task_id=spec.task_id, arm=arm, seed=seed,
             attempt1_success=success1, retried=retried, final_success=final_success,
             invalid=bool(final_report.invalid_reason), timeout=final_report.timed_out,
-            failure_kind=outcome1.failure_kind, intervention=intervention_used,
+            failure_kind=final_failure, intervention=intervention_used,
             provider_calls=budget.ledger.provider_attempts,
             tool_calls=budget.ledger.tool_attempts,
             input_tokens=budget.ledger.known_input_tokens,
@@ -147,6 +172,14 @@ def run_task_arm(
             output_tokens=budget.ledger.output_tokens,
             cost_cny=round(budget.ledger.known_cost_cny, 10),
             latency_ms=latency, run_id=run_id,
+            attempt_1_status=outcome1.failure_kind,
+            attempt_2_status=attempt_2_status,
+            final_status=final_failure,
+            abort_reason=abort_reason,
+            attempt_1_provider_requests=calls_after_1,
+            attempt_2_provider_requests=(
+                budget.ledger.provider_attempts - calls_after_1 if outcome2 else 0),
+            actual_agent_attempts=1 + int(retried),
         )
     finally:
         factory.destroy_all()

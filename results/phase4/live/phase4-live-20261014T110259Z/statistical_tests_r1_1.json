@@ -1,0 +1,309 @@
+{
+  "schema_version": "r1.1",
+  "legacy_iid_paired": {
+    "mcnemar": [
+      {
+        "arm_a": "B5-cea-v1",
+        "arm_b": "B0-original",
+        "b01": 7,
+        "b10": 3,
+        "n_discordant": 10,
+        "p_value": 0.34375
+      },
+      {
+        "arm_a": "B5-cea-v1",
+        "arm_b": "B1-random",
+        "b01": 3,
+        "b10": 5,
+        "n_discordant": 8,
+        "p_value": 0.7265625
+      },
+      {
+        "arm_a": "B4-cea-v0",
+        "arm_b": "B5-cea-v1",
+        "b01": 3,
+        "b10": 5,
+        "n_discordant": 8,
+        "p_value": 0.7265625
+      }
+    ],
+    "bootstrap": [
+      {
+        "arm_a": "B5-cea-v1",
+        "arm_b": "B0-original",
+        "mean_diff": 0.07692307692307693,
+        "ci95": [
+          -0.0385,
+          0.1923
+        ],
+        "n_pairs": 52,
+        "n_boot": 10000
+      },
+      {
+        "arm_a": "B5-cea-v1",
+        "arm_b": "B1-random",
+        "mean_diff": -0.038461538461538464,
+        "ci95": [
+          -0.1538,
+          0.0577
+        ],
+        "n_pairs": 52,
+        "n_boot": 10000
+      }
+    ]
+  },
+  "cluster_bootstrap": [
+    {
+      "arm_a": "B5-cea-v1",
+      "arm_b": "B0-original",
+      "mean_diff": 0.07692307692307687,
+      "ci95": [
+        -0.0385,
+        0.1923
+      ],
+      "n_task_clusters": 26,
+      "n_boot": 10000
+    },
+    {
+      "arm_a": "B5-cea-v1",
+      "arm_b": "B1-random",
+      "mean_diff": -0.03846153846153855,
+      "ci95": [
+        -0.1346,
+        0.0577
+      ],
+      "n_task_clusters": 26,
+      "n_boot": 10000
+    },
+    {
+      "arm_a": "B4-cea-v0",
+      "arm_b": "B5-cea-v1",
+      "mean_diff": -0.038461538461538436,
+      "ci95": [
+        -0.1538,
+        0.0769
+      ],
+      "n_task_clusters": 26,
+      "n_boot": 10000
+    }
+  ],
+  "task_level_summary": {
+    "micro-000-clamp_value": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-001-moving_average": {
+      "B0-original": 0.5,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-002-reverse_words": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-003-count_vowels": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-004-fibonacci": {
+      "B0-original": 0.5,
+      "B1-random": 0.5,
+      "B2-rule": 0.0,
+      "B3-reflexion": 0.0,
+      "B4-cea-v0": 0.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-005-merge_sorted": {
+      "B0-original": 0.5,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-006-is_palindrome": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-007-binary_search": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-008-roman_to_int": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-009-flatten_once": {
+      "B0-original": 0.5,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-010-chunk_list": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-011-second_largest": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-012-title_case": {
+      "B0-original": 0.0,
+      "B1-random": 0.5,
+      "B2-rule": 0.0,
+      "B3-reflexion": 0.0,
+      "B4-cea-v0": 0.0,
+      "B5-cea-v1": 0.0
+    },
+    "micro-013-sum_digits": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-014-caesar_shift": {
+      "B0-original": 0.5,
+      "B1-random": 0.5,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 0.5,
+      "B5-cea-v1": 1.0
+    },
+    "micro-015-balanced_parens": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-016-max_subarray": {
+      "B0-original": 0.5,
+      "B1-random": 1.0,
+      "B2-rule": 0.5,
+      "B3-reflexion": 0.0,
+      "B4-cea-v0": 0.0,
+      "B5-cea-v1": 0.5
+    },
+    "micro-017-transpose": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 0.5,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 0.5,
+      "B5-cea-v1": 1.0
+    },
+    "micro-018-dedup_adjacent": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-019-parse_kv": {
+      "B0-original": 0.5,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 0.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-020-fizzbuzz": {
+      "B0-original": 1.0,
+      "B1-random": 0.5,
+      "B2-rule": 1.0,
+      "B3-reflexion": 0.5,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 0.5
+    },
+    "micro-021-gcd": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 0.5
+    },
+    "micro-022-word_count": {
+      "B0-original": 0.5,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-023-median": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 0.5
+    },
+    "micro-024-count_inversions_naive": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    },
+    "micro-025-int_to_binary": {
+      "B0-original": 1.0,
+      "B1-random": 1.0,
+      "B2-rule": 1.0,
+      "B3-reflexion": 1.0,
+      "B4-cea-v0": 1.0,
+      "B5-cea-v1": 1.0
+    }
+  },
+  "retry_frequency": {
+    "B0-original": 0.0,
+    "B1-random": 0.17307692307692307,
+    "B2-rule": 0.15384615384615385,
+    "B3-reflexion": 0.19230769230769232,
+    "B4-cea-v0": 0.17307692307692307,
+    "B5-cea-v1": 0.23076923076923078
+  },
+  "note": "cluster bootstrap resamples 26 task clusters (both seeds kept together); legacy IID values preserved verbatim; B5 vs B1 remains the key causal control"
+}

@@ -1,0 +1,53 @@
+{
+  "gene_space": {
+    "tool_validation": 1,
+    "read_before_write": 1,
+    "verification_level": 2,
+    "stagnation_break": 1,
+    "reflection_step": 1,
+    "retry_strategy": 2
+  },
+  "total_genotypes": 144,
+  "unique_phenotypes": 16,
+  "duplicate_ratio": 0.8889,
+  "duplicate_phenotypes": {
+    "('identity',)": 6,
+    "('break_repeat_with_read',)": 6,
+    "('append_readback_and_fix',)": 12,
+    "('break_repeat_with_read', 'append_readback_and_fix')": 12,
+    "('prepend_read_step',)": 6,
+    "('prepend_read_step', 'break_repeat_with_read')": 6,
+    "('prepend_read_step', 'append_readback_and_fix')": 12,
+    "('prepend_read_step', 'break_repeat_with_read', 'append_readback_and_fix')": 12,
+    "('replace_unknown_tool_with_read',)": 6,
+    "('replace_unknown_tool_with_read', 'break_repeat_with_read')": 6,
+    "('replace_unknown_tool_with_read', 'append_readback_and_fix')": 12,
+    "('replace_unknown_tool_with_read', 'break_repeat_with_read', 'append_readback_and_fix')": 12,
+    "('replace_unknown_tool_with_read', 'prepend_read_step')": 6,
+    "('replace_unknown_tool_with_read', 'prepend_read_step', 'break_repeat_with_read')": 6,
+    "('replace_unknown_tool_with_read', 'prepend_read_step', 'append_readback_and_fix')": 12,
+    "('replace_unknown_tool_with_read', 'prepend_read_step', 'break_repeat_with_read', 'append_readback_and_fix')": 12
+  },
+  "gene_effect_counts": {
+    "tool_validation": 144,
+    "read_before_write": 144,
+    "verification_level": 192,
+    "stagnation_break": 144,
+    "reflection_step": 0,
+    "retry_strategy": 0
+  },
+  "degenerate_genes": [
+    "reflection_step",
+    "retry_strategy"
+  ],
+  "reserved_genes": [
+    "reflection_step",
+    "retry_strategy"
+  ],
+  "effective_genes": [
+    "tool_validation",
+    "read_before_write",
+    "verification_level",
+    "stagnation_break"
+  ]
+}

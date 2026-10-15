@@ -16,7 +16,7 @@ from causalevo.eval.task_spec import load_task
 from causalevo.intervention.generator import NO_INTERVENTION
 
 REPO = Path(__file__).resolve().parents[1]
-IMAGE = "causalevo-dsh-agent:0.2.0"
+IMAGE = "causalevo-dsh-agent:0.2.1"
 
 
 def _image_present(image: str) -> bool:

@@ -5,6 +5,7 @@ per-task workspace at /work; DSH_HOME is an in-container temp dir, so agent
 file access ends at the container edge.
 """
 import json
+import os
 import pathlib
 import sys
 import tempfile
@@ -15,7 +16,20 @@ def _emit(obj: dict) -> None:
     sys.stdout.flush()
 
 
+def scrub_proxy_env() -> None:
+    """DeepSeek DIRECT rule (P4-R1.1 supplement): the runtime must reach the
+    provider WITHOUT any proxy. Scrub inherited proxy env vars and pin
+    NO_PROXY for the provider host. (TUN/transparent proxies cannot be proven
+    absent from config alone — see docs/PHASE4_R1_1_AUDIT_ADDENDUM.md.)"""
+    for var in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY",
+                "http_proxy", "https_proxy", "all_proxy"):
+        os.environ.pop(var, None)
+    os.environ["NO_PROXY"] = "api.deepseek.com,127.0.0.1,localhost"
+    os.environ["no_proxy"] = "api.deepseek.com,127.0.0.1,localhost"
+
+
 def main() -> int:
+    scrub_proxy_env()
     request = json.load(sys.stdin)
     workdir = pathlib.Path("/work")
     with tempfile.TemporaryDirectory() as tmp:

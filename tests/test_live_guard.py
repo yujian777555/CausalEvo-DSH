@@ -103,7 +103,7 @@ def _run_cli(env_extra: dict[str, str]) -> subprocess.CompletedProcess:
     env.update(env_extra)
     env["NO_PROXY"] = "*"
     return subprocess.run(
-        [str(REPO_ROOT / ".venv" / "Scripts" / "python.exe"),
+        [sys.executable,
          str(REPO_ROOT / "scripts" / "run_agent_task.py"), "--live", "--tasks", "1"],
         capture_output=True, text=True, env=env, timeout=120)
 

@@ -25,7 +25,7 @@ from causalevo.eval.task_spec import load_all_tasks  # noqa: E402
 from causalevo.eval.trace import new_run_id, provenance_block  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[1]
-IMAGE = "causalevo-dsh-agent:0.2.0"
+IMAGE = "causalevo-dsh-agent:0.2.1"
 PATCH = REPO / "configs" / "dsh_task_patch.yml"
 SEEDS = [20261014, 20261015]
 BUDGET_CAP_CNY = 3.00
@@ -119,6 +119,9 @@ def main() -> int:
                         fh.write(json.dumps(res.as_dict(), ensure_ascii=False) + "\n")
                     print(f"{seed} {spec.task_id} {arm}: a1={res.attempt1_success} "
                               f"final={res.final_success} cost={res.cost_cny}", flush=True)
+                    if res.abort_reason:
+                        aborted = f"fail-closed at {spec.task_id}/{arm}: {res.abort_reason}"
+                        break
                 if aborted:
                     break
             if aborted:

@@ -155,3 +155,32 @@ def test_b0_b1_budget_parity_identical_behavior():
             budget.after_provider_request(usage, price_tier=PRICE_TIER, usd_cny=USD_CNY)
         with pytest.raises(BudgetStop):
             budget.before_provider_request(0.0)
+
+
+def test_reservation_released_exactly_once_on_settle():
+    b = RuntimeBudget(max_provider_calls=5, max_total_output_tokens=10000,
+                      max_tool_calls=10, wall_time_s=300)
+    b.before_provider_request(0.01)
+    b.before_provider_request(0.02)
+    assert b.ledger.reserved_cost_cny == pytest.approx(0.03)
+    b.after_provider_request(UsageRecord(100, 0, 10, None), price_tier="off_peak", usd_cny=7.1)
+    assert b.ledger.reserved_cost_cny == pytest.approx(0.02)  # oldest (0.01) released
+    b.after_provider_request(UsageRecord(100, 0, 10, None), price_tier="off_peak", usd_cny=7.1)
+    assert b.ledger.reserved_cost_cny == pytest.approx(0.0)
+
+
+def test_failed_maybe_billed_request_keeps_reservation_and_stops():
+    b = RuntimeBudget(max_provider_calls=5, max_total_output_tokens=10000,
+                      max_tool_calls=10, wall_time_s=300)
+    b.before_provider_request(0.05)
+    with pytest.raises(BudgetStop):
+        b.after_provider_request(None, price_tier="off_peak", usd_cny=7.1)
+    assert b.ledger.reserved_cost_cny == pytest.approx(0.05)  # NOT released
+    assert b.ledger.unknown_spend_attempts == 1
+
+
+def test_insufficient_budget_blocks_before_send():
+    b = RuntimeBudget(max_provider_calls=5, max_total_output_tokens=10000,
+                      max_tool_calls=10, wall_time_s=300, max_cost_cny=0.01)
+    with pytest.raises(BudgetStop):
+        b.before_provider_request(0.02)

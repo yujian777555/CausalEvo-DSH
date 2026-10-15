@@ -26,6 +26,7 @@ logs/
 # raw harness session logs stay local; redacted-by-construction eval traces may be committed
 *.jsonl
 !results/phase1/**/traces.jsonl
+!results/phase4/**/auditable_tasks.jsonl
 
 # --- benchmark scratch ---
 results/phase0/tmp/
