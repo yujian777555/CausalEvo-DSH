@@ -3,18 +3,18 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4-R1.1",
-  "previous_plan_id": "CE-DSH-P4",
-  "phase": "Phase 4 R1.1",
-  "phase_status": "READY_FOR_REVIEW",
-  "planner_review": "PENDING",
-  "next_actor": "GPT-Planner",
+  "plan_id": "CE-DSH-P4-R1.2",
+  "previous_plan_id": "CE-DSH-P4-R1.1",
+  "phase": "Phase 4 R1.2",
+  "phase_status": "CHANGES_REQUESTED",
+  "planner_review": "CHANGES_REQUESTED",
+  "next_actor": "Kimi-Executor",
   "planner_review_date": "2026-10-10",
   "executor_fix_date": "2026-10-14",
   "baseline_main_sha": "a9bef642e35eeed398f5578890a00f8872af2af0",
-  "reviewed_executor_head": "bddb17d632ca40a36468d82bb4dad3fd41f37644",
+  "reviewed_executor_head": "9c7148eb34020c50295a0bda52cef0647df9702b",
   "plan_path": "planner/latest_plan.md",
-  "review_path": "planner/reviews/CE-DSH-P4-R1-review.md",
+  "review_path": "planner/reviews/CE-DSH-P4-R1_1-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "docs/PHASE4_R1_1_AUDIT_ADDENDUM.md",
   "implementation": {
@@ -74,10 +74,10 @@
     "new_live_calls_this_round": 0
   },
   "blockers": [
-    "P4-R1.1-S1: raw 312 task-level tasks.jsonl missing from GitHub due *.jsonl ignore; metrics cannot independently be reproduced",
-    "P4-R1.1-S2: B4/B5 actual live behavior is static heuristic / fixed text bundle rather than LinUCB / conditional NSGA-III controller",
-    "P4-R1.1-S3: Provider budget only reserved at agent attempt start, 2-8 underlying requests settled afterward; per-request cap not proven",
-    "P4-R1.1-S4: bootstrap ignores repeated task clustering; CEA vs random non-significant"
+    "P0 fresh clone: analyze_phase4.py/test_phase4_analysis.py/test_phase4_integrity.py still require uncommitted tasks.jsonl",
+    "P0 live run_phase4_pilot.py uses provider_endpoint=None; BudgetProxy not integrated, no verified Docker access",
+    "P0 BudgetProxy _forward omits Authorization; concurrency ignores in-flight worst-case reservation; no pre-send persistent ledger",
+    "P1 CausalPolicyAdapter not used in live/dry-run evaluator; cea_v1 ignores most failure state and expected source SHA is not pinned"
   ],
   "limitations": [
     "actual billed cost unknown (balance resolution/lag)",
@@ -102,8 +102,8 @@
     "tests/test_causal_policy_adapter.py",
     "tests/test_direct_connect.py"
   ],
-  "notes": "P4 R1.1 remediation complete offline: evidence republished + reconcilable, algorithm fidelity disclosed + real adapters, per-request budget gate, cluster bootstrap, direct-connect config. Zero new API calls. Awaiting Planner review.",
-  "next_goal": "Offline Phase 4 evidence recovery, algorithm fidelity audit, provider request budget gate, task-cluster statistics; no paid API",
+  "notes": "Planner independently parsed 312 auditable GitHub rows, matches pass rates/cost/pair counts; R1.1 incomplete: clean-clone scripts still require ignored raw tasks.jsonl, live proxy unintegrated/incomplete under concurrency and auth, adapter not in live dispatcher. No new paid API authorization.",
+  "next_goal": "R1.2 offline: fresh clone statistics from auditable rows; live budget proxy integration + concurrency reservation + auth; authentic adapter orchestration; no DeepSeek API",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -282,7 +282,15 @@
     "paid_api_budget_cny_next_round": 0,
     "statistical_conclusion": "B5 vs B0 not significant; B5 vs random B1 not significant; superiority unsupported",
     "raw_task_rows_in_git": false,
-    "algorithm_fidelity": "B4/B5 are proxy/static live arms as coded; not proven full CEA controllers"
+    "algorithm_fidelity": "B4/B5 are proxy/static live arms as coded; not proven full CEA controllers",
+    "r1_1_planner_review": "CHANGES_REQUESTED_PARTIAL",
+    "r1_1_review_head": "9c7148eb34020c50295a0bda52cef0647df9702b",
+    "r1_1_evidence_projection_verified": true,
+    "r1_1_rows": 312,
+    "r1_1_new_api_authorized": 0,
+    "r1_2_next_plan": "CE-DSH-P4-R1.2",
+    "r1_1_clean_clone_recompute": false,
+    "r1_1_proxy_integrated": false
   },
   "phase4_r1_1": {
     "new_live_calls": 0,
