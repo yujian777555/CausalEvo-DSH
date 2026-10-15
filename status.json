@@ -3,18 +3,18 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4",
-  "previous_plan_id": "CE-DSH-P3.2",
+  "plan_id": "CE-DSH-P4-R1.1",
+  "previous_plan_id": "CE-DSH-P4",
   "phase": "Phase 4",
-  "phase_status": "READY_FOR_REVIEW",
-  "planner_review": "PENDING",
-  "next_actor": "GPT-Planner",
+  "phase_status": "CHANGES_REQUESTED",
+  "planner_review": "CHANGES_REQUESTED",
+  "next_actor": "Kimi-Executor",
   "planner_review_date": "2026-10-10",
   "executor_fix_date": "2026-10-15",
   "baseline_main_sha": "a9bef642e35eeed398f5578890a00f8872af2af0",
-  "reviewed_executor_head": "c6276450fd97f0d1d047e151423bd5e2ecb21225",
+  "reviewed_executor_head": "bddb17d632ca40a36468d82bb4dad3fd41f37644",
   "plan_path": "planner/latest_plan.md",
-  "review_path": "planner/reviews/CE-DSH-P1-R1-final.md",
+  "review_path": "planner/reviews/CE-DSH-P4-R1-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "docs/PHASE4_FINAL_EVALUATION.md",
   "implementation": {
@@ -73,7 +73,12 @@
     "budget_cap_runtime_cny": 4.83,
     "new_live_calls_this_round": 0
   },
-  "blockers": [],
+  "blockers": [
+    "P4-R1.1-S1: raw 312 task-level tasks.jsonl missing from GitHub due *.jsonl ignore; metrics cannot independently be reproduced",
+    "P4-R1.1-S2: B4/B5 actual live behavior is static heuristic / fixed text bundle rather than LinUCB / conditional NSGA-III controller",
+    "P4-R1.1-S3: Provider budget only reserved at agent attempt start, 2-8 underlying requests settled afterward; per-request cap not proven",
+    "P4-R1.1-S4: bootstrap ignores repeated task clustering; CEA vs random non-significant"
+  ],
   "limitations": [
     "actual billed cost unknown (balance resolution/lag)",
     "task_validity of stored 100 samples unknown (bodies not persisted)",
@@ -90,8 +95,8 @@
     "tests/test_phase4_pilot.py",
     "tests/test_phase4_integrity.py"
   ],
-  "notes": "Phase 4 real-agent validation complete: 312 recorded live runs, CNY 0.715 of 3.00 cap. CEA-v1 not significantly better than baselines at this scale (honest negative). Awaiting Planner review.",
-  "next_goal": "Phase1 R2 offline Harness real-tool bridge, FS read isolation, run-time budget and repeat-dedup gate, no paid API",
+  "notes": "Planner reviewed GitHub Phase4 code and summary: negative result retained, but raw task rows absent from remote and algorithm/budget-gate fidelity unresolved. Offline repair only, no new live API permission.",
+  "next_goal": "Offline Phase 4 evidence recovery, algorithm fidelity audit, provider request budget gate, task-cluster statistics; no paid API",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -226,7 +231,7 @@
     },
     "ablation": {
       "A2_history": 0.949,
-      "A3_plain_reward": 1.0,
+      "A3_plain_reward": 1,
       "note": "history no benefit in tiny stationary state space; plain reward overestimates (documented)"
     },
     "live_calls_made": 0,
@@ -251,7 +256,7 @@
     "live_authorized": true,
     "live_runs": 312,
     "spent_cny": 0.714923,
-    "budget_cap_cny": 3.0,
+    "budget_cap_cny": 3,
     "pass_rates": {
       "B0": 0.808,
       "B1": 0.923,
@@ -263,6 +268,13 @@
     "evolution_gain_B5_minus_B0": 0.0769,
     "significance": "B5 vs B0 p=0.344 (ns); B5 vs B1 p=0.727 (ns); CIs cross 0",
     "honest_conclusion": "platform end-to-end validated; algorithmic superiority NOT demonstrated at this scale",
-    "run_dir": "results/phase4/live/phase4-live-20261014T110259Z"
+    "run_dir": "results/phase4/live/phase4-live-20261014T110259Z",
+    "planner_review": "CHANGES_REQUESTED",
+    "live_new_calls_authorized": 0,
+    "next_plan": "CE-DSH-P4-R1.1",
+    "paid_api_budget_cny_next_round": 0,
+    "statistical_conclusion": "B5 vs B0 not significant; B5 vs random B1 not significant; superiority unsupported",
+    "raw_task_rows_in_git": false,
+    "algorithm_fidelity": "B4/B5 are proxy/static live arms as coded; not proven full CEA controllers"
   }
 }
