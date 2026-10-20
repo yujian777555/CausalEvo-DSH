@@ -3,18 +3,18 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4-R1.5",
-  "previous_plan_id": "CE-DSH-P4-R1.4",
-  "phase": "Phase 4 R1.5",
-  "phase_status": "READY_FOR_REVIEW",
-  "planner_review": "CHANGES_REQUESTED",
-  "next_actor": "GPT-Planner",
+  "plan_id": "CE-DSH-P4-R1.6",
+  "previous_plan_id": "CE-DSH-P4-R1.5",
+  "phase": "Phase 4 R1.6",
+  "phase_status": "READY_FOR_EXECUTION",
+  "planner_review": "ACCEPTED_WITH_LIVE_READINESS_BLOCKERS",
+  "next_actor": "Kimi-Executor",
   "planner_review_date": "2026-10-20",
   "executor_fix_date": "2026-10-20",
   "baseline_main_sha": "d9fbfa2697eb68f760fd3c9c2813376cbda679f8",
-  "reviewed_executor_head": "63e80e894c08a8bb90d5e006d96d5c3cbc740bbb",
+  "reviewed_executor_head": "a6e6b6e4490ba56ec67fe694fc307242fc8b1af3",
   "plan_path": "planner/latest_plan.md",
-  "review_path": "planner/reviews/CE-DSH-P4-R1_4-independent-review.md",
+  "review_path": "planner/reviews/CE-DSH-P4-R1_5-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
@@ -44,7 +44,10 @@
       "v2_offline_driver": "tests/test_phase4_v2_offline.py 7/7 (4 scenarios x 2 arms, real docker)",
       "clean_clone": "final-SHA clean clone incl. 7 key suites (see phase4_r1_5.clean_clone_final)",
       "frozen_integrity": "test_live_csv_consistency/test_phase4_integrity etc. pass"
-    }
+    },
+    "planner_reviewed_head": "a6e6b6e4490ba56ec67fe694fc307242fc8b1af3",
+    "clean_clone_tested_sha": "63e80e894c08a8bb90d5e006d96d5c3cbc740bbb",
+    "current_remote_head": "a6e6b6e4490ba56ec67fe694fc307242fc8b1af3"
   },
   "live_api": {
     "run": true,
@@ -87,7 +90,11 @@
     "budget_cap_runtime_cny": 4.83,
     "new_live_calls_this_round": 0
   },
-  "blockers": [],
+  "blockers": [
+    "Live pilot remains unauthorized while TUN-level direct routing to api.deepseek.com:443 is DIRECT_ROUTE_UNVERIFIED",
+    "R1.6 should harden corrupted-ledger handling for extremely large integer literals that may raise OverflowError/ValueError rather than controlled ledger_corrupt state",
+    "R1.5 clean-clone passed at 63e80e894c08a8bb90d5e006d96d5c3cbc740bbb; later docs-only HEAD a6e6b6e4490ba56ec67fe694fc307242fc8b1af3 is explicitly disclosed as not re-gated"
+  ],
   "blockers_note": "R1.4-review P0-A/P0-B and P1-C/D/E are addressed in CE-DSH-P4-R1.5 (see phase4_r1_5). Historical review records preserved under phase4_r1_2_review / phase4_r1_3_review / phase4_r1_4_review. No currently open P0/P1 items at handback.",
   "limitations": [
     "actual billed cost unknown (balance resolution/lag)",
@@ -96,27 +103,6 @@
     "TUN-level DeepSeek DIRECT route remains DIRECT_ROUTE_UNVERIFIED (no live calls this round)",
     "v2-offline results are adapter_integration_smoke (fake provider); NOT algorithm generalization or real-agent improvement evidence",
     "docker inspect Config.Env readable by host-privileged users (documented host trust boundary; key no longer in CLI argv)"
-  ],
-  "evidence": [
-    "scripts/clean_clone_check.py",
-    "src/causalevo/eval/auditable.py",
-    "src/causalevo/eval/budget_proxy.py",
-    "src/causalevo/eval/networks.py",
-    "src/causalevo/eval/proxy_control.py",
-    "scripts/proxy_server.py",
-    "scripts/run_phase4_v2_offline.py",
-    "results/phase4/v2-offline/run-20261020T104048Z/",
-    "configs/phase3_artifact_manifest.json",
-    "docs/PHASE4_R1_4_REMEDIATION.md",
-    "docs/PHASE4_R1_3_REMEDIATION.md",
-    "tests/test_proxy_integration_e2e.py",
-    "tests/test_auditable.py",
-    "tests/test_budget_proxy.py",
-    "tests/test_budget_proxy_r14.py",
-    "tests/test_credential_isolation.py",
-    "tests/test_proxy_control.py",
-    "tests/test_causal_policy_adapter.py",
-    "tests/test_phase4_v2_offline.py"
   ],
   "evidence": [
     "scripts/clean_clone_check.py",
@@ -141,7 +127,7 @@
     "tests/test_causal_policy_adapter.py",
     "tests/test_phase4_v2_offline.py"
   ],
-  "notes": "R1.5 closes the R1.4-review defects: per-field strict output-token validation (True==1 / 256.0==256 bypass closed); shared _valid_amount for initial+duplicate ledger monetary events (NaN/Inf/bool/negative/conflict -> corrupt fail-closed); full-suite count unified at 567 with the 523/525 cause documented; final-SHA clean-clone re-executed; frozen-data provenance corrected (sweep artifact = controlled publication, canonical-LF hash, byte-compare evidence). No live pilot authorization.",
+  "notes": "R1.5 accepted for offline engineering after GitHub source/test/report inspection; GPT did not independently rerun Windows/Docker tests. No live API pilot authorization. Remaining live-readiness blocker: DIRECT_ROUTE_UNVERIFIED. R1.6 adds overflow-safe corrupt-ledger handling and TCP/TLS-only route diagnostics with zero HTTP/API requests.",
   "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.5",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
@@ -475,5 +461,23 @@
       "F_zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
     },
     "clean_clone_final": "PASS at 63e80e894c08a8bb90d5e006d96d5c3cbc740bbb: 'CLEAN CLONE OK: HEAD 63e80e894c08 == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 144 key-suite tests passed (exit 0; includes test_budget_proxy_r15). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)"
+  },
+  "phase4_r1_5_review": {
+    "status": "ACCEPTED_FOR_OFFLINE_ENGINEERING",
+    "reviewed_head": "a6e6b6e4490ba56ec67fe694fc307242fc8b1af3",
+    "code_test_sha": "63e80e894c08a8bb90d5e006d96d5c3cbc740bbb",
+    "docs_only_followup_sha": "a6e6b6e4490ba56ec67fe694fc307242fc8b1af3",
+    "review_method": "GitHub source/test/status/report/tree/commit inspection; no independent Windows/Docker test rerun",
+    "p0_a_output_alias_validation": "PASS_BY_SOURCE_REVIEW",
+    "p0_b_ledger_numeric_validation": "PASS_BY_SOURCE_REVIEW",
+    "p1_c_full_suite_count": "567 passed / 0 failed / 0 skipped reported consistently; not independently rerun",
+    "p1_d_clean_clone": "PASS at 63e80e894c08a8bb90d5e006d96d5c3cbc740bbb; docs-only a6e6 follow-up explicitly disclosed as not rerun",
+    "p1_e_frozen_provenance": "PASS_WITH_CONTROLLED_SWEEP_ARTIFACT_ADDITION_DISCLOSED",
+    "minor_report_correction": "R1.5 test file appears to split 42 tests as 21 alias + 21 ledger, not 20 + 22; correct prose in R1.6",
+    "live_readiness": "NOT_READY",
+    "direct_route": "DIRECT_ROUTE_UNVERIFIED",
+    "new_api_calls": 0,
+    "new_spend_cny": 0,
+    "next_plan": "CE-DSH-P4-R1.6"
   }
 }
