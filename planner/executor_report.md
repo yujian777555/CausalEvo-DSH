@@ -86,6 +86,16 @@
 - 本报告与 status.json 的 SHA 记录为紧随的 housekeeping commit（仅改 status.json/executor_report.md，不动代码与测试）。
 - **最终 HEAD（housekeeping commit）的 clean-clone 在 push 后实测**：脚本强制校验 clone HEAD == `git ls-remote origin main`（不一致即 exit 2），clone 内执行 reconcile 复算（312 行）+ phase4 子集 + 7 个关键套件（credential_isolation / budget_proxy / budget_proxy_r14 / proxy_control / proxy_integration_e2e / causal_policy_adapter / phase4_v2_offline，含 Docker）。完整 SHA 与逐字输出见本节下方补充与 Executor 交付消息。
 - **Gate 首次执行发现并修复两个 R1.3 S6 缺陷**：(1) manifest 钉定对换行符敏感（CRLF 工作区 vs LF clone）——改为 `canonical_sha256()` LF 规范化哈希（pareto `41119e59…`、sweep `564f7d18…`）；(2) `sweep_results.jsonl` 被 `*.jsonl` 忽略从未提交——`.gitignore` 精确白名单后补入库（内容不变）。修复后 v2 证据重新生成于 `results/phase4/v2-offline/run-20261020T104048Z`，最终 SHA Gate 对修复后 HEAD 重新执行（输出见下）。
+- **最终 SHA Gate 实测输出（逐字）**：
+  ```
+  verified: 312 auditable rows recompute to the committed analysis (incl. cluster bootstrap)
+  34 passed (phase4 subset)
+  102 passed (credential_isolation 9 + budget_proxy 27 + budget_proxy_r14 25 + proxy_control 8
+             + proxy_integration_e2e 7 + causal_policy_adapter 19 + phase4_v2_offline 7)
+  CLEAN CLONE OK: HEAD 13971ac111ec == origin/main; 312 auditable rows recompute in a fresh clone
+  ```
+- **Gate 验证 SHA（完整）**：`13971ac111ec46d1ffe3964f0661616592ef03ee`（= 执行 Gate 时的 origin/main 与本地 HEAD）。
+- 本记录提交（housekeeping）仅改 status.json 与 executor_report.md，不含任何代码/测试变更；按 P1-F 如实声明：Gate 在 `13971ac…` 通过，记录提交本身未再触发 Gate（如需可用 `python scripts/clean_clone_check.py` 随时重验当前 HEAD）。
 - 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 零改动；密钥扫描 0 命中。
 
 ## 冻结完整性

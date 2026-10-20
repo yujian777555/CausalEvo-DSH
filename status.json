@@ -408,10 +408,10 @@
       "C_credential_isolation_on_github_and_runnable": "PASS",
       "D_no_key_in_docker_argv_proxy_still_authenticated": "PASS",
       "E_conflicting_duplicates_fail_closed": "PASS",
-      "F_final_sha_clean_clone": "EXECUTED_POST_PUSH_ON_FINAL_HEAD (see clean_clone_final)",
+      "F_final_sha_clean_clone": "PASS at 13971ac111ec46d1ffe3964f0661616592ef03ee (102 key-suite + 34 phase4-subset + reconcile; HEAD==origin/main enforced)",
       "G_frozen_data_untouched": "PASS",
       "H_zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
     },
-    "clean_clone_final": "clean_clone_check.py executed post-push against the FINAL housekeeping HEAD (ls-remote==local enforced by the script); suites: reconcile + phase4 subset + credential_isolation/budget_proxy/budget_proxy_r14/proxy_control/proxy_integration_e2e/causal_policy_adapter/phase4_v2_offline; verbatim output recorded in planner/executor_report.md Git-delivery section and the executor handback message"
+    "clean_clone_final": "PASS at 13971ac111ec46d1ffe3964f0661616592ef03ee: 'CLEAN CLONE OK: HEAD 13971ac111ec == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 102 key-suite tests passed (exit 0). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)"
   }
 }
