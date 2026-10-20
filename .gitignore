@@ -27,6 +27,7 @@ logs/
 *.jsonl
 !results/phase1/**/traces.jsonl
 !results/phase4/**/auditable_tasks.jsonl
+!results/phase4/dry-run-evidence/*.jsonl
 
 # --- benchmark scratch ---
 results/phase0/tmp/

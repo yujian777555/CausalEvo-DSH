@@ -22,12 +22,21 @@ def main() -> int:
         assert not (clone / "results/phase4/live/phase4-live-20261014T110259Z/tasks.jsonl").exists(), \
             "raw tasks.jsonl must NOT be in a fresh clone"
         py = clone / "venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
-        subprocess.run([sys.executable, "-m", "venv", str(clone / "venv")],
+        # build the venv from the PROJECT interpreter (lockfile pins require
+        # >=3.10); never whatever `python` happens to be on PATH
+        base_py = str(REPO / ".venv" / "Scripts" / "python.exe") \
+            if (REPO / ".venv" / "Scripts" / "python.exe").is_file() else sys.executable
+        subprocess.run([base_py, "-m", "venv", str(clone / "venv")],
                        check=True, cwd=work)
+        import os
+        env = dict(os.environ)
+        env["PIP_INDEX_URL"] = "https://pypi.org/simple"
+        subprocess.run([str(py), "-m", "pip", "install", "--quiet", "--upgrade", "pip"],
+                       check=True, cwd=clone, env=env)
         subprocess.run(
             [str(py), "-m", "pip", "install", "--quiet",
              "-r", "requirements-lock.txt"],
-            check=True, cwd=clone)
+            check=True, cwd=clone, env=env)
         # the recomputation subset: reader validation + full analysis + reconcile
         subprocess.run(
             [str(py), "scripts/reconcile_phase4_rows.py"], check=True, cwd=clone)

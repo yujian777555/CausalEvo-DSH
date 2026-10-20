@@ -111,9 +111,10 @@ def test_analysis_outputs_written():
 
 
 def test_dry_run_artifacts_exist():
-    runs = sorted(DRY.glob("phase4-dry-*"))
-    assert runs
-    rows = [json.loads(l) for l in (runs[-1] / "tasks.jsonl").read_text(encoding="utf-8").splitlines()]
+    # committed evidence path (dry-run-evidence), not the gitignored scratch
+    evidence = REPO / "results" / "phase4" / "dry-run-evidence"
+    assert (evidence / "tasks.jsonl").is_file(), "dry-run evidence missing"
+    rows = [json.loads(l) for l in (evidence / "tasks.jsonl").read_text(encoding="utf-8").splitlines()]
     assert len(rows) == 24
     for r in rows:
         if r["arm"] == "B0-original":
