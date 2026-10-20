@@ -1,0 +1,15 @@
+{
+  "experiment_version": "p4-r1.2-v2",
+  "arms": [
+    "B4-v2",
+    "B5-v2"
+  ],
+  "provider": "fake tape (offline)",
+  "provenance": {
+    "repo_head_sha": "2e0b834cb55124592f4e5019c282503c7559a30e",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-20T03:26:11.117337+00:00"
+  },
+  "note": "adapter-driven intervention selection; NOT merged into the 2026-10-14 pilot"
+}

@@ -91,11 +91,62 @@ class CausalPolicyAdapter:
                    provenance={"pareto_front_path": str(pareto_front_path),
                                "pareto_front_sha256": source_sha,
                                "genome_id": genome.genome_id,
-                               "train_fitness": member["train_fitness"]})
+                               "train_fitness": member["train_fitness"],
+                               "front_size": len(front)})
+
+    # frozen selection rule (P4-R1.2-S4): failure-conditioned genome choice.
+    # Recorded at build time; never tuned on evaluation results.
+    def select_genome(self, *, failure_kind: str, edited: bool,
+                      invalid: bool) -> dict[str, Any]:
+        """Failure-conditioned deployment: pick the front member whose active
+        genes match the observable failure evidence. Frozen rule — changing it
+        requires a new adapter version."""
+        if self.mode != "cea-v1":
+            raise RuntimeError("select_genome is only valid for cea-v1 mode")
+        front = self._front_members()
+        infra = failure_kind in ("unknown_cost", "budget_stop", "transport", "protocol")
+        if infra:
+            return {"genome": None, "reason": f"infra failure {failure_kind}: no retry",
+                    "adapter_version": ADAPTER_VERSION}
+        def _has(gene):
+            out = []
+            for m in front:
+                g = InterventionGenome.from_dict(m["genome"])
+                if g.as_dict().get(gene, 0) > 0:
+                    out.append((g, m))
+            return out
+        if invalid and _has("verification_level"):
+            g, m = _has("verification_level")[0]
+            return {"genome": g, "reason": "invalid -> verification-heavy genome",
+                    "genome_id": g.genome_id, "train_fitness": m["train_fitness"],
+                    "adapter_version": ADAPTER_VERSION}
+        if not edited and _has("read_before_write"):
+            g, m = _has("read_before_write")[0]
+            return {"genome": g, "reason": "no-edit -> read-first genome",
+                    "genome_id": g.genome_id, "train_fitness": m["train_fitness"],
+                    "adapter_version": ADAPTER_VERSION}
+        if _has("tool_validation"):
+            g, m = _has("tool_validation")[0]
+            return {"genome": g, "reason": "default -> tool-validation genome",
+                    "genome_id": g.genome_id, "train_fitness": m["train_fitness"],
+                    "adapter_version": ADAPTER_VERSION}
+        return {"genome": self.genome, "reason": "fallback: deployed default genome",
+                "genome_id": self.genome.genome_id, "adapter_version": ADAPTER_VERSION}
+
+    def _front_members(self) -> list[dict[str, Any]]:
+        path = Path(self.provenance["pareto_front_path"])
+        front = json.loads(path.read_text(encoding="utf-8"))
+        # re-verify the source hash on every read (frozen artifact integrity)
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual != self.provenance["pareto_front_sha256"]:
+            raise ValueError("pareto_front.json hash changed since adapter load")
+        return front
 
     def intervention_for(self, *, failure_kind: str, edited: bool,
-                         invalid: bool) -> dict[str, Any]:
-        """cea-v1: map observable failure evidence through the frozen genome.
+                         invalid: bool,
+                         genome: InterventionGenome | None = None) -> dict[str, Any]:
+        """cea-v1: map observable failure evidence through a frozen genome
+        (explicit override from select_genome, else the deployed default).
 
         Infra failures (unknown_cost/budget_stop/transport/protocol) never get
         a behavioral intervention — they escalate, per the fail-closed rules.
@@ -106,8 +157,9 @@ class CausalPolicyAdapter:
 
         if failure_kind in ("unknown_cost", "budget_stop", "transport", "protocol"):
             return {"text": None, "reason": f"infra failure {failure_kind}: escalate, no retry",
-                    "genome_id": self.genome.genome_id, "adapter_version": ADAPTER_VERSION}
-        active = {g: v for g, v in self.genome.as_dict().items() if v > 0}
+                    "genome_id": None, "adapter_version": ADAPTER_VERSION}
+        g = genome or self.genome
+        active = {k: v for k, v in g.as_dict().items() if v > 0}
         texts = []
         for gene in active:
             key = _GENE_TO_TEXT_KEY.get(gene)
@@ -115,9 +167,9 @@ class CausalPolicyAdapter:
                 texts.append(INTERVENTION_TEXT[key])
         return {
             "text": " ".join(texts) if texts else None,
-            "reason": (f"genome {self.genome.genome_id} active genes {sorted(active)}"
+            "reason": (f"genome {g.genome_id} active genes {sorted(active)}"
                        if texts else "genome has no executable genes (no-op)"),
-            "genome_id": self.genome.genome_id,
+            "genome_id": g.genome_id,
             "adapter_version": ADAPTER_VERSION,
             "provenance": self.provenance,
         }

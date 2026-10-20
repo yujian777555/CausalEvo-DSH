@@ -103,6 +103,6 @@ def test_cost_analysis_per_arm_keys():
 
 
 def test_no_hidden_test_leakage_in_rows():
-    text = (RUN / "tasks.jsonl").read_text(encoding="utf-8")
+    text = (RUN / "auditable_tasks.jsonl").read_text(encoding="utf-8")
     assert "sealed_tests.py" not in text
     assert "solution_fixed" not in text

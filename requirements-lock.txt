@@ -30,3 +30,10 @@ PyYAML==6.0.3
 tomli==2.5.0
 typing-inspection==0.4.4
 typing_extensions==4.16.0
+
+# Phase 2.2 diagnosis models (added 2026-10-14; was missing from the lock)
+joblib==1.6.0
+numpy==2.2.6
+scikit-learn==1.7.2
+scipy==1.15.3
+threadpoolctl==3.7.0

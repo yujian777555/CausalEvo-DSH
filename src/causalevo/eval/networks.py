@@ -22,7 +22,116 @@ TAPE_SERVER_PATH = Path(__file__).with_name("tape_server.py")
 
 
 def _docker(*args: str, timeout: int = 60) -> subprocess.CompletedProcess:
-    return subprocess.run(["docker", *args], capture_output=True, text=True, timeout=timeout)
+    import os
+    env = dict(os.environ)
+    env["MSYS_NO_PATHCONV"] = "1"  # never let MSYS rewrite /opt, /work etc.
+    return subprocess.run(["docker", *args], capture_output=True, text=True,
+                          timeout=timeout, env=env)
+
+
+class ProxyContainer:
+    """The budget-gate proxy as a container (P4-R1.2-S2).
+
+    Topology: agent containers live on the INTERNAL ceval-net and can reach
+    only the proxy by name; the proxy is additionally attached to the default
+    bridge for DIRECT upstream egress (its client uses an empty ProxyHandler).
+    The control channel (set_current_task) is published to host loopback only;
+    agents cannot reach it. The upstream API key is injected into the proxy's
+    env at start — never into agent containers.
+    """
+
+    def __init__(self, *, upstream: str, ledger_dir: Path,
+                 upstream_api_key: str | None = None,
+                 max_requests_per_task: int = 8, cap_cny: float = 3.0,
+                 network: str = INTERNAL_NETWORK) -> None:
+        self.upstream = upstream
+        self.ledger_dir = ledger_dir
+        self.upstream_api_key = upstream_api_key
+        self.max_requests_per_task = max_requests_per_task
+        self.cap_cny = cap_cny
+        self.network = network
+        self.name = f"ceval-proxy-{uuid.uuid4().hex[:10]}"
+
+    @property
+    def endpoint(self) -> str:
+        return f"http://{self.name}:8081"
+
+    def __enter__(self) -> "ProxyContainer":
+        ensure_internal_network(self.network)
+        self.ledger_dir.mkdir(parents=True, exist_ok=True)
+        repo = Path(__file__).resolve().parents[3]
+        env = [
+            "-e", f"CE_PROXY_UPSTREAM={self.upstream}",
+            "-e", f"CE_PROXY_MAX_PER_TASK={self.max_requests_per_task}",
+            "-e", f"CE_PROXY_CAP_CNY={self.cap_cny}",
+            "-e", "CE_PROXY_AUTHORIZED=1",
+        ]
+        if self.upstream_api_key:
+            env += ["-e", f"CE_PROXY_KEY={self.upstream_api_key}"]
+        proc = _docker(
+            "run", "-d", "--name", self.name,
+            "--network", self.network,
+            "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,size=16m",
+            "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+            "--memory", "256m", "--cpus", "0.5", "--pids-limit", "64",
+            *env,
+            "-v", f"{repo / 'src'}:/opt/src:ro",
+            "-v", f"{repo / 'scripts' / 'proxy_server.py'}:/opt/proxy_server.py:ro",
+            "-v", f"{self.ledger_dir.resolve()}:/ledger",
+            PROVIDER_IMAGE, "python", "/opt/proxy_server.py",
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(f"proxy container failed: {proc.stderr.strip()}")
+        # second NIC: default bridge for DIRECT upstream egress (agent net stays internal)
+        proc2 = _docker("network", "connect", "bridge", self.name)
+        if proc2.returncode != 0:
+            _docker("rm", "-f", self.name)
+            raise RuntimeError(f"proxy bridge connect failed: {proc2.stderr.strip()}")
+        self._wait_ready()
+        return self
+
+    def _wait_ready(self, timeout_s: float = 45.0) -> None:
+        deadline = time.monotonic() + timeout_s
+        while time.monotonic() < deadline:
+            alive = _docker("inspect", self.name, "--format", "{{.State.Running}}")
+            if alive.returncode == 0 and alive.stdout.strip() == "true":
+                logs = _docker("logs", self.name).stdout
+                if "proxy up" in logs:
+                    return
+                if "Traceback" in logs or "Error" in logs:
+                    raise RuntimeError(f"proxy crashed: {logs[-500:]}")
+            time.sleep(0.4)
+        raise RuntimeError(f"proxy {self.name} not ready in {timeout_s}s")
+
+    def set_current_task(self, task_id: str) -> None:
+        """Trusted attribution via the shared ledger dir (host-only channel;
+        the agent network has no route to it). Synchronous: waits for the
+        proxy's ack so a following request can never race the attribution."""
+        (self.ledger_dir / "control.json").write_text(
+            json.dumps({"task_id": task_id}), encoding="utf-8")
+        ack = self.ledger_dir / "control_ack.json"
+        if ack.exists():
+            ack.unlink()
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            if ack.is_file():
+                try:
+                    if json.loads(ack.read_text(encoding="utf-8")).get("task_id") == task_id:
+                        return
+                except json.JSONDecodeError:
+                    pass
+            time.sleep(0.1)
+        raise RuntimeError(f"control channel did not ack task {task_id}")
+
+    def snapshot(self) -> dict:
+        # ledger on the host mount is the durable source
+        ledger = self.ledger_dir / "ledger.jsonl"
+        entries = [json.loads(l) for l in ledger.read_text(encoding="utf-8").splitlines()
+                   if l.strip()] if ledger.is_file() else []
+        return {"ledger_entries": len(entries), "entries": entries}
+
+    def __exit__(self, *exc) -> None:
+        _docker("rm", "-f", self.name, timeout=20)
 
 
 def ensure_internal_network(name: str = INTERNAL_NETWORK) -> str:

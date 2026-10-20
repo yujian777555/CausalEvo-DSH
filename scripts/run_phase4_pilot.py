@@ -65,10 +65,11 @@ def main() -> int:
 
     def make_runner(attempt: int) -> ContainerHarnessRunner:
         if live:
+            proxy.set_current_task(_current_spec[0].task_id if _current_spec[0] else "unknown")
             return ContainerHarnessRunner(
                 image=IMAGE, patch_path=PATCH, model="deepseek-flash",
                 reasoning_effort="low", max_tokens=256, provider_kind="live",
-                provider_endpoint=None, network="bridge")
+                provider_endpoint=proxy.endpoint, network="ceval-net")
         tape = _attempt_tape(_current_spec[0], attempt)
         provider = ProviderContainer(tape)
         provider.__enter__()
@@ -81,12 +82,20 @@ def main() -> int:
     if live:
         require_live_authorization()
         from causalevo.balance import query_balance_cny
+        from causalevo.eval.networks import ProxyContainer
         import os
         key = os.environ["DEEPSEEK_API_KEY"]
         set_api_key(key)
         balance = query_balance_cny(key)
         cap = min(BUDGET_CAP_CNY, balance)
-        print(f"live pilot: balance={balance:.2f} cap={cap:.2f}")
+        # the ONLY live path: proxy container holds the key and gates every
+        # request; agent containers get a placeholder and the internal net.
+        proxy = ProxyContainer(upstream="https://api.deepseek.com",
+                               ledger_dir=(out_dir if args.out else REPO / "results" / "phase4" / "live") / f"proxy-ledger-{new_run_id()}",
+                               upstream_api_key=key, cap_cny=cap)
+        proxy.__enter__()
+        providers.append(proxy)
+        print(f"live pilot: balance={balance:.2f} cap={cap:.2f} proxy={proxy.endpoint}")
     else:
         set_api_key("sk-fake-offline-no-cost")
         cap = BUDGET_CAP_CNY

@@ -85,7 +85,7 @@ def test_cost_within_budget_cap():
 
 
 def test_no_api_key_in_artifacts():
-    blob = RUN / "tasks.jsonl"
+    blob = RUN / "auditable_tasks.jsonl"
     text = blob.read_text(encoding="utf-8")
     assert "sk-" not in text
 

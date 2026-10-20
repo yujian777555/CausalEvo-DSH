@@ -7,14 +7,31 @@ No averages without intervals."""
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import numpy as np
 
 
-def load_rows(run_dir: Path) -> list[dict[str, Any]]:
-    return [json.loads(l) for l in (run_dir / "tasks.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+def load_rows(run_dir: Path, source: str = "auditable") -> list[dict[str, Any]]:
+    """Default: the committed de-identified projection (works on a fresh
+    clone). source='original' reads the raw tasks.jsonl — LOCAL-ONLY (never
+    committed); raises if absent instead of fabricating."""
+    if source == "auditable":
+        from causalevo.eval.auditable import read_auditable_rows
+        return read_auditable_rows(run_dir / "auditable_tasks.jsonl")
+    if source == "original":
+        path = run_dir / "tasks.jsonl"
+        if not path.is_file():
+            raise FileNotFoundError(
+                f"raw tasks.jsonl not present at {path} (never committed; "
+                "use source='auditable' on fresh clones)")
+        return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()
+                if l.strip()]
+    raise ValueError(f"unknown source {source!r}")
 
 
 def pass_rate(rows: list[dict], arm: str) -> float | None:
@@ -139,6 +156,10 @@ def analyze(run_dir: Path) -> dict[str, Any]:
                     mcnemar_exact(rows, "B4-cea-v0", "B5-cea-v1")],
         "bootstrap": [bootstrap_diff_ci(rows, "B5-cea-v1", "B0-original"),
                       bootstrap_diff_ci(rows, "B5-cea-v1", "B1-random")],
+        "cluster": [cluster_bootstrap_diff_ci(rows, "B5-cea-v1", "B0-original"),
+                    cluster_bootstrap_diff_ci(rows, "B5-cea-v1", "B1-random"),
+                    cluster_bootstrap_diff_ci(rows, "B4-cea-v0", "B5-cea-v1")],
+        "task_level": task_level_summary(rows),
         "cost": cost_analysis(rows),
     }
     if "B0-original" in arms and "B5-cea-v1" in arms:

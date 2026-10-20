@@ -258,10 +258,15 @@ class ContainerHarnessRunner:
                  reasoning_effort: str | None, max_tokens: int,
                  provider_kind: str = "fake",
                  provider_endpoint: str | None = None,
-                 network: str = "ceval-net") -> None:
+                 network: str = "ceval-net",
+                 agent_api_key: str | None = None) -> None:
         """Container Security Profile v2: read-only rootfs, tmpfs /tmp,
         cap-drop ALL, no-new-privileges, internal network only. The sole
-        reachable endpoint is `provider_endpoint` on the internal network."""
+        reachable endpoint is `provider_endpoint` on the internal network.
+
+        agent_api_key: the key handed to the agent container. When a budget
+        proxy fronts the provider, this is a placeholder (the proxy injects
+        the trusted key upstream); the real key never enters agent space."""
         self.image = image
         self.patch_path = patch_path
         self.model = model
@@ -270,6 +275,7 @@ class ContainerHarnessRunner:
         self.provider_kind = provider_kind
         self.provider_endpoint = provider_endpoint
         self.network = network
+        self.agent_api_key = agent_api_key
 
     def run_task(
         self,
@@ -280,6 +286,10 @@ class ContainerHarnessRunner:
         api_key: str,
         extra_prompt: str | None = None,
     ) -> AgentRunOutcome:
+        if self.provider_kind == "live" and not self.provider_endpoint:
+            raise PermissionError(
+                "live runs must go through the budget proxy: provider_endpoint is "
+                "required (no direct-to-API fallback exists)")
         name = f"ceval-agent-{uuid.uuid4().hex[:12]}"
         prompt = spec.instructions
         if extra_prompt:
@@ -292,7 +302,7 @@ class ContainerHarnessRunner:
             "max_tokens": self.max_tokens,
             "patch_yml": self.patch_path.read_text(encoding="utf-8"),
             "base_url": self.provider_endpoint,
-            "api_key": api_key,
+            "api_key": self.agent_api_key or api_key,
             "request_timeout_s": max(60, budget.wall_time_s),
         }
         cmd = [
