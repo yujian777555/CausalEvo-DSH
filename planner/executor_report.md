@@ -75,10 +75,13 @@ run_dir：results/phase4/v2-offline/run-20261020T090554Z（8 行：4 场景 × B
 3. v2 结果为 fake-provider 适配器 smoke；CEA-v0/v1 真实模型效果需独立预注册与新预算授权（不属本轮）。
 4. LinUCB 在冻结 sweep 上对所有行为 failure_type 选 lib:verification_failure（训练数据仅 3 类），已在每条记录中透明标注 reason/candidates。
 
-## Git 交付
+## Git 交付（已核验）
 
-- 修改/新增文件：见 `git status`（13 modified + 7 new；含 configs/phase3_artifact_manifest.json、docs/PHASE4_R1_3_REMEDIATION.md、results/phase4/v2-offline/run-20261020T090554Z/）。
-- Commit SHA、远端核验、clean-clone 实测：见本报告末尾补充（housekeeping commit）。
+- **Commit SHA：1ae933a48623da26d6941e051da4157fa25bd3e7**（本报告与 status.json 的 SHA 记录为随后的 housekeeping commit）。
+- `git ls-remote origin main` == 本地 HEAD（push 后实测一致）；工作区 clean。
+- clean-clone 实测（push 后）：`CLEAN CLONE OK: HEAD 1ae933a48623 == origin/main; 312 auditable rows recompute in a fresh clone`（fresh clone + fresh venv + lockfile；reconcile 校验 312 行 + 34 项子集测试通过；raw tasks.jsonl 不存在断言保持）。
+- 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 零改动；密钥扫描 0 命中。
+- 23 files changed, 1965 insertions(+), 358 deletions(-)（13 modified + 10 new，含 .gitignore 白名单）。
 
 ## 停止
 

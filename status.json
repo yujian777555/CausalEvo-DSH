@@ -19,10 +19,10 @@
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "RECORDED_IN_FOLLOWUP_COMMIT",
-    "github_commit_verified": false,
+    "latest_executor_commit": "1ae933a48623da26d6941e051da4157fa25bd3e7",
+    "github_commit_verified": true,
     "executor_reports_local_clean": true,
-    "note": "SHA recorded in the follow-up housekeeping commit after push + ls-remote verification"
+    "note": "verified via git ls-remote after push; clean-clone re-verified HEAD==origin/main on this SHA"
   },
   "tests": {
     "executor_reported_run": true,
