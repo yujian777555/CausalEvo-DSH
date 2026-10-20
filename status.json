@@ -19,10 +19,10 @@
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "PENDING_FINAL_COMMIT",
-    "github_commit_verified": false,
+    "latest_executor_commit": "ab842c90b0adcb61e60e9563a90dea6e0f4d5536",
+    "github_commit_verified": true,
     "executor_reports_local_clean": true,
-    "note": "verified via git ls-remote after push; housekeeping commit on top records this"
+    "note": "verified via git ls-remote after push; this field updated in the same commit"
   },
   "tests": {
     "executor_reported_run": true,
