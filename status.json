@@ -3,18 +3,18 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4-R1.2",
-  "previous_plan_id": "CE-DSH-P4-R1.1",
-  "phase": "Phase 4 R1.2",
-  "phase_status": "READY_FOR_REVIEW",
-  "planner_review": "PENDING",
-  "next_actor": "GPT-Planner",
+  "plan_id": "CE-DSH-P4-R1.3",
+  "previous_plan_id": "CE-DSH-P4-R1.2",
+  "phase": "Phase 4 R1.3",
+  "phase_status": "CHANGES_REQUESTED",
+  "planner_review": "CHANGES_REQUESTED",
+  "next_actor": "Kimi-Executor",
   "planner_review_date": "2026-10-10",
   "executor_fix_date": "2026-10-20",
   "baseline_main_sha": "a9bef642e35eeed398f5578890a00f8872af2af0",
-  "reviewed_executor_head": "9c7148eb34020c50295a0bda52cef0647df9702b",
+  "reviewed_executor_head": "be14f380433e6b08788e8dc47950a3a90c640b72",
   "plan_path": "planner/latest_plan.md",
-  "review_path": "planner/reviews/CE-DSH-P4-R1_1-independent-review.md",
+  "review_path": "planner/reviews/CE-DSH-P4-R1_2-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
@@ -81,10 +81,16 @@
     "new_live_calls_this_round": 0
   },
   "blockers": [
-    "P0 fresh clone: analyze_phase4.py/test_phase4_analysis.py/test_phase4_integrity.py still require uncommitted tasks.jsonl",
-    "P0 live run_phase4_pilot.py uses provider_endpoint=None; BudgetProxy not integrated, no verified Docker access",
-    "P0 BudgetProxy _forward omits Authorization; concurrency ignores in-flight worst-case reservation; no pre-send persistent ledger",
-    "P1 CausalPolicyAdapter not used in live/dry-run evaluator; cea_v1 ignores most failure state and expected source SHA is not pinned"
+    "P0: run_phase4_pilot.py passes real DEEPSEEK_API_KEY through _current_key() into ContainerHarnessRunner request JSON because agent_api_key is not set",
+    "P0: BudgetProxy restart fails to reconstruct settled _known_cost and _per_task counts; budget may reset",
+    "P0: ProxyContainer control ACK race and repeated identical task_id can timeout; scope currently conflates task/arm/seed",
+    "P0: Proxy binds 0.0.0.0 on a dual-NIC default-bridge container without ingress client authentication",
+    "P0: fixed worst-case reservation is not enforced against request model/max_tokens/prompt size",
+    "P1: run_phase4_pilot.py references out_dir before assignment when --live and --out are both set",
+    "P1: E2E cap test counts proxy SENT ledger rows rather than directly observing fake upstream requests",
+    "P1: CEA-v1 expected Pareto hash is not independently pinned; v2 driver is one-task synthetic smoke only",
+    "P1: clean-clone check clones local REPO rather than verifying the tested commit against origin/main",
+    "P1: status.json retains stale R1.1 blockers inconsistent with R1.2 claims"
   ],
   "limitations": [
     "actual billed cost unknown (balance resolution/lag)",
@@ -103,8 +109,8 @@
     "tests/test_auditable.py",
     "tests/test_budget_proxy.py"
   ],
-  "notes": "P4 R1.2 complete offline: clean-clone recompute proven, budget proxy integrated into the live runner path, v2 arms use real adapters. Zero new API calls. Awaiting review.",
-  "next_goal": "R1.2 offline: fresh clone statistics from auditable rows; live budget proxy integration + concurrency reservation + auth; authentic adapter orchestration; no DeepSeek API",
+  "notes": "R1.2 contains substantial progress but is not accepted. Current source inspection found P0 credential isolation, restart-accounting, control-channel, proxy ingress auth, and request-bound enforcement issues. No paid pilot authorization.",
+  "next_goal": "R1.3 offline: prevent real API key entering agent; restore Proxy ledger budget on restart; fix unique run-scope/ACK; protect proxy ingress; enforce request bounds; improve fake E2E and adapter smoke tests",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -310,5 +316,24 @@
     "proxy_integrated": "ProxyContainer dual-NIC ceval-net+bridge; live runner refuses without endpoint",
     "adapter_scheduled": "B4-v2 real LinUCB / B5-v2 failure-conditioned frozen Pareto genome",
     "direct_connect": "config-level DIRECT; TUN-level DIRECT_ROUTE_UNVERIFIED"
+  },
+  "phase4_r1_2_review": {
+    "status": "CHANGES_REQUESTED",
+    "reviewed_head": "be14f380433e6b08788e8dc47950a3a90c640b72",
+    "reviewed_by": "GPT-Planner",
+    "review_method": "GitHub source and test inspection; no rerun on Executor Windows/Docker environment; no live API calls",
+    "clean_clone": "PARTIAL_PASS",
+    "historical_projection": "PASS_STATIC_RECOMPUTE_REPORTED",
+    "proxy_integration": "PARTIAL_FAIL",
+    "secret_isolation": "FAIL",
+    "ledger_recovery": "FAIL",
+    "task_attribution": "FAIL",
+    "proxy_ingress_auth": "FAIL",
+    "request_bound_enforcement": "FAIL",
+    "algorithm_adapter": "OFFLINE_SMOKE_ONLY",
+    "direct_route": "DIRECT_ROUTE_UNVERIFIED",
+    "new_api_calls": 0,
+    "new_spend_cny": 0,
+    "next_plan": "CE-DSH-P4-R1.3"
   }
 }

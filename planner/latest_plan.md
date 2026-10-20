@@ -1,54 +1,91 @@
-# CE-DSH-P4-R1.2 — Fresh Clone Reproducibility & Provider Proxy Integration
+# CE-DSH-P4-R1.3 — Proxy Credential Isolation, Ledger Recovery & Run Scoping
 
-Planner 审核 SHA：`9c7148eb34020c50295a0bda52cef0647df9702b`
-正式 review：`planner/reviews/CE-DSH-P4-R1_1-independent-review.md`
-**本轮不准任何收费/模型 API 调用，预算 ¥0；也不可重新跑旧数据覆盖负面结果。**
+Planner review base: be14f380433e6b08788e8dc47950a3a90c640b72
 
-## S0 先确认代码与证据
+正式独立审查：planner/reviews/CE-DSH-P4-R1_2-independent-review.md
 
-Fetch origin/main；阅读 Review，检查历史冻结 hashes。旧 312 条实验不改动，原始来源 SHA 保留；只在新 audit 产物/独立模块修复。
+本轮必须修复 R1.2 独立审查中列出的全部 P0，并补齐 P1 回归测试。**新增 DeepSeek 模型 API 调用 = 0，新增付费预算 = ¥0。** 只允许 Fake Provider、离线重算和 Docker fake E2E。
 
-## S1 — P0 干净克隆可复算
+## 0. 接管
 
-- 为 `auditable_tasks.jsonl` 实现专用 reader：跳过并验证开头两行 `#` 元数据，解析并独立验证 312 行 row_sha16、字段、唯一 `(task_id,arm,seed)`、6x52、成本和试验摘要。源原始 `tasks.jsonl` 不应是复算必需品。
-- 修改 `scripts/analyze_phase4.py`、`recompute_phase4_stats.py` 和相关 tests/CI，让默认任务为只读 auditable projection；**保留**读取 original 并对照生成投影的独立可选 local-only 命令，缺失原始数据时不能伪称恢复成功。
-- 新建最小 fresh-clone 冒烟检查：在工作树暂时无法找到 `tasks.jsonl` 时所有统计/审计测试应通过；不能依赖已忽略的 scratch raw logs；测试不要因为代码依赖固定 Windows 路径而虚假通过。
-- 输出 versioned audit 对账文件，不修改 2026-10-14 原摘要。Task cluster bootstrap 与 McNemar/pairs 独立再生，与 R1.1 结果一致。
+- fetch origin/main，确认 HEAD。
+- 阅读本计划、独立审查、status.json、Executor 报告。
+- 保留 Phase 0–3 与 Phase 4 2026-10-14 的 312 行真实历史记录及 SHA；不得回填、重命名或重算覆盖历史原件。
+- 本轮结束前不运行 --live，不做真实余额查询、不连接真实 DeepSeek。
 
-## S2 — P0 Proxy 正式连入 ContainerHarnessRunner
+## S1 / P0：密钥隔离
 
-- 直接源码更新 `scripts/run_phase4_pilot.py` 的 live make_runner：显式创建并持有 `BudgetProxy` 生命周期，将 Harness base_url 指向 Docker 容器可访问的受控 proxy 地址；proxy 转发到用户批准的 DeepSeek 官方主机必须 DIRECT。不能保留 `provider_endpoint=None` 作为任何实际 live 路径的 fallback。
-- 明确代理宿主与 Docker 的网络拓扑：`127.0.0.1` 只对所在网络命名空间可见；设可达私有绑定地址 + 容器可验证路由，同时配置访问控制及防止未经授权容器任意访问 proxy；Docker 不可任意公网出口。
-- 完整保留必要上游请求头（特别是 `Authorization`）但不得记录密钥；透传应当只允许经过验证的 Provider 主机，删除敏感日志。测试必须使用拒绝无鉴权的假服务端，证明不会变成真实 401。
-- 每个 task_id/attempt/request_id 应由可信运行端生成并自动进入 proxy 账本；不要依赖 SDK 未发送的 `X-Task-Id`。若 SDK 无法注入头，用 proxy 分配受信 task-scoped session endpoint/token，分别验证不能串账。
-- 完整 live 链端到端使用 FAKE provider：Docker Harness → proxy → fake SSE 多轮调用 → judge；验证真实的 cap-before-send、网络 ACL、安全停止、partial ledger。**不调用 DeepSeek**。
+- run_phase4_pilot.py 不得把真实 DEEPSEEK_API_KEY 写进 live_pilot._API_KEY_HOLDER，再由 _current_key() 传给 Agent。
+- 真实 key 只可用于宿主侧必要的 balance 查询和 Proxy trusted config；Agent 容器必须收到无权限 placeholder，建议通过明确的 proxy-mode 构造参数强制保证，而非依赖默认值。
+- 对序列化给容器的完整 JSON、stdin payload、容器 env、trace、stdout/stderr、异常做 secret canary 测试：真实 canary key 在任何 Agent 可见位置都必须为 0 次；trusted Proxy upstream 收到正确的 key。
+- 测试应调用实际 request builder/run path，不允许只断言 runner 对象属性。
 
-## S3 — P0 并发/异常/预留原子性
+## S2 / P0：Ledger 事件重放与预算恢复
 
-- 在 `_check` 时实际登记 `in_flight_reserved_cost_cny` 并在持久日志中写入预留 BEFORE forward；对同一时刻不同请求的 projected cost 必须累加 in-flight reservation。完成时单次 settle/release；疑似计费仍保留未知额并阻止进一步发送。
-- 引入 atomic request state（reserved/sent/settled/unknown）；支持进程恢复时对未完成状态 fail closed；不可把只在结算时持久化称为 crash-safe。
-- 验证并发 2–10 个 **不同 body**、全局 cap 仅够一个时后续全部 pre-send rejected；重复 request_id 与不同 request_id 同 usage 的情况也覆盖。HTTP 500/401/EOF、stream truncation、lack of usage 都全局停机，未知支出不可归零。
-- 明确 `stream:true/false` 支持范围、SSE response 连续性与 usage 包含约束；代理必须以实际 DSH/OpenAI-compatible traffic 的请求形式离线测试，不能只测简化 FakeProvider 的无鉴权 happy path。
+- 在 BudgetProxy.__init__ 中重放 append-only ledger，按 request_id 校验合法状态转换并恢复：
+  - _states；
+  - 所有 SETTLED 的累计已知费用；
+  - 每个评估 scope 的 request count；
+  - 已知 in-flight reservation；
+  - UNKNOWN/损坏/矛盾状态与全局停止条件。
+- 任意 RESERVED/SENT 在启动恢复后转为保守 UNKNOWN；不确定费用时停止新请求。
+- 人工 reconcile 必须有记录和显式 scope；不能因解除 UNKNOWN 而清零历史 known cost 或 per-scope counts。
+- 处理重复日志事件、截断行、非法 JSON、负数费用、同 request_id 冲突。账本不能被完整、可信地恢复时 fail-closed。
+- 在 reservation/SENT 发送前持久化；评估 flush/fsync 与原子写语义。测试重启/模拟崩溃后预算不得归零。
+- 必测：成功结算 N 次→关闭/重启→恢复相同累计费用和请求数；再请求超限时 0 次到达 upstream。
 
-## S4 — P1 Algorithm adapter 真正接入评估调度（离线）
+## S3 / P0：唯一评估 scope 与控制 ACK 协议
 
-- 为 `CausalPolicyAdapter.cea_v0` / `cea_v1` 设计新版本独立臂和冻结 policy manifest；runtime 在失败后从真实 controller/genome adapter 选可执行 intervention。旧 B4/B5 数据不可改名换数字或回填。
-- CEA-v1 如声称 failure-conditioned，就必须采用预先冻结的 failure-context/目标/预算约束选择不同 Pareto candidates；如果不能，客观描述为 single frozen evolved genome，不得把静态选择称为状态自适应。
-- 强制校验 expected_sha256（从独立冻结 manifest）而非只计算源 hash；显式选择 genome_id / phenotype_id / training provenance，避免 silent max over train_fitness 和重复 phenotype 误导。
-- 包括至少 2 种失败情境能触发不同策略（若方法设计确实要求），并用 fake Agent 驱动而不止 unittest 模拟适配器调用。
+- 不能再只使用 spec.task_id 作为 per-task cap key。定义稳定且唯一的 evaluation scope，至少含 experiment_run_id/task_id/seed/arm；attempt 另有 attempt_id，但同一逻辑评估的所有 attempts 应按预注册的预算语义归属。
+- 修改 runner 调用协议，让每条逻辑评估在第一个 Provider 请求前设定 scope；禁止把 6 arms × 2 seeds 混在同一个 task bucket。
+- 控制消息包含 generation/request_id。宿主先删除旧 ACK，再原子替换发布新控制消息；Proxy ACK 必须回显同一 generation。禁止通过仅比较 task_id 判断消息是否新鲜。
+- 控制通道超时、generation 不匹配、账本共享挂载不可用时，拒绝启动 Agent。
+- 测试连续两次相同 task_id、相同 task 不同 arm/seed、快速 A→B→A、重复 retry、延迟 ACK 和并发控制。
+- 明确若代理只支持串行单任务，运行器必须强制串行并用锁保证 attribution；若支持并发，必须按每个请求携带受信 scope token，而非全局 mutable _current_task。
 
-## S5 — P1 直连与 CI 真验证
+## S4 / P0：Proxy ingress 认证与网络隔离
 
-- 删除 `tests/test_direct_connect.py` 的 `or True` 占位断言，新增可在 Linux/Windows 上执行的行为级 offline mock。TUN 层直连仍由用户本地代理客户端路由/连接日志确认；未确认标 `DIRECT_ROUTE_UNVERIFIED`，不可绕过外部审批。
-- 使用真正干净 git clone / isolated venv 执行 pytest、数据复算、fake container-proxy e2e；分别记录无 Docker 时的跳过原因和有 Docker 时的实测结果。不能因为本机 raw tasks 文件仍存在就声称 fresh clone PASS。
+- Proxy 连接 internal ceval-net 与 egress network 时，不能无条件在所有接口暴露一个未鉴权的转发器。
+- 在 Agent→Proxy 方向添加独立的代理客户端认证（不能复用或泄露上游 API key），或实现等价且测试证明的网络级隔离。实际 DSH SDK 必须能够携带此认证；若不能，不得宣称安全接入。
+- 证明 default-bridge sibling container 无法访问 Proxy 或不能通过认证。不能只证明端口未发布到宿主机。
+- Proxy 只能连接预先允许的 HTTPS 上游主机（live 为 api.deepseek.com），不能让 Agent 或不可信环境变量指定任意 URL、内部地址或协议。
+- 限制 HTTP 方法、路径、body size、model、max_tokens/max_completion_tokens 和输入规模；拒绝超出 worst-case reservation 配置的请求，拒绝必须发生在 upstream socket 发送之前。
+- 固定允许模型为 deepseek-flash，除非另有冻结协议批准。校验实际 request JSON 与预留的 worst-case prompt/output tokens 一致；若无法可靠界定输入规模，保守拒绝。
+- 所有入站拒绝、鉴权失败、上游失败、未知 usage 都写审计 ledger；不得记录 key 或完整 prompt。
 
-## 验收与交付
+## S5 / P1：修复控制与输出目录边界
 
-Gate A：仓库单独 checkout，无 tasks.jsonl 时 312 auditable 行完整重算成功。
-Gate B：live Runner 已实际连接可达且安全的 proxy；需要至少 Docker 假服务端从发请求到 ledger 的 E2E。
-Gate C：并发请求下不超预算，失败/异常/崩溃预留 fail closed；认证头正确透传。
-Gate D：冻结 NSGA-III 与 LinUCB 通过新 adapter 在新实验调度中实际被调用，且与历史代理臂分离。
-Gate E：全量历史测试和新测试可信；Phase0–3/2026-10-14 真实结果完全不变。
-Gate F：新 DeepSeek calls=0、付费预算 ¥0、工作区 clean、push main 并附 SHA。
+- 修复 run_phase4_pilot.py 中 out_dir 在赋值前被 --out 真分支读取的问题：先解析 out_dir/run_dir，再启动 Proxy。
+- Proxy cap E2E 加入 FakeProvider 真实接收请求计数器，不能用 Proxy 自己的 SENT 行替代上游计数。
+- 新增 fake tests 验证请求大小/model/output cap、proxy ingress auth、default bridge sibling 拒绝、未知费用锁定、重启恢复、重复 scope。
+- Clean clone 应验证所测试 HEAD 与 origin/main 或目标 SHA 完全一致；保留 no-raw-tasks 断言。
 
-如 Gate B 或 C 无法在不付费下完成，标 `BLOCKED` 并维持全部 live entrypoints 为关闭状态。更新 `status.json` 和 `planner/executor_report.md`，完成后 `READY_FOR_REVIEW`，等待 Planner 复审；不要自动进入 SWE-bench/Phase5。
+## S6 / P1：算法 smoke 测试准确定位
+
+- 在独立 manifest 中冻结 pareto_front.json 与训练 sweep 输入的 SHA-256；适配器加载前必须和 expected hash 比较，不能仅计算当前文件 hash 后自证。
+- 对 CEA-v1 建立多种 fake failure fixtures：invalid/verification、no-edit/read-first、edited-but-failing/tool-validation、infra/unknown-cost no-retry。实际运行驱动必须观察到各分支及不同选中 genome；edited 等状态不得硬编码，应由 workspace/trace 计算。
+- 对 CEA-v0 同样记录固定 snapshot hash、action、policy_version 和 no-update 约束。
+- run_phase4_v2_offline.py 的结果标为 adapter_integration_smoke，不能宣称算法泛化、真实 Agent 提升或 NSGA-III 优越性。
+- 真实模型 live 评估仍需单独的预注册与新授权，不属于本轮。
+
+## S7：状态、测试与证据
+
+- 更新 status.json：清理过期 blockers，保留历史 R1.1/R1.2 审查记录，将当前未关闭问题列入当前 blockers。
+- 全量运行可执行测试，并分别报告 unit/integration/Docker E2E/clean clone/secret isolation/ledger recovery/scope attribution。
+- 任何 Docker 测试若因镜像/daemon 未启动而 skip，必须标记 NOT_VERIFIED，不能归为 PASS。
+- 更新 planner/executor_report.md 和版本化结果；不修改历史真实数据。
+- 新增 DeepSeek model API calls = 0，费用 ¥0。
+
+## Gate 与停止
+
+Gate A：Agent 请求中不含真实 API key。
+Gate B：重启后 known spend 与 per-scope request counts 完整恢复。
+Gate C：相同 task 重复设置不会 ACK 超时；不同 arm/seed 预算独立。
+Gate D：未经认证的 bridge sibling 无法使用 Proxy。
+Gate E：请求 model/body/token 超限在发送前拒绝。
+Gate F：Fake Provider 端到端实际计数验证 cap-before-send。
+Gate G：CEA-v0/v1 多种离线分支被真实驱动触发；SHA 由独立 manifest 钉住。
+Gate H：clean clone/历史数据复算一致，冻结数据不变。
+Gate I：本轮新增真实模型 API 调用 0、费用 ¥0。
+
+所有 P0 Gate 通过后，设置 phase_status=READY_FOR_REVIEW、next_actor=GPT-Planner；任何 P0 未通过则 BLOCKED。推送 main、核验 HEAD 与工作区 clean 后立即停止，等待 Planner 审查。不得进入付费 pilot 或 Phase 5。
