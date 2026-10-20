@@ -1,88 +1,91 @@
-# CE-DSH-P4-R1.4 — Strict Output Bounds, Scoped Reconcile & Verifiable Secret Isolation
+# CE-DSH-P4-R1.5 — Strict Alias Types, Corrupt-Ledger Numeric Validation & Evidence Reconciliation
 
-Planner baseline: `9b1abcb18cdbe13700315a9ff101f5f8e41515ee`
+Planner baseline: `d9fbfa2697eb68f760fd3c9c2813376cbda679f8`
 
-独立审查：`planner/reviews/CE-DSH-P4-R1_3-independent-review.md`
+Independent review: `planner/reviews/CE-DSH-P4-R1_4-independent-review.md`
 
-本轮只修 R1.3 复审发现的问题并补齐可复现证据。**新增真实 DeepSeek 模型 API 调用 0 次，新增预算 ¥0。** 不运行 `--live`，不查真实余额，不进入 Phase 5。
+Offline only. **New live DeepSeek model API calls: 0. New spend: ¥0.** Do not run `--live`, query the live balance, or start Phase 5.
 
-## 0. 接管
+## 0. Handoff and preservation
 
-- fetch `origin/main`，确认远端 HEAD。
-- 阅读本计划、R1.3 复审、status.json、executor_report.md 和 remediation report。
-- 保护所有未提交改动；以当前 GitHub 代码为准。
-- 保留 Phase 0–3 与 Phase 4 历史 312 行真实记录及 SHA，不覆盖或回填。
+1. Fetch `origin/main` and confirm the remote SHA.
+2. Read this plan, the R1.4 review, `status.json`, `planner/executor_report.md` and `docs/PHASE4_R1_4_REMEDIATION.md`.
+3. Preserve uncommitted work; do not force-reset or force-push.
+4. Keep historical Phase 0–3 outputs and the 312-row Phase 4 live pilot data immutable. R1.4 added a previously ignored Phase 3 sweep artifact to version control for reproducibility; document that controlled addition honestly rather than claiming the entire Phase 0–3 tree has zero diff.
 
-## P0-A：输出 token cap 必须严格 fail-closed
+## P0-A — Strictly validate every supplied output-token field
 
-文件：`src/causalevo/eval/budget_proxy.py`
+File: `src/causalevo/eval/budget_proxy.py`
 
-- 在任何预算预留和上游发送前解析 output limit。
-- 按冻结的 DeepSeek chat-completions schema 选择允许的字段；必须存在且严格为正整数。
-- 拒绝缺失、null、字符串、浮点数、bool、负数、0、超过上限。
-- 如果 max_tokens 与 max_completion_tokens 同时出现，拒绝歧义组合，除非协议已明确规定且实现验证它们一致。
-- 任何验证失败写入不含 key/prompt 的拒绝审计，不能预留预算、不能访问上游。
-- 测试逐项覆盖上述异常值；使用 Fake Provider 的独立接收计数证明每项违规请求 upstream count = 0。
-- 保留正常边界值恰好等于 output cap 时的正向测试。
+- Validate `max_tokens` and `max_completion_tokens` individually before comparing them.
+- For every present field, reject bool, float, string, null, zero, negative and all non-integers. Missing both fields is rejected.
+- If both fields are present, both must independently pass strict validation and then their integer values must match exactly.
+- Do not rely on Python cross-type equality (`True == 1`, `256.0 == 256`) to establish schema validity.
+- Keep validation before reservation and upstream forwarding.
+- Add tests for:
+  - `max_tokens=1, max_completion_tokens=true`
+  - `max_tokens=256, max_completion_tokens=256.0`
+  - each alias independently bool/float/string/null/zero/negative
+  - conflicting valid integers
+  - valid single-field and valid equal-integer alias pair
+- For every invalid shape, assert Fake Provider receive count is 0, no request scope count is incremented, and no reservation is recorded.
 
-## P0-B：scope-aware UNKNOWN reconciliation
+## P0-B — Fail-closed validation for duplicate monetary ledger events
 
-文件：`src/causalevo/eval/budget_proxy.py`
+File: `src/causalevo/eval/budget_proxy.py`
 
-- 在内存状态和 ledger replay 中保存 `request_id -> scope`。
-- 修复 `reconcile(scope=...)`：只能清除指定 scope 下已列明的 UNKNOWN 请求，不能清空整个 `_unresolved_unknown` 集合。
-- 若需要跨 scope reconcile，要求显式 request ID 列表、操作理由和人工授权记录；拒绝空 scope、默认全清或不存在的 ID。
-- 重放时验证 reconcile event 中 request IDs 与 scope 对应；冲突、越权或格式损坏 fail-closed。
-- 解除 scope A 后，scope B 未知请求仍使全局 gate 保持停止；不得因为 A 已确认就允许请求越过 B 的未知费用风险。
-- 测试至少覆盖两个不同 scope 同时 UNKNOWN、先只 reconcile A、重启后仍保留 B 的 UNKNOWN、再 reconcile B 的完整流程。
-- 历史已知费用、各 scope 请求数和未知请求审计不得清零。
+- Introduce shared strict validators for RESERVED `reserved_cny` and SETTLED `cost_cny`.
+- Reject bool explicitly; require numeric, finite, nonnegative values on first occurrences and duplicate occurrences.
+- Duplicate events are idempotent only if all semantic fields are valid and consistent. NaN/Infinity/bool/negative values and conflicting values must set `ledger_corrupt=true`, stop the gate and refuse new requests.
+- Ensure the same strict checks are used by the duplicate SETTLED branch; do not depend only on subtraction/tolerance comparisons.
+- Add tests for duplicate SETTLED NaN, Infinity, bool, negative and ordinary conflicting costs; add RESERVED bool/NaN/Infinity fixtures and valid duplicate controls.
+- Re-run restart/recovery tests to ensure valid histories still replay correctly.
+- Keep ledger evidence intact; never auto-rewrite or silently repair corrupt records.
 
-## P0-C：密钥隔离测试必须真实存在于 GitHub
+## P1-C — Reconcile test-count evidence
 
-- 修正 `status.json` 与 `planner/executor_report.md` 中声称存在但远端缺失的 `tests/test_secret_isolation.py` 证据。
-- 新增该测试文件，或在确有等价测试时统一路径/命令/用例数；优先提交独立、易运行的 `tests/test_secret_isolation.py`。
-- Canary key 必须经过实际 request construction / runner path，而不是仅测试对象属性。
-- 断言真实 key 不出现在 Agent stdin JSON、Agent Docker argv/env、trace、stdout/stderr、异常和日志中。
-- 断言请求内只使用 per-run proxy client token，Fake Provider 端仍由 Proxy 注入正确的 trusted upstream key。
-- 对错误路径、Docker 启动失败和 provider 错误同样检查。
-- 在最终 clean clone 中运行测试，并确认该测试路径在 GitHub tree 和提交差异中存在。
+- Run the exact full-suite command against the current source.
+- Save the raw pytest summary as an artifact or quote it exactly in the report.
+- Update `status.json` and `planner/executor_report.md` to the same full-suite pass/fail/skip counts.
+- Explain the prior mismatch (status says 525; report says 523) using actual test collection and terminal output. Never guess.
 
-## P1-D：避免真实 key 出现在 Docker CLI argv
+## P1-D — Verify clean clone on exact final SHA
 
-文件：`src/causalevo/eval/networks.py` 及 Docker helper。
+- After code fixes and final push, record the complete remote `main` SHA.
+- Run `scripts/clean_clone_check.py <full_sha>` or equivalent with an explicit target SHA, and confirm clone HEAD equals that SHA.
+- Run recomputation and all seven key suites in the clean clone, preserving actual output and exit code.
+- Update all status/report notes so they identify exactly the SHA that passed.
+- If a docs-only commit follows, either rerun the Gate at that new SHA or explicitly mark the new commit as not covered; never claim both simultaneously.
 
-- 当前 `-e CE_PROXY_KEY=<real-key>` 把 key 值放进 docker CLI argv。
-- 改为受控 subprocess environment + `docker run -e CE_PROXY_KEY`（argv 不包含值），或经过审计的等价安全注入方式。
-- 不把 key 写入 Git 跟踪文件或无保护临时文件。
-- Canary 测试验证：Proxy 进程确实得到正确 key；Docker CLI argv、异常和日志中没有 key。
-- 代理 client token 与上游 key 必须继续分离。
+## P1-E — Correct frozen-data provenance statement
 
-## P1-E：ledger 同状态重复事件完整性
+- Report the newly tracked `results/phase3/replay_sweep/sweep_results.jsonl` as a controlled publication of a previously ignored artifact, not as “zero repository diff”.
+- Record its SHA-256 and, if the original local artifact exists, compare byte-for-byte with the source artifact before publication.
+- Explain why `configs/phase3_artifact_manifest.json`, `src/causalevo/evolution/adapter.py`, and `scripts/run_phase4_v2_offline.py` changed for canonical LF hashing and clean-clone reproducibility.
+- Clearly distinguish:
+  1. historical Phase 4 live 312-row dataset and previously tracked frozen files unchanged;
+  2. previously untracked/ignored Phase 3 artifact newly added;
+  3. reproducibility loader/manifest code changed.
+- Keep hashes and provenance auditable; do not rewrite historical experiment outputs.
 
-文件：`src/causalevo/eval/budget_proxy.py`
+## Validation and report
 
-- 重复事件只在语义字段完全一致时才可视为幂等。
-- 重复 RESERVED 的 scope/reserved_cny 不同必须标记 ledger corrupt 并 fail-closed。
-- 对其他同状态事件校验所有有意义字段；不能仅校验重复 SETTLED cost。
-- 增加合法完全重复事件通过、冲突 RESERVED、冲突 SETTLED 及截断日志拒绝的测试。
+Run:
+1. New output-alias strictness tests.
+2. New ledger numeric-corruption tests.
+3. Budget proxy and recovery tests.
+4. Credential isolation and Docker E2E.
+5. Proxy control and CEA adapter/v2 smoke tests.
+6. Full `pytest tests/ -q`.
+7. Clean-clone recomputation and seven key suites at the exact final SHA.
+8. Frozen-data hash/diff audit.
 
-## P1-F：最终 SHA 的 clean-clone 复验
+No test may be skipped or weakened to manufacture a PASS. Docker-unavailable tests must be marked NOT_VERIFIED. Fake-provider evidence remains adapter integration smoke, not real algorithm-improvement evidence.
 
-- 完成所有修改后先 commit/push。
-- 确认最终本地 HEAD == `git ls-remote origin main`。
-- 使用该精确 SHA 重新运行 clean-clone；报告完整 SHA，不得只报告短 SHA。
-- 在 clean clone 中运行统计复算和关键测试（secret isolation、budget proxy、control channel、proxy E2E、CEA adapter smoke）。
-- 如果验证后再产生任何提交，必须重新运行最终 SHA Gate，或如实声明新提交未经 Gate 验证。
+## Stop conditions
 
-## Gate
-
-A. 缺失/非法/超限 output limit 全部在上游发送前拒绝。
-B. scope A 的 reconcile 不解除 scope B 的 UNKNOWN；重启后状态仍一致。
-C. GitHub 存在并可执行真实 canary secret-isolation 测试。
-D. Docker CLI argv、日志、异常不含真实 upstream key；Proxy 收到凭证且能通过 Fake Provider 鉴权。
-E. ledger 的冲突重复事件 fail-closed。
-F. 最终 HEAD 与 origin/main 完全一致，最终 SHA 的 clean-clone 复算成功。
-G. Phase 0–3 与历史 312 行实验数据零改动。
-H. 本轮真实 DeepSeek 模型 API 调用 0 次、费用 ¥0。
-
-任意 P0 未通过：`phase_status=BLOCKED`。全部 Gate 通过后：`phase_status=READY_FOR_REVIEW`、`next_actor=GPT-Planner`。推送后停止等待 Planner，不得启动 live pilot。
+- Any P0 failure: `phase_status=BLOCKED`, `next_actor=GPT-Planner`, and stop after pushing failure evidence.
+- All gates pass: `phase_status=READY_FOR_REVIEW`, `next_actor=GPT-Planner`.
+- New real DeepSeek calls = 0; spend = ¥0.
+- No live pilot and no Phase 5.
+- Push to `origin/main`, verify local HEAD == remote HEAD and clean working tree, then stop for Planner review.
