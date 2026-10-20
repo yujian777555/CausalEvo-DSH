@@ -6,31 +6,38 @@
   "plan_id": "CE-DSH-P4-R1.2",
   "previous_plan_id": "CE-DSH-P4-R1.1",
   "phase": "Phase 4 R1.2",
-  "phase_status": "CHANGES_REQUESTED",
-  "planner_review": "CHANGES_REQUESTED",
-  "next_actor": "Kimi-Executor",
+  "phase_status": "READY_FOR_REVIEW",
+  "planner_review": "PENDING",
+  "next_actor": "GPT-Planner",
   "planner_review_date": "2026-10-10",
-  "executor_fix_date": "2026-10-14",
+  "executor_fix_date": "2026-10-20",
   "baseline_main_sha": "a9bef642e35eeed398f5578890a00f8872af2af0",
   "reviewed_executor_head": "9c7148eb34020c50295a0bda52cef0647df9702b",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_1-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
-  "fix_report_path": "docs/PHASE4_R1_1_AUDIT_ADDENDUM.md",
+  "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "45a0bd290e33c40bf0ab2a7393bb566bfef40302",
-    "github_commit_verified": true,
+    "latest_executor_commit": "PENDING_FINAL_COMMIT",
+    "github_commit_verified": false,
     "executor_reports_local_clean": true,
     "note": "verified via git ls-remote after push; housekeeping commit on top records this"
   },
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 436,
+    "passed": 447,
     "failed": 0,
     "skipped": 0,
-    "planner_reran": false
+    "planner_reran": false,
+    "categories": {
+      "unit_integration_full_suite": "447/447 (docker live)",
+      "proxy_concurrency_failclosed": "tests/test_budget_proxy.py 12/12",
+      "docker_e2e_proxy_chain": "tests/test_proxy_integration_e2e.py 3/3",
+      "clean_clone": "scripts/clean_clone_check.py CLEAN CLONE OK (34 subset + reconcile)",
+      "algorithm_adapter": "tests/test_causal_policy_adapter.py 9/9 + v2 driver run"
+    }
   },
   "live_api": {
     "run": true,
@@ -85,24 +92,18 @@
     "no-tools runtime evidence produced on executor machine only"
   ],
   "evidence": [
-    "docs/PHASE4_R1_1_AUDIT_ADDENDUM.md",
-    "docs/PHASE4_ALGORITHM_FIDELITY_AUDIT.md",
-    "docs/PHASE4_R1_1_PROVIDER_BUDGET_GATE.md",
-    "docs/PHASE4_GENOME_PHENOTYPE_AUDIT.md",
-    "docs/PHASE4_NEXT_PILOT_PREREG.md",
-    "scripts/reconcile_phase4_rows.py",
-    "scripts/recompute_phase4_stats.py",
-    "scripts/audit_genome_phenotype.py",
+    "scripts/clean_clone_check.py",
+    "src/causalevo/eval/auditable.py",
     "src/causalevo/eval/budget_proxy.py",
-    "src/causalevo/evolution/adapter.py",
-    "results/phase4/live/phase4-live-20261014T110259Z/auditable_tasks.jsonl",
-    "results/phase4/audit/genome_phenotype_audit.json",
-    "results/phase4/live/phase4-live-20261014T110259Z/statistical_tests_r1_1.json",
-    "tests/test_budget_proxy.py",
-    "tests/test_causal_policy_adapter.py",
-    "tests/test_direct_connect.py"
+    "src/causalevo/eval/networks.py",
+    "scripts/proxy_server.py",
+    "scripts/run_phase4_v2_offline.py",
+    "results/phase4/v2-offline/",
+    "tests/test_proxy_integration_e2e.py",
+    "tests/test_auditable.py",
+    "tests/test_budget_proxy.py"
   ],
-  "notes": "Planner independently parsed 312 auditable GitHub rows, matches pass rates/cost/pair counts; R1.1 incomplete: clean-clone scripts still require ignored raw tasks.jsonl, live proxy unintegrated/incomplete under concurrency and auth, adapter not in live dispatcher. No new paid API authorization.",
+  "notes": "P4 R1.2 complete offline: clean-clone recompute proven, budget proxy integrated into the live runner path, v2 arms use real adapters. Zero new API calls. Awaiting review.",
   "next_goal": "R1.2 offline: fresh clone statistics from auditable rows; live budget proxy integration + concurrency reservation + auth; authentic adapter orchestration; no DeepSeek API",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
@@ -301,5 +302,13 @@
     "genome_audit": "144 genotypes -> 16 unique phenotypes; reflection_step/retry_strategy reserved",
     "stats": "cluster bootstrap added; negative conclusions unchanged",
     "direct_connect": "config-level DIRECT everywhere; TUN-level DIRECT_ROUTE_UNVERIFIED"
+  },
+  "phase4_r1_2": {
+    "new_live_calls": 0,
+    "new_spend_cny": 0,
+    "clean_clone_recompute": "PASS (312 auditable rows recompute to committed analysis)",
+    "proxy_integrated": "ProxyContainer dual-NIC ceval-net+bridge; live runner refuses without endpoint",
+    "adapter_scheduled": "B4-v2 real LinUCB / B5-v2 failure-conditioned frozen Pareto genome",
+    "direct_connect": "config-level DIRECT; TUN-level DIRECT_ROUTE_UNVERIFIED"
   }
 }
