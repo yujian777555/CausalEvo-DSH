@@ -135,7 +135,7 @@ class ProxyContainer:
             raise
         return self
 
-    def _wait_ready(self, timeout_s: float = 45.0) -> None:
+    def _wait_ready(self, timeout_s: float = 120.0) -> None:
         deadline = time.monotonic() + timeout_s
         while time.monotonic() < deadline:
             alive = _docker("inspect", self.name, "--format", "{{.State.Running}}")
@@ -159,7 +159,9 @@ class ProxyContainer:
             self._generation += 1
             gen = self._generation
             publish_control(self.ledger_dir, gen, scope)
-            await_ack(self.ledger_dir, gen, timeout_s=10.0)
+            # 30s ack budget: full-suite docker load slows the proxy's control
+            # loop; an operational timeout must never masquerade as a gate failure
+            await_ack(self.ledger_dir, gen, timeout_s=30.0)
 
     def set_current_task(self, task_id: str) -> None:
         """Backward-compatible alias (task-only scope)."""

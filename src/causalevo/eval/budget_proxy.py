@@ -110,17 +110,28 @@ class ProxyConfig:
 _ABSENT = object()
 
 
+def _strict_positive_int(v: Any) -> bool:
+    """Strict schema integer: real int, never bool (bool is an int subclass),
+    positive. Floats/strings/null never pass — even when Python's cross-type
+    equality (True == 1, 256.0 == 256) would call them equal to a valid int."""
+    return isinstance(v, int) and not isinstance(v, bool) and v > 0
+
+
 def _output_limit_problem(obj: dict) -> str | None:
     """None = valid; otherwise a short audit-safe reason (no prompt content)."""
     mt = obj.get("max_tokens", _ABSENT)
     mct = obj.get("max_completion_tokens", _ABSENT)
     if mt is _ABSENT and mct is _ABSENT:
         return "output_limit_missing"
+    # P4-R1.5 P0-A: validate EVERY supplied field independently FIRST; only
+    # then may the (now guaranteed strict-int) values be compared.
+    for v in (mt, mct):
+        if v is _ABSENT:
+            continue
+        if not _strict_positive_int(v):
+            return "output_limit_illegal"
     if mt is not _ABSENT and mct is not _ABSENT and mt != mct:
         return "output_limit_ambiguous"
-    effective = mt if mt is not _ABSENT else mct
-    if isinstance(effective, bool) or not isinstance(effective, int) or effective <= 0:
-        return "output_limit_illegal"
     return None
 
 
@@ -130,6 +141,15 @@ def _validate_output_limit(obj: dict) -> int | None:
         return None
     mt = obj.get("max_tokens", _ABSENT)
     return mt if mt is not _ABSENT else obj["max_completion_tokens"]
+
+
+def _valid_amount(v: Any) -> bool:
+    """Ledger monetary amounts (P4-R1.5 P0-B): JSON number, finite,
+    nonnegative, never bool (bool is an int subclass; NaN is non-finite AND
+    defeats tolerance comparisons — abs(nan - x) > tol is always False).
+    Shared by initial and duplicate RESERVED/SETTLED replay validation."""
+    return (isinstance(v, (int, float)) and not isinstance(v, bool)
+            and math.isfinite(v) and v >= 0)
 
 
 class BudgetProxy:
@@ -232,22 +252,22 @@ class BudgetProxy:
             cur = prev[0] if prev else None
             if prev is not None and state == cur:
                 # duplicate event: idempotent ONLY when every semantic field
-                # is identical (P4-R1.4 P1-E); conflicts corrupt the ledger
+                # is strictly valid AND identical (P4-R1.5 P0-B); NaN/bool/
+                # negative/conflicting values corrupt the ledger — never a
+                # tolerance comparison on unvalidated numbers
                 if state == RESERVED:
                     scope = e.get("scope", e.get("task_id", "unknown-scope"))
                     reserved = e.get("reserved_cny")
-                    if (scope != prev[1] or not isinstance(reserved, (int, float))
-                            or not math.isfinite(reserved)
-                            or abs(reserved - prev[2]) > 1e-12):
-                        corrupt = (f"line {lineno}: conflicting duplicate "
+                    if (scope != prev[1] or not _valid_amount(reserved)
+                            or reserved != prev[2]):
+                        corrupt = (f"line {lineno}: conflicting/invalid duplicate "
                                    f"RESERVED for {rid}")
                         break
                 elif state == SETTLED:
-                    old = prev[3]
                     new = e.get("cost_cny")
-                    if not isinstance(new, (int, float)) or abs(old - new) > 1e-12:
-                        corrupt = (f"line {lineno}: conflicting duplicate SETTLED "
-                                   f"for {rid}")
+                    if not _valid_amount(new) or new != prev[3]:
+                        corrupt = (f"line {lineno}: conflicting/invalid duplicate "
+                                   f"SETTLED for {rid}")
                         break
                 continue  # idempotent repeat (SENT/UNKNOWN carry no extra semantics)
             if state not in _REPLAY_TRANSITIONS.get(cur, frozenset()):
@@ -256,15 +276,13 @@ class BudgetProxy:
             if state == RESERVED:
                 scope = e.get("scope", e.get("task_id", "unknown-scope"))
                 reserved = e.get("reserved_cny")
-                if (not isinstance(scope, str) or not isinstance(reserved, (int, float))
-                        or not math.isfinite(reserved) or reserved < 0):
+                if not isinstance(scope, str) or not _valid_amount(reserved):
                     corrupt = f"line {lineno}: malformed RESERVED for {rid}"
                     break
                 states[rid] = [RESERVED, scope, float(reserved), None]
             elif state == SETTLED:
                 cost = e.get("cost_cny")
-                if (not isinstance(cost, (int, float)) or not math.isfinite(cost)
-                        or cost < 0):
+                if not _valid_amount(cost):
                     corrupt = f"line {lineno}: SETTLED with invalid cost for {rid}"
                     break
                 prev[0] = SETTLED
