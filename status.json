@@ -12,17 +12,17 @@
   "planner_review_date": "2026-10-20",
   "executor_fix_date": "2026-10-20",
   "baseline_main_sha": "d9fbfa2697eb68f760fd3c9c2813376cbda679f8",
-  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
+  "reviewed_executor_head": "63e80e894c08a8bb90d5e006d96d5c3cbc740bbb",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_4-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "RECORDED_IN_FOLLOWUP_COMMIT",
-    "github_commit_verified": false,
+    "latest_executor_commit": "63e80e894c08a8bb90d5e006d96d5c3cbc740bbb",
+    "github_commit_verified": true,
     "executor_reports_local_clean": true,
-    "note": "SHA recorded in the follow-up housekeeping commit after push + ls-remote verification; final-SHA clean-clone executed on the Gate-verified SHA (see phase4_r1_5.clean_clone_final)"
+    "note": "main R1.5 commit 171e07089222... + clone-suite commit 63e80e8...; final-SHA clean-clone PASS executed on 63e80e894c08a8bb90d5e006d96d5c3cbc740bbb (see phase4_r1_5.clean_clone_final); this housekeeping commit records the result (docs-only)"
   },
   "tests": {
     "executor_reported_run": true,
@@ -470,10 +470,10 @@
       "A_mixed_type_alias_rejected": "PASS",
       "B_ledger_numeric_fail_closed": "PASS",
       "C_test_counts_unified": "PASS (567 in status.json == executor_report.md)",
-      "D_final_sha_clean_clone": "PENDING_RECORDED_IN_FOLLOWUP",
+      "D_final_sha_clean_clone": "PASS at 63e80e894c08a8bb90d5e006d96d5c3cbc740bbb (144 key-suite + 34 phase4-subset + reconcile; clone HEAD==ls-remote enforced)",
       "E_frozen_provenance_corrected": "PASS",
       "F_zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
     },
-    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
+    "clean_clone_final": "PASS at 63e80e894c08a8bb90d5e006d96d5c3cbc740bbb: 'CLEAN CLONE OK: HEAD 63e80e894c08 == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 144 key-suite tests passed (exit 0; includes test_budget_proxy_r15). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)"
   }
 }

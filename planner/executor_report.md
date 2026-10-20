@@ -80,7 +80,21 @@ Docker daemon 29.3.1 与所需镜像全程可用：无 NOT_VERIFIED 项。
 
 ## H. Git 交付（最终 SHA / clean-clone / 同步状态）
 
-（push 后实测填写。）
+- **R1.5 主提交：`171e070892228f7cc7a2f8dd6d8f0de5642a25f9`**（修复+测试+文档）；clone 套件补充提交：`63e80e894c08a8bb90d5e006d96d5c3cbc740bbb`（clean_clone_check.py 增加 test_budget_proxy_r15）。
+- **最终 SHA Gate（逐字输出）**：
+  ```
+  verified: 312 auditable rows recompute to the committed analysis (incl. cluster bootstrap)
+  34 passed in 5.88s (phase4 subset)
+  144 passed in 265.72s (credential_isolation 9 + budget_proxy 27 + budget_proxy_r14 25
+      + budget_proxy_r15 42 + proxy_control 8 + proxy_integration_e2e 7
+      + causal_policy_adapter 19 + phase4_v2_offline 7)
+  CLEAN CLONE OK: HEAD 63e80e894c08 == origin/main; 312 auditable rows recompute in a fresh clone
+  exit=0
+  ```
+- **Gate 验证 SHA（完整）**：`63e80e894c08a8bb90d5e006d96d5c3cbc740bbb`（= 执行 Gate 时的 origin/main 与本地 HEAD；脚本强制一致，失配 exit 2）。
+- 本记录提交（housekeeping）仅改 status.json 与 executor_report.md，不含代码/测试变更；按 P1-D 如实声明：Gate 在 `63e80e8…` 通过，记录提交本身未再触发 Gate（如需可用 `python scripts/clean_clone_check.py` 随时对当前 HEAD 重验）。
+- 同步状态：本地 HEAD == `git ls-remote origin main`；`git status --porcelain` = 0（clean）。
+- 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 既有跟踪文件零改动（R1.4 已披露的 sweep 工件为唯一新增，见 P1-E）；密钥扫描 0 命中。
 
 ## 停止
 
