@@ -48,7 +48,8 @@ def test_budget_proxy_upstream_ignores_env_proxy(monkeypatch, tmp_path):
                          tmp_path / "ledger.jsonl") as proxy:
             req = urllib.request.Request(
                 proxy.base_url + "/chat/completions",
-                data=_json.dumps({"model": "deepseek-flash", "messages": []}).encode(),
+                data=_json.dumps({"model": "deepseek-flash", "max_tokens": 8,
+                                  "messages": []}).encode(),
                 headers={"Content-Type": "application/json"})
             assert urllib.request.urlopen(req, timeout=15).status == 200
 

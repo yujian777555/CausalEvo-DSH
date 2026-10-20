@@ -74,6 +74,18 @@ def main() -> int:
              "tests/test_phase4_analysis.py", "tests/test_phase4_integrity.py",
              "tests/test_auditable.py"],
             check=True, cwd=clone)
+        # P4-R1.4 P1-F: the key safety/algorithm suites must ALSO pass inside
+        # the clean clone of the final SHA (docker available on this host)
+        subprocess.run(
+            [str(py), "-m", "pytest", "-q",
+             "tests/test_credential_isolation.py",
+             "tests/test_budget_proxy.py",
+             "tests/test_budget_proxy_r14.py",
+             "tests/test_proxy_control.py",
+             "tests/test_proxy_integration_e2e.py",
+             "tests/test_causal_policy_adapter.py",
+             "tests/test_phase4_v2_offline.py"],
+            check=True, cwd=clone)
         print(f"CLEAN CLONE OK: HEAD {expected[:12]} == origin/main; "
               "312 auditable rows recompute in a fresh clone")
         return 0

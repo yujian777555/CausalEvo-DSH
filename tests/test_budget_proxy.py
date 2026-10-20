@@ -17,7 +17,7 @@ from causalevo.eval.fake_provider import FakeProvider
 def _post(url, body=None, headers=None):
     req = urllib.request.Request(
         url + "/chat/completions",
-        data=json.dumps(body or {"model": "deepseek-flash",
+        data=json.dumps(body or {"model": "deepseek-flash", "max_tokens": 16,
                                  "messages": [{"role": "user", "content": "hi"}]}).encode(),
         headers={"Content-Type": "application/json", **(headers or {})})
     try:
@@ -73,7 +73,7 @@ def test_global_cap_counts_inflight_reservations(logp):
             def go(i):
                 barrier.wait()
                 results.append(_post(proxy.base_url,
-                                     body={"model": "deepseek-flash",
+                                     body={"model": "deepseek-flash", "max_tokens": 16,
                                            "messages": [{"role": "user",
                                                          "content": f"req-{i}"}]})[0])
             threads = [threading.Thread(target=go, args=(i,)) for i in range(n_threads)]
@@ -117,7 +117,7 @@ def test_crash_recovery_blocks_until_reconcile(logp):
             assert snap["stopped"] is True
             assert snap["recovered_unknown"] == 1
             assert _post(proxy2.base_url)[0] == 429
-            proxy2.reconcile()
+            proxy2.reconcile(scope="t1")
             assert _post(proxy2.base_url)[0] == 200
 
 
@@ -216,7 +216,8 @@ def test_auth_injected_from_trusted_config_and_agent_cannot_override(logp):
                  global_cap_cny=5.0, upstream_api_key="trusted-key") as proxy:
             req = urllib.request.Request(
                 proxy.base_url + "/chat/completions",
-                data=json.dumps({"model": "deepseek-flash", "messages": []}).encode(),
+                data=json.dumps({"model": "deepseek-flash", "max_tokens": 8,
+                                 "messages": []}).encode(),
                 headers={"Content-Type": "application/json",
                          "Authorization": "Bearer agent-forged-key"})
             assert urllib.request.urlopen(req, timeout=15).status == 200
@@ -319,7 +320,7 @@ def test_restart_with_unsettled_request_blocks_then_reconcile_keeps_history(logp
                 "settled history survives crash recovery"
             assert snap["per_scope"] == {"r/t/s/B0": 2}
             assert _post(proxy2.base_url)[0] == 429
-            proxy2.reconcile(scope="ops/review-1")
+            proxy2.reconcile(scope="r/t/s/B0")
             proxy2.set_current_scope("r/t/s/B0")
             assert _post(proxy2.base_url)[0] == 200
             snap2 = proxy2.snapshot()
@@ -330,7 +331,7 @@ def test_restart_with_unsettled_request_blocks_then_reconcile_keeps_history(logp
     controls = [json.loads(l) for l in logp.read_text().splitlines()
                 if l.strip() and '"control"' in l]
     assert any(c.get("control") == "manual_reconcile"
-               and c.get("scope") == "ops/review-1" for c in controls)
+               and c.get("scope") == "r/t/s/B0" for c in controls)
 
 
 def test_restarted_proxy_recovers_unknown_state_from_ledger(logp):

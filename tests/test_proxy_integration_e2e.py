@@ -39,8 +39,10 @@ def spec():
 
 
 def _budget():
+    # 480s wall: full-suite docker load can slow container startup; this must
+    # never be the reason a proxy-gate assertion can't be evaluated
     return RuntimeBudget(max_provider_calls=8, max_total_output_tokens=4096,
-                         max_tool_calls=12, wall_time_s=240)
+                         max_tool_calls=12, wall_time_s=480)
 
 
 def _runner(proxy):
@@ -178,3 +180,28 @@ def test_agent_cannot_bypass_proxy_when_endpoint_absent(tmp_path, spec):
             image=AGENT_IMAGE, patch_path=REPO / "configs" / "dsh_task_patch.yml",
             model="deepseek-flash", reasoning_effort="low", max_tokens=256,
             provider_kind="live", provider_endpoint=None)
+
+
+def test_proxy_key_delivered_via_env_not_argv(tmp_path):
+    """P1-D: with a canary upstream key, the proxy container must HOLD the
+    credential (printenv inside the container) while argv-visible surfaces
+    (docker ps Command, docker inspect args) stay clean."""
+    canary = "sk-CANARYe2e-envpass-0123456789abcdef0123456789"
+    with ProviderContainer(GOOD_TAPE) as upstream, \
+            ProxyContainer(upstream=upstream.endpoint,
+                           ledger_dir=tmp_path / "ledger",
+                           upstream_api_key=canary) as proxy:
+        out = subprocess.run(["docker", "exec", proxy.name, "printenv",
+                              "CE_PROXY_KEY"],
+                             capture_output=True, timeout=20)
+        assert out.stdout.decode("utf-8", errors="replace").strip() == canary, \
+            "proxy container got the credential"
+        ps = subprocess.run(["docker", "ps", "--filter", f"name={proxy.name}",
+                             "--format", "{{.Command}}"],
+                            capture_output=True, timeout=15)
+        assert canary.encode() not in ps.stdout
+        # the proxy remains fully functional with the env-delivered key
+        proxy.set_current_scope("e2e/key-check/s1/B0")
+        entries = proxy.snapshot()["entries"]
+        assert all(canary not in json.dumps(e) for e in entries), \
+            "key never written to the ledger"

@@ -99,6 +99,39 @@ class ProxyConfig:
         return self.max_body_bytes or self.worst_case_prompt_tokens
 
 
+# frozen output-limit protocol (P4-R1.4 P0-A): a request must carry EXACTLY
+# ONE effective output token limit. The DeepSeek chat-completions schema
+# accepts `max_tokens` (current) and `max_completion_tokens` (alias); both may
+# co-occur ONLY when identical (proven-consistent), otherwise the request is
+# ambiguous and rejected. The value must be a strict positive int (bool/float/
+# str/null/missing/negative/zero are all illegal) and must not exceed the
+# proxy's worst-case reservation. All rejections happen before reservation
+# and before any upstream byte.
+_ABSENT = object()
+
+
+def _output_limit_problem(obj: dict) -> str | None:
+    """None = valid; otherwise a short audit-safe reason (no prompt content)."""
+    mt = obj.get("max_tokens", _ABSENT)
+    mct = obj.get("max_completion_tokens", _ABSENT)
+    if mt is _ABSENT and mct is _ABSENT:
+        return "output_limit_missing"
+    if mt is not _ABSENT and mct is not _ABSENT and mt != mct:
+        return "output_limit_ambiguous"
+    effective = mt if mt is not _ABSENT else mct
+    if isinstance(effective, bool) or not isinstance(effective, int) or effective <= 0:
+        return "output_limit_illegal"
+    return None
+
+
+def _validate_output_limit(obj: dict) -> int | None:
+    """The single effective output limit, or None when the request is illegal."""
+    if _output_limit_problem(obj) is not None:
+        return None
+    mt = obj.get("max_tokens", _ABSENT)
+    return mt if mt is not _ABSENT else obj["max_completion_tokens"]
+
+
 class BudgetProxy:
     def __init__(self, config: ProxyConfig, log_path: Path) -> None:
         self.config = config
@@ -116,6 +149,7 @@ class BudgetProxy:
         self._ledger_corrupt = False
         self._recovered_unknown = 0
         self._unresolved_unknown: set[str] = set()
+        self._request_scope: dict[str, str] = {}  # request_id -> evaluation scope
         log_path.parent.mkdir(parents=True, exist_ok=True)
         if log_path.is_file():
             self._replay(log_path)
@@ -148,14 +182,44 @@ class BudgetProxy:
                 break
             control = e.get("control")
             if control is not None:
-                if control == "manual_reconcile":
-                    cleared = e.get("cleared")
-                    if isinstance(cleared, list):
-                        reconciled |= {str(r) for r in cleared}
-                    else:  # legacy count-only form (R1.2): clears all unknowns
-                        reconciled |= {rid for rid, s in states.items()
-                                       if s[0] == UNKNOWN}
-                continue  # other control entries are audit-only
+                if control != "manual_reconcile":
+                    continue  # crash_recovery etc.: audit-only
+                # P4-R1.4 P0-B: replay validates every reconcile event. Only
+                # explicitly listed request ids may be cleared; each id must
+                # exist, be in an unresolved state, and belong to the event's
+                # scope (cross-scope events must use scope=None + reason).
+                cleared = e.get("cleared")
+                escope = e.get("scope")
+                if (not isinstance(cleared, list)
+                        or not all(isinstance(r, str) for r in cleared)):
+                    corrupt = (f"line {lineno}: malformed reconcile (cleared "
+                               "must be a list of request ids)")
+                    break
+                if escope is not None and not isinstance(escope, str):
+                    corrupt = f"line {lineno}: malformed reconcile scope"
+                    break
+                if escope is None and not e.get("reason"):
+                    corrupt = (f"line {lineno}: cross-scope reconcile without "
+                               "operator reason")
+                    break
+                bad = None
+                for rid in cleared:
+                    prev_r = states.get(rid)
+                    if prev_r is None:
+                        bad = f"reconcile references unknown request id {rid}"
+                        break
+                    if prev_r[0] not in (RESERVED, SENT, UNKNOWN):
+                        bad = f"reconcile of non-pending request {rid}"
+                        break
+                    if escope is not None and prev_r[1] != escope:
+                        bad = (f"reconcile scope {escope!r} overreaches request "
+                               f"{rid} (scope {prev_r[1]!r})")
+                        break
+                if bad:
+                    corrupt = f"line {lineno}: {bad}"
+                    break
+                reconciled |= set(cleared)
+                continue
             state = e.get("state")
             rid = e.get("request_id")
             if state == REJECTED and rid is None:
@@ -167,15 +231,25 @@ class BudgetProxy:
             prev = states.get(rid)
             cur = prev[0] if prev else None
             if prev is not None and state == cur:
-                # duplicate event: tolerate only when key fields cannot conflict
-                if state == SETTLED:
+                # duplicate event: idempotent ONLY when every semantic field
+                # is identical (P4-R1.4 P1-E); conflicts corrupt the ledger
+                if state == RESERVED:
+                    scope = e.get("scope", e.get("task_id", "unknown-scope"))
+                    reserved = e.get("reserved_cny")
+                    if (scope != prev[1] or not isinstance(reserved, (int, float))
+                            or not math.isfinite(reserved)
+                            or abs(reserved - prev[2]) > 1e-12):
+                        corrupt = (f"line {lineno}: conflicting duplicate "
+                                   f"RESERVED for {rid}")
+                        break
+                elif state == SETTLED:
                     old = prev[3]
                     new = e.get("cost_cny")
                     if not isinstance(new, (int, float)) or abs(old - new) > 1e-12:
                         corrupt = (f"line {lineno}: conflicting duplicate SETTLED "
                                    f"for {rid}")
                         break
-                continue  # idempotent repeat (e.g. crash between write retries)
+                continue  # idempotent repeat (SENT/UNKNOWN carry no extra semantics)
             if state not in _REPLAY_TRANSITIONS.get(cur, frozenset()):
                 corrupt = f"line {lineno}: illegal transition {cur}->{state} for {rid}"
                 break
@@ -204,6 +278,7 @@ class BudgetProxy:
             return
         for rid, (st, scope, _reserved, cost) in states.items():
             self._states[rid] = st
+            self._request_scope[rid] = scope
             self._per_scope[scope] = self._per_scope.get(scope, 0) + 1
             if st == SETTLED:
                 self._known_cost += cost
@@ -232,21 +307,59 @@ class BudgetProxy:
         """Backward-compatible alias: attributes to a task-only scope."""
         self.set_current_scope(task_id)
 
-    def reconcile(self, scope: str = "manual") -> None:
-        """Manual reconciliation clears unresolved UNKNOWNs (auditable, scoped).
-        NEVER clears settled cost or per-scope counts; a corrupt ledger cannot
-        be reconciled in-process (human must rebuild it)."""
+    def reconcile(self, scope: str) -> list[str]:
+        """Manual reconciliation of UNKNOWN requests belonging to ONE scope
+        (P4-R1.4 P0-B). Only unresolved unknowns whose recorded scope equals
+        `scope` are cleared; unknowns of every other scope keep the gate
+        stopped. Never clears settled cost or per-scope counts. A corrupt
+        ledger cannot be reconciled in-process."""
         with self._lock:
             if self._ledger_corrupt:
                 raise GateStop("ledger corrupt: reconcile refused; rebuild required")
-            if self._unresolved_unknown or self._recovered_unknown:
-                cleared = sorted(self._unresolved_unknown)
-                self._persist({"control": "manual_reconcile", "scope": scope,
-                               "cleared": cleared})
-                self._unresolved_unknown.clear()
-                self._recovered_unknown = 0
-                self._stopped = False
-                self._stop_reason = None
+            if not scope or not isinstance(scope, str):
+                raise GateStop("reconcile requires an explicit non-empty scope")
+            cleared = sorted(rid for rid in self._unresolved_unknown
+                             if self._request_scope.get(rid) == scope)
+            self._persist({"control": "manual_reconcile", "scope": scope,
+                           "cleared": cleared})
+            self._apply_reconcile(cleared)
+            return cleared
+
+    def reconcile_requests(self, request_ids: list[str], *, reason: str) -> list[str]:
+        """Cross-scope reconciliation: ONLY the explicitly listed request ids,
+        with a mandatory operator reason. Refuses unknown/ghost ids."""
+        with self._lock:
+            if self._ledger_corrupt:
+                raise GateStop("ledger corrupt: reconcile refused; rebuild required")
+            if not reason or not isinstance(reason, str):
+                raise GateStop("cross-scope reconcile requires an operator reason")
+            if not request_ids:
+                raise GateStop("cross-scope reconcile requires explicit request ids")
+            unknown = [rid for rid in request_ids
+                       if rid not in self._unresolved_unknown]
+            if unknown:
+                raise GateStop(f"request ids not pending reconciliation: {unknown}")
+            cleared = sorted(request_ids)
+            scopes = sorted({self._request_scope.get(rid, "?") for rid in cleared})
+            self._persist({"control": "manual_reconcile", "scope": None,
+                           "scopes": scopes, "cleared": cleared, "reason": reason})
+            self._apply_reconcile(cleared)
+            return cleared
+
+    def _apply_reconcile(self, cleared: list[str]) -> None:
+        for rid in cleared:
+            self._unresolved_unknown.discard(rid)
+        if not self._unresolved_unknown:
+            self._recovered_unknown = 0
+            self._stopped = False
+            self._stop_reason = None
+        else:
+            self._recovered_unknown = len(self._unresolved_unknown)
+            remaining = sorted({self._request_scope.get(rid, "?")
+                                for rid in self._unresolved_unknown})
+            self._stopped = True
+            self._stop_reason = (f"{len(self._unresolved_unknown)} unresolved "
+                                 f"UNKNOWN request(s) remain in scope(s) {remaining}")
 
     # ---------- gate ----------
     def _worst_case(self) -> float:
@@ -270,6 +383,7 @@ class BudgetProxy:
             raise GateStop(f"global budget: {projected:.6f} > {self.config.global_cap_cny}")
         request_id = uuid.uuid4().hex
         self._states[request_id] = RESERVED
+        self._request_scope[request_id] = scope
         self._inflight_reserved += worst
         self._per_scope[scope] = n_scope + 1
         self._persist({"request_id": request_id, "state": RESERVED,
@@ -360,10 +474,15 @@ class BudgetProxy:
                                         detail=str(obj.get("model"))[:60])
                     self._send(403, {"error": "model not allowed by frozen protocol"})
                     return
-                max_out = obj.get("max_tokens", obj.get("max_completion_tokens"))
-                if isinstance(max_out, int) and not isinstance(max_out, bool) and \
-                        max_out > proxy.config.worst_case_output_tokens:
-                    proxy._audit_reject("max_tokens", body=body, detail=str(max_out))
+                max_out = _validate_output_limit(obj)
+                if max_out is None:
+                    proxy._audit_reject("output_limit", body=body,
+                                        detail=_output_limit_problem(obj))
+                    self._send(400, {"error": _output_limit_problem(obj)})
+                    return
+                if max_out > proxy.config.worst_case_output_tokens:
+                    proxy._audit_reject("output_limit_exceeds", body=body,
+                                        detail=str(max_out))
                     self._send(403, {"error": "output token cap exceeds reservation"})
                     return
                 # --- budget gate (reserve BEFORE forwarding) ---

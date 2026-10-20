@@ -25,10 +25,14 @@ PROVIDER_IMAGE = "python:3.11-slim"
 TAPE_SERVER_PATH = Path(__file__).with_name("tape_server.py")
 
 
-def _docker(*args: str, timeout: int = 60) -> subprocess.CompletedProcess:
+def _docker(*args: str, timeout: int = 60,
+            extra_env: dict[str, str] | None = None) -> subprocess.CompletedProcess:
     import os
     env = dict(os.environ)
     env["MSYS_NO_PATHCONV"] = "1"  # never let MSYS rewrite /opt, /work etc.
+    if extra_env:
+        # secrets travel ONLY here (process environment), never in argv
+        env.update(extra_env)
     return subprocess.run(["docker", *args], capture_output=True, text=True,
                           timeout=timeout, env=env)
 
@@ -94,8 +98,13 @@ class ProxyContainer:
         if parsed.scheme != "https":
             # offline fake providers only; live requires https
             env += ["-e", "CE_PROXY_ALLOW_INSECURE=1"]
+        secret_env: dict[str, str] = {}
         if self.upstream_api_key:
-            env += ["-e", f"CE_PROXY_KEY={self.upstream_api_key}"]
+            # P4-R1.4 P1-D: the real key rides the subprocess ENVIRONMENT via
+            # a bare `-e NAME` passthrough — it never appears in the docker
+            # CLI argv, host process lists, or error text.
+            env += ["-e", "CE_PROXY_KEY"]
+            secret_env["CE_PROXY_KEY"] = self.upstream_api_key
         proc = _docker(
             "run", "-d", "--name", self.name,
             "--network", self.network,
@@ -107,6 +116,7 @@ class ProxyContainer:
             "-v", f"{repo / 'scripts' / 'proxy_server.py'}:/opt/proxy_server.py:ro",
             "-v", f"{self.ledger_dir.resolve()}:/ledger",
             PROVIDER_IMAGE, "python", "/opt/proxy_server.py",
+            extra_env=secret_env,
         )
         if proc.returncode != 0:
             raise RuntimeError(f"proxy container failed: {proc.stderr.strip()}")

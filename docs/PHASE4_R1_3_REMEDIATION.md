@@ -14,7 +14,9 @@
 - `run_task`：live（proxied）模式请求 JSON 的 `api_key` 只取构造期 placeholder；调用方传入的 `api_key` 参数（可能持有真实 key）被**刻意忽略**，永不序列化（`harness_agent.py:297-315`）。
 - `scripts/run_phase4_pilot.py`：live 分支不再调用 `set_api_key(key)`；真实 key 只用于宿主侧 `query_balance_cny(key)` 与 `ProxyContainer(upstream_api_key=key)`（proxy 容器 env）。`make_live_runner(proxy)` 注入 `agent_api_key=proxy.client_token`。
 
-测试（tests/test_secret_isolation.py，7 项，真实请求构造/运行路径 + 捕获 subprocess，非对象属性断言）：
+测试（~~tests/test_secret_isolation.py~~，7 项，真实请求构造/运行路径 + 捕获 subprocess，非对象属性断言）：
+
+> **R1.4 更正**：该文件被 `.gitignore` 的 `*secret*` 保护规则吞没，从未进入远端 tree；R1.4 已改名扩展为 `tests/test_credential_isolation.py`（9 项）并实际提交，见 docs/PHASE4_R1_4_REMEDIATION.md。
 
 - canary 真实 key 作为 `run_task(api_key=CANARY)` 传入：stdin 请求 JSON、docker cmd/env、outcome ledger/events 序列化中 canary 出现 0 次；`request["api_key"] == proxy token`。
 - provider 异常路径的 error/ledger/blob 同样 0 次。
@@ -84,7 +86,7 @@
 
 ## P1 补齐
 
-1. `--out` 在初始化前使用：`_resolve_paths(args)` 先于一切 live 设置解析 out_dir/run_id/run_dir；回归测试 test_secret_isolation.py::test_out_dir_resolved_before_live_setup。
+1. `--out` 在初始化前使用：`_resolve_paths(args)` 先于一切 live 设置解析 out_dir/run_id/run_dir；回归测试 test_credential_isolation.py::test_out_dir_resolved_before_live_setup。
 2. Fake Provider 真实计数：tape_server 每个 POST 追加 `/tape/requests.jsonl`；`ProviderContainer.request_count()`；E2E cap 测试改为断言上游计数 == 1（不再用 proxy 自身 SENT 行）。
 3. Pareto 独立 manifest 钉住：configs/phase3_artifact_manifest.json（pareto_front.json + sweep_results.jsonl 的 expected SHA-256）；adapter 加载前比对，失配即 ValueError（见 S6 小节，由子任务实施）。
 4. CEA-v0/v1 多故障场景：scripts/run_phase4_v2_offline.py 重写为 4 场景 × 2 臂（edited_failing / invalid_syntax / no_edit / infra_unknown_cost），edited 由 workspace digest 计算，结果标 `evidence_class=adapter_integration_smoke`。
@@ -100,7 +102,7 @@
 （最终数字以 planner/executor_report.md 为准）
 
 - tests/test_budget_proxy.py：27 项（含新增 15 项）
-- tests/test_secret_isolation.py：7 项
+- tests/test_credential_isolation.py：9 项（R1.4 改名，原 test_secret_isolation.py 被 gitignore 吞没）
 - tests/test_proxy_control.py：8 项
 - tests/test_proxy_integration_e2e.py：6 项（Docker 真实参与）
 - tests/test_causal_policy_adapter.py / test_phase4_v2_offline.py：S6 子任务结果
