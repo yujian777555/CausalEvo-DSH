@@ -81,6 +81,7 @@ def main() -> int:
              "tests/test_credential_isolation.py",
              "tests/test_budget_proxy.py",
              "tests/test_budget_proxy_r14.py",
+             "tests/test_budget_proxy_r15.py",
              "tests/test_proxy_control.py",
              "tests/test_proxy_integration_e2e.py",
              "tests/test_causal_policy_adapter.py",
