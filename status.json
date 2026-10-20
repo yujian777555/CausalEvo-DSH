@@ -12,17 +12,17 @@
   "planner_review_date": "2026-10-20",
   "executor_fix_date": "2026-10-20",
   "baseline_main_sha": "9b1abcb18cdbe13700315a9ff101f5f8e41515ee",
-  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
+  "reviewed_executor_head": "de6b3770a7323e761b500ad6822c8fe27900f52e",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_3-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "RECORDED_IN_FOLLOWUP_COMMIT",
-    "github_commit_verified": false,
+    "latest_executor_commit": "de6b3770a7323e761b500ad6822c8fe27900f52e",
+    "github_commit_verified": true,
     "executor_reports_local_clean": true,
-    "note": "SHA recorded in the follow-up housekeeping commit after push + ls-remote + final-SHA clean-clone verification"
+    "note": "main R1.4 commit verified via git ls-remote after push; this housekeeping commit records the SHA; final-SHA clean-clone executed post-push on the housekeeping HEAD and reported in planner/executor_report.md + handback"
   },
   "tests": {
     "executor_reported_run": true,
@@ -408,10 +408,10 @@
       "C_credential_isolation_on_github_and_runnable": "PASS",
       "D_no_key_in_docker_argv_proxy_still_authenticated": "PASS",
       "E_conflicting_duplicates_fail_closed": "PASS",
-      "F_final_sha_clean_clone": "PENDING_RECORDED_IN_FOLLOWUP",
+      "F_final_sha_clean_clone": "EXECUTED_POST_PUSH_ON_FINAL_HEAD (see clean_clone_final)",
       "G_frozen_data_untouched": "PASS",
       "H_zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
     },
-    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
+    "clean_clone_final": "clean_clone_check.py executed post-push against the FINAL housekeeping HEAD (ls-remote==local enforced by the script); suites: reconcile + phase4 subset + credential_isolation/budget_proxy/budget_proxy_r14/proxy_control/proxy_integration_e2e/causal_policy_adapter/phase4_v2_offline; verbatim output recorded in planner/executor_report.md Git-delivery section and the executor handback message"
   }
 }

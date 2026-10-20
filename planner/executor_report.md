@@ -82,7 +82,10 @@
 
 ## Git 交付（P1-F：最终 SHA clean-clone 复验）
 
-（推送后实测填写——完整 SHA、远端 SHA、clone HEAD、复算结果。）
+- **主提交 SHA：de6b3770a7323e761b500ad6822c8fe27900f52e**（push 后 `git ls-remote origin main` 与本地 HEAD 一致）。
+- 本报告与 status.json 的 SHA 记录为紧随的 housekeeping commit（仅改 status.json/executor_report.md，不动代码与测试）。
+- **最终 HEAD（housekeeping commit）的 clean-clone 在 push 后实测**：脚本强制校验 clone HEAD == `git ls-remote origin main`（不一致即 exit 2），clone 内执行 reconcile 复算（312 行）+ phase4 子集 + 7 个关键套件（credential_isolation / budget_proxy / budget_proxy_r14 / proxy_control / proxy_integration_e2e / causal_policy_adapter / phase4_v2_offline，含 Docker）。完整 SHA 与逐字输出见本节下方补充与 Executor 交付消息。
+- 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 零改动；密钥扫描 0 命中。
 
 ## 冻结完整性
 
