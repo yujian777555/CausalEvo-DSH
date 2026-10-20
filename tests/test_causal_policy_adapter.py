@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from causalevo.evolution.adapter import ADAPTER_VERSION, CausalPolicyAdapter
+from causalevo.evolution.adapter import ADAPTER_VERSION, CausalPolicyAdapter, canonical_sha256
 from causalevo.evolution.policy import ACTIONS, LinUCBPolicy
 
 REPO = Path(__file__).resolve().parents[1]
@@ -60,8 +60,9 @@ def test_cea_v0_policy_version_changes_only_with_training():
 
 
 def test_manifest_pins_current_front():
-    """The frozen manifest must pin the artifact as it exists on disk."""
-    assert hashlib.sha256(FRONT.read_bytes()).hexdigest() == _front_sha()
+    """The frozen manifest must pin the artifact as it exists on disk
+    (EOL-canonical: identical in dev worktrees and clean clones)."""
+    assert canonical_sha256(FRONT) == _front_sha()
 
 
 def test_cea_v1_loads_real_pareto_genome():

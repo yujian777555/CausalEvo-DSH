@@ -103,7 +103,7 @@
     "src/causalevo/eval/proxy_control.py",
     "scripts/proxy_server.py",
     "scripts/run_phase4_v2_offline.py",
-    "results/phase4/v2-offline/run-20261020T090554Z/",
+    "results/phase4/v2-offline/run-20261020T104048Z/",
     "configs/phase3_artifact_manifest.json",
     "docs/PHASE4_R1_4_REMEDIATION.md",
     "docs/PHASE4_R1_3_REMEDIATION.md",
@@ -359,7 +359,7 @@
       "infra_unknown_cost": "none (no retry)"
     },
     "v2_evidence_class": "adapter_integration_smoke (synthetic fake-provider; not algorithm-effect evidence)",
-    "driver_run_dir": "results/phase4/v2-offline/run-20261020T090554Z",
+    "driver_run_dir": "results/phase4/v2-offline/run-20261020T104048Z",
     "gates": {
       "A_agent_requests_carry_no_real_key": "PASS",
       "B_restart_restores_spend_and_scope_counts": "PASS",
@@ -401,7 +401,7 @@
     "p0_c_credential_isolation": "tests/test_credential_isolation.py committed and runnable (renamed from test_secret_isolation.py which .gitignore '*secret*' swallowed in R1.3; R1.3 doc path corrected); 9/9 canary over real request path incl. launch-failure exception text",
     "p1_d_docker_argv": "CE_PROXY_KEY via subprocess extra_env + bare -e passthrough; argv/exception/docker ps surfaces clean; container printenv proves delivery; ledger clean",
     "p1_e_duplicate_events": "duplicate RESERVED scope/reserved_cny conflict -> corrupt; duplicate SETTLED cost conflict -> corrupt; identical duplicates idempotent; restart recovery unaffected",
-    "p1_f_clean_clone_final_sha": "clone runs reconcile + phase4 subset + 7 key suites (credential_isolation, budget_proxy, budget_proxy_r14, proxy_control, proxy_integration_e2e, causal_policy_adapter, phase4_v2_offline); executed on the exact final SHA (see clean_clone_final)",
+    "p1_f_clean_clone_final_sha": "clone runs reconcile + phase4 subset + 7 key suites; FIRST final-SHA gate run caught two R1.3 S6 defects: EOL-sensitive manifest pinning (fixed via canonical_sha256 LF-normalized hashes pareto 41119e59/sweep 564f7d18) and sweep_results.jsonl never committed (whitelisted + published unchanged); v2 evidence regenerated at run-20261020T104048Z; gate re-executed on the fixed final SHA (see clean_clone_final)",
     "gates": {
       "A_output_limit_fail_closed": "PASS",
       "B_scoped_reconcile_restart_consistent": "PASS",

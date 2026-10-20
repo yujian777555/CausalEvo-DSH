@@ -85,6 +85,7 @@
 - **主提交 SHA：de6b3770a7323e761b500ad6822c8fe27900f52e**（push 后 `git ls-remote origin main` 与本地 HEAD 一致）。
 - 本报告与 status.json 的 SHA 记录为紧随的 housekeeping commit（仅改 status.json/executor_report.md，不动代码与测试）。
 - **最终 HEAD（housekeeping commit）的 clean-clone 在 push 后实测**：脚本强制校验 clone HEAD == `git ls-remote origin main`（不一致即 exit 2），clone 内执行 reconcile 复算（312 行）+ phase4 子集 + 7 个关键套件（credential_isolation / budget_proxy / budget_proxy_r14 / proxy_control / proxy_integration_e2e / causal_policy_adapter / phase4_v2_offline，含 Docker）。完整 SHA 与逐字输出见本节下方补充与 Executor 交付消息。
+- **Gate 首次执行发现并修复两个 R1.3 S6 缺陷**：(1) manifest 钉定对换行符敏感（CRLF 工作区 vs LF clone）——改为 `canonical_sha256()` LF 规范化哈希（pareto `41119e59…`、sweep `564f7d18…`）；(2) `sweep_results.jsonl` 被 `*.jsonl` 忽略从未提交——`.gitignore` 精确白名单后补入库（内容不变）。修复后 v2 证据重新生成于 `results/phase4/v2-offline/run-20261020T104048Z`，最终 SHA Gate 对修复后 HEAD 重新执行（输出见下）。
 - 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 零改动；密钥扫描 0 命中。
 
 ## 冻结完整性

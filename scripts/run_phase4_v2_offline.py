@@ -40,7 +40,7 @@ from causalevo.eval.runtime_budget import RuntimeBudget  # noqa: E402
 from causalevo.eval.task_spec import load_task  # noqa: E402
 from causalevo.eval.workspace_factory import WorkspaceFactory  # noqa: E402
 from causalevo.eval.trace import new_run_id, provenance_block  # noqa: E402
-from causalevo.evolution.adapter import ADAPTER_VERSION, CausalPolicyAdapter  # noqa: E402
+from causalevo.evolution.adapter import ADAPTER_VERSION, CausalPolicyAdapter, canonical_sha256  # noqa: E402
 from causalevo.evolution.policy import ACTIONS, LinUCBPolicy  # noqa: E402
 from causalevo.evolution.reward import compute_reward  # noqa: E402
 from causalevo.intervention.generator import INTERVENTION_LIBRARY  # noqa: E402
@@ -122,7 +122,7 @@ def _manifest_hash(artifact_rel: str) -> str:
 
 def _verify_against_manifest(path: Path, artifact_rel: str) -> str:
     expected = _manifest_hash(artifact_rel).strip().lower()
-    actual = hashlib.sha256(path.read_bytes()).hexdigest()
+    actual = canonical_sha256(path)
     if actual != expected:
         raise ValueError(
             f"{artifact_rel} diverged from the frozen manifest: expected "

@@ -1,12 +1,13 @@
 {
-  "manifest_version": "r1.3",
+  "manifest_version": "r1.3.1",
   "frozen_for_plan": "CE-DSH-P4-R1.3-S6",
+  "hash_canonicalization": "SHA-256 over LF-normalized bytes (CRLF/CR -> LF); identical in dev worktrees and clean clones (fixed in CE-DSH-P4-R1.4 after the final-SHA clean-clone gate caught EOL-sensitive pinning)",
   "artifacts": {
     "results/phase3/evolution/pareto_front.json": {
-      "sha256": "20fdb5120f44f31e58d4a9b6070508140eee568b432ccc01549dbc239bd871de"
+      "sha256": "41119e591d055f10a7712095d6c67752969023bb78d9923580b04ba660f7c10d"
     },
     "results/phase3/replay_sweep/sweep_results.jsonl": {
-      "sha256": "15e2cb844584398d5ce2e65c4ccb1c5bf6be052ab6436cee75815e14e4540ab4"
+      "sha256": "564f7d18927bcc2b485fbab8cb2d858d66a54dec31912d13a3b894baa7f77262"
     }
   }
 }

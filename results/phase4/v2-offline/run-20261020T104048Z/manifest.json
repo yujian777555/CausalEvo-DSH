@@ -13,15 +13,15 @@
   ],
   "adapter_version": "r1.3",
   "artifact_manifest": "configs/phase3_artifact_manifest.json",
-  "pareto_front_sha256": "20fdb5120f44f31e58d4a9b6070508140eee568b432ccc01549dbc239bd871de",
-  "sweep_sha256": "15e2cb844584398d5ce2e65c4ccb1c5bf6be052ab6436cee75815e14e4540ab4",
+  "pareto_front_sha256": "41119e591d055f10a7712095d6c67752969023bb78d9923580b04ba660f7c10d",
+  "sweep_sha256": "564f7d18927bcc2b485fbab8cb2d858d66a54dec31912d13a3b894baa7f77262",
   "policy_snapshot_sha256": "208e52043764bf1be5c586b39e761a2938970bd3b471ab7105fec5300a71bbed",
   "provider": "fake tape (offline)",
   "provenance": {
-    "repo_head_sha": "a2d22a127f2b7ba5f0738dda87a453371db45b59",
+    "repo_head_sha": "bd89e91726974a7c82b0aab0e77841b3e7554a5f",
     "deepseek_harness_sdk": "0.1.5rc1",
     "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
-    "recorded_utc": "2026-10-20T09:07:09.196605+00:00"
+    "recorded_utc": "2026-10-20T10:42:00.000951+00:00"
   },
   "note": "synthetic fake-provider evidence only; NOT algorithm generalization / real-agent improvement / NSGA-III superiority evidence."
 }

@@ -31,6 +31,19 @@ from .policy import ACTIONS, LinUCBPolicy
 
 ADAPTER_VERSION = "r1.3"
 
+
+def canonical_sha256(path: Path) -> str:
+    """SHA-256 over LF-normalized bytes (CRLF/CR -> LF).
+
+    Artifact identity must not depend on the platform's line endings: git
+    (core.autocrlf=true) stores LF blobs but hands Windows worktrees CRLF
+    bytes, so a raw-bytes hash of the same artifact differs between a dev
+    worktree and a clean clone (found by the R1.4 final-SHA clean-clone gate).
+    The frozen manifest pins this canonical hash.
+    """
+    data = Path(path).read_bytes()
+    return hashlib.sha256(data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")).hexdigest()
+
 # Observable-failure -> intervention-text key, used when the deployed genome
 # bundles multiple genes: the failure evidence picks the gene whose
 # intervention addresses it; otherwise all active genes' texts are bundled.
@@ -85,7 +98,7 @@ class CausalPolicyAdapter:
                 "cea_v1 requires expected_sha256 from the frozen artifact "
                 "manifest; hashing the file at load is not verification")
         expected = expected_sha256.strip().lower()
-        actual = hashlib.sha256(Path(pareto_front_path).read_bytes()).hexdigest()
+        actual = canonical_sha256(pareto_front_path)
         if actual != expected:
             raise ValueError(
                 f"pareto front hash mismatch: expected {expected}, file has "
@@ -176,7 +189,7 @@ class CausalPolicyAdapter:
         # re-verify against the PINNED expected hash on every read (frozen
         # artifact integrity; the pinned value came from the manifest, not
         # from hashing this file at load time)
-        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        actual = canonical_sha256(path)
         if actual != self.provenance["pareto_front_sha256"]:
             raise ValueError("pareto_front.json diverged from the manifest-pinned hash")
         return front

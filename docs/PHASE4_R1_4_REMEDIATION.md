@@ -82,6 +82,13 @@
 - 统计复算：reconcile_phase4_rows.py + test_phase4_analysis/integrity/auditable；
 - 关键套件：test_credential_isolation、test_budget_proxy、test_budget_proxy_r14、test_proxy_control、test_proxy_integration_e2e（Docker）、test_causal_policy_adapter、test_phase4_v2_offline（Docker）。
 
+**最终 SHA Gate 首次执行即发现两个 R1.3 S6 真实缺陷（ Gate 生效的证据）**：
+
+1. **EOL 敏感钉定**：`configs/phase3_artifact_manifest.json` 钉的是开发工作区字节（core.autocrlf=true 下为 CRLF），clean clone 中文件为 LF，pareto_front.json 哈希不一致导致 adapter 全部拒绝加载。修复：新增 `canonical_sha256()`（LF 规范化后哈希），adapter/driver/测试统一使用；manifest 改钉规范化哈希（pareto `41119e59…`，sweep `564f7d18…`）。
+2. **sweep 工件未入库**：`results/phase3/replay_sweep/sweep_results.jsonl` 被 `*.jsonl` 规则忽略，从未提交——manifest 引用了远端不存在的工件，clean clone 中 v2 driver 直接报错。修复：`.gitignore` 精确白名单并提交该冻结工件（内容字节不变，不是修改冻结数据，而是补上缺失的公开）。
+
+修复后重新生成 v2 证据目录（results/phase4/v2-offline/run-20261020T104048Z，记录中哈希已为规范化值），并重新执行最终 SHA Gate（结果见 planner/executor_report.md）。
+
 最终 SHA 的实际执行结果记录在 planner/executor_report.md 的 Git 交付节（完整 SHA，非短 SHA）。
 
 ## 边界

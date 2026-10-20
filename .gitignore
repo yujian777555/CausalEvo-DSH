@@ -26,6 +26,7 @@ logs/
 # raw harness session logs stay local; redacted-by-construction eval traces may be committed
 *.jsonl
 !results/phase1/**/traces.jsonl
+!results/phase3/replay_sweep/sweep_results.jsonl
 !results/phase4/**/auditable_tasks.jsonl
 !results/phase4/dry-run-evidence/*.jsonl
 !results/phase4/v2-offline/**/records.jsonl
