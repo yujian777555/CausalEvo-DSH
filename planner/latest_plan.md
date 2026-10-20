@@ -1,91 +1,88 @@
-# CE-DSH-P4-R1.3 — Proxy Credential Isolation, Ledger Recovery & Run Scoping
+# CE-DSH-P4-R1.4 — Strict Output Bounds, Scoped Reconcile & Verifiable Secret Isolation
 
-Planner review base: be14f380433e6b08788e8dc47950a3a90c640b72
+Planner baseline: `9b1abcb18cdbe13700315a9ff101f5f8e41515ee`
 
-正式独立审查：planner/reviews/CE-DSH-P4-R1_2-independent-review.md
+独立审查：`planner/reviews/CE-DSH-P4-R1_3-independent-review.md`
 
-本轮必须修复 R1.2 独立审查中列出的全部 P0，并补齐 P1 回归测试。**新增 DeepSeek 模型 API 调用 = 0，新增付费预算 = ¥0。** 只允许 Fake Provider、离线重算和 Docker fake E2E。
+本轮只修 R1.3 复审发现的问题并补齐可复现证据。**新增真实 DeepSeek 模型 API 调用 0 次，新增预算 ¥0。** 不运行 `--live`，不查真实余额，不进入 Phase 5。
 
 ## 0. 接管
 
-- fetch origin/main，确认 HEAD。
-- 阅读本计划、独立审查、status.json、Executor 报告。
-- 保留 Phase 0–3 与 Phase 4 2026-10-14 的 312 行真实历史记录及 SHA；不得回填、重命名或重算覆盖历史原件。
-- 本轮结束前不运行 --live，不做真实余额查询、不连接真实 DeepSeek。
+- fetch `origin/main`，确认远端 HEAD。
+- 阅读本计划、R1.3 复审、status.json、executor_report.md 和 remediation report。
+- 保护所有未提交改动；以当前 GitHub 代码为准。
+- 保留 Phase 0–3 与 Phase 4 历史 312 行真实记录及 SHA，不覆盖或回填。
 
-## S1 / P0：密钥隔离
+## P0-A：输出 token cap 必须严格 fail-closed
 
-- run_phase4_pilot.py 不得把真实 DEEPSEEK_API_KEY 写进 live_pilot._API_KEY_HOLDER，再由 _current_key() 传给 Agent。
-- 真实 key 只可用于宿主侧必要的 balance 查询和 Proxy trusted config；Agent 容器必须收到无权限 placeholder，建议通过明确的 proxy-mode 构造参数强制保证，而非依赖默认值。
-- 对序列化给容器的完整 JSON、stdin payload、容器 env、trace、stdout/stderr、异常做 secret canary 测试：真实 canary key 在任何 Agent 可见位置都必须为 0 次；trusted Proxy upstream 收到正确的 key。
-- 测试应调用实际 request builder/run path，不允许只断言 runner 对象属性。
+文件：`src/causalevo/eval/budget_proxy.py`
 
-## S2 / P0：Ledger 事件重放与预算恢复
+- 在任何预算预留和上游发送前解析 output limit。
+- 按冻结的 DeepSeek chat-completions schema 选择允许的字段；必须存在且严格为正整数。
+- 拒绝缺失、null、字符串、浮点数、bool、负数、0、超过上限。
+- 如果 max_tokens 与 max_completion_tokens 同时出现，拒绝歧义组合，除非协议已明确规定且实现验证它们一致。
+- 任何验证失败写入不含 key/prompt 的拒绝审计，不能预留预算、不能访问上游。
+- 测试逐项覆盖上述异常值；使用 Fake Provider 的独立接收计数证明每项违规请求 upstream count = 0。
+- 保留正常边界值恰好等于 output cap 时的正向测试。
 
-- 在 BudgetProxy.__init__ 中重放 append-only ledger，按 request_id 校验合法状态转换并恢复：
-  - _states；
-  - 所有 SETTLED 的累计已知费用；
-  - 每个评估 scope 的 request count；
-  - 已知 in-flight reservation；
-  - UNKNOWN/损坏/矛盾状态与全局停止条件。
-- 任意 RESERVED/SENT 在启动恢复后转为保守 UNKNOWN；不确定费用时停止新请求。
-- 人工 reconcile 必须有记录和显式 scope；不能因解除 UNKNOWN 而清零历史 known cost 或 per-scope counts。
-- 处理重复日志事件、截断行、非法 JSON、负数费用、同 request_id 冲突。账本不能被完整、可信地恢复时 fail-closed。
-- 在 reservation/SENT 发送前持久化；评估 flush/fsync 与原子写语义。测试重启/模拟崩溃后预算不得归零。
-- 必测：成功结算 N 次→关闭/重启→恢复相同累计费用和请求数；再请求超限时 0 次到达 upstream。
+## P0-B：scope-aware UNKNOWN reconciliation
 
-## S3 / P0：唯一评估 scope 与控制 ACK 协议
+文件：`src/causalevo/eval/budget_proxy.py`
 
-- 不能再只使用 spec.task_id 作为 per-task cap key。定义稳定且唯一的 evaluation scope，至少含 experiment_run_id/task_id/seed/arm；attempt 另有 attempt_id，但同一逻辑评估的所有 attempts 应按预注册的预算语义归属。
-- 修改 runner 调用协议，让每条逻辑评估在第一个 Provider 请求前设定 scope；禁止把 6 arms × 2 seeds 混在同一个 task bucket。
-- 控制消息包含 generation/request_id。宿主先删除旧 ACK，再原子替换发布新控制消息；Proxy ACK 必须回显同一 generation。禁止通过仅比较 task_id 判断消息是否新鲜。
-- 控制通道超时、generation 不匹配、账本共享挂载不可用时，拒绝启动 Agent。
-- 测试连续两次相同 task_id、相同 task 不同 arm/seed、快速 A→B→A、重复 retry、延迟 ACK 和并发控制。
-- 明确若代理只支持串行单任务，运行器必须强制串行并用锁保证 attribution；若支持并发，必须按每个请求携带受信 scope token，而非全局 mutable _current_task。
+- 在内存状态和 ledger replay 中保存 `request_id -> scope`。
+- 修复 `reconcile(scope=...)`：只能清除指定 scope 下已列明的 UNKNOWN 请求，不能清空整个 `_unresolved_unknown` 集合。
+- 若需要跨 scope reconcile，要求显式 request ID 列表、操作理由和人工授权记录；拒绝空 scope、默认全清或不存在的 ID。
+- 重放时验证 reconcile event 中 request IDs 与 scope 对应；冲突、越权或格式损坏 fail-closed。
+- 解除 scope A 后，scope B 未知请求仍使全局 gate 保持停止；不得因为 A 已确认就允许请求越过 B 的未知费用风险。
+- 测试至少覆盖两个不同 scope 同时 UNKNOWN、先只 reconcile A、重启后仍保留 B 的 UNKNOWN、再 reconcile B 的完整流程。
+- 历史已知费用、各 scope 请求数和未知请求审计不得清零。
 
-## S4 / P0：Proxy ingress 认证与网络隔离
+## P0-C：密钥隔离测试必须真实存在于 GitHub
 
-- Proxy 连接 internal ceval-net 与 egress network 时，不能无条件在所有接口暴露一个未鉴权的转发器。
-- 在 Agent→Proxy 方向添加独立的代理客户端认证（不能复用或泄露上游 API key），或实现等价且测试证明的网络级隔离。实际 DSH SDK 必须能够携带此认证；若不能，不得宣称安全接入。
-- 证明 default-bridge sibling container 无法访问 Proxy 或不能通过认证。不能只证明端口未发布到宿主机。
-- Proxy 只能连接预先允许的 HTTPS 上游主机（live 为 api.deepseek.com），不能让 Agent 或不可信环境变量指定任意 URL、内部地址或协议。
-- 限制 HTTP 方法、路径、body size、model、max_tokens/max_completion_tokens 和输入规模；拒绝超出 worst-case reservation 配置的请求，拒绝必须发生在 upstream socket 发送之前。
-- 固定允许模型为 deepseek-flash，除非另有冻结协议批准。校验实际 request JSON 与预留的 worst-case prompt/output tokens 一致；若无法可靠界定输入规模，保守拒绝。
-- 所有入站拒绝、鉴权失败、上游失败、未知 usage 都写审计 ledger；不得记录 key 或完整 prompt。
+- 修正 `status.json` 与 `planner/executor_report.md` 中声称存在但远端缺失的 `tests/test_secret_isolation.py` 证据。
+- 新增该测试文件，或在确有等价测试时统一路径/命令/用例数；优先提交独立、易运行的 `tests/test_secret_isolation.py`。
+- Canary key 必须经过实际 request construction / runner path，而不是仅测试对象属性。
+- 断言真实 key 不出现在 Agent stdin JSON、Agent Docker argv/env、trace、stdout/stderr、异常和日志中。
+- 断言请求内只使用 per-run proxy client token，Fake Provider 端仍由 Proxy 注入正确的 trusted upstream key。
+- 对错误路径、Docker 启动失败和 provider 错误同样检查。
+- 在最终 clean clone 中运行测试，并确认该测试路径在 GitHub tree 和提交差异中存在。
 
-## S5 / P1：修复控制与输出目录边界
+## P1-D：避免真实 key 出现在 Docker CLI argv
 
-- 修复 run_phase4_pilot.py 中 out_dir 在赋值前被 --out 真分支读取的问题：先解析 out_dir/run_dir，再启动 Proxy。
-- Proxy cap E2E 加入 FakeProvider 真实接收请求计数器，不能用 Proxy 自己的 SENT 行替代上游计数。
-- 新增 fake tests 验证请求大小/model/output cap、proxy ingress auth、default bridge sibling 拒绝、未知费用锁定、重启恢复、重复 scope。
-- Clean clone 应验证所测试 HEAD 与 origin/main 或目标 SHA 完全一致；保留 no-raw-tasks 断言。
+文件：`src/causalevo/eval/networks.py` 及 Docker helper。
 
-## S6 / P1：算法 smoke 测试准确定位
+- 当前 `-e CE_PROXY_KEY=<real-key>` 把 key 值放进 docker CLI argv。
+- 改为受控 subprocess environment + `docker run -e CE_PROXY_KEY`（argv 不包含值），或经过审计的等价安全注入方式。
+- 不把 key 写入 Git 跟踪文件或无保护临时文件。
+- Canary 测试验证：Proxy 进程确实得到正确 key；Docker CLI argv、异常和日志中没有 key。
+- 代理 client token 与上游 key 必须继续分离。
 
-- 在独立 manifest 中冻结 pareto_front.json 与训练 sweep 输入的 SHA-256；适配器加载前必须和 expected hash 比较，不能仅计算当前文件 hash 后自证。
-- 对 CEA-v1 建立多种 fake failure fixtures：invalid/verification、no-edit/read-first、edited-but-failing/tool-validation、infra/unknown-cost no-retry。实际运行驱动必须观察到各分支及不同选中 genome；edited 等状态不得硬编码，应由 workspace/trace 计算。
-- 对 CEA-v0 同样记录固定 snapshot hash、action、policy_version 和 no-update 约束。
-- run_phase4_v2_offline.py 的结果标为 adapter_integration_smoke，不能宣称算法泛化、真实 Agent 提升或 NSGA-III 优越性。
-- 真实模型 live 评估仍需单独的预注册与新授权，不属于本轮。
+## P1-E：ledger 同状态重复事件完整性
 
-## S7：状态、测试与证据
+文件：`src/causalevo/eval/budget_proxy.py`
 
-- 更新 status.json：清理过期 blockers，保留历史 R1.1/R1.2 审查记录，将当前未关闭问题列入当前 blockers。
-- 全量运行可执行测试，并分别报告 unit/integration/Docker E2E/clean clone/secret isolation/ledger recovery/scope attribution。
-- 任何 Docker 测试若因镜像/daemon 未启动而 skip，必须标记 NOT_VERIFIED，不能归为 PASS。
-- 更新 planner/executor_report.md 和版本化结果；不修改历史真实数据。
-- 新增 DeepSeek model API calls = 0，费用 ¥0。
+- 重复事件只在语义字段完全一致时才可视为幂等。
+- 重复 RESERVED 的 scope/reserved_cny 不同必须标记 ledger corrupt 并 fail-closed。
+- 对其他同状态事件校验所有有意义字段；不能仅校验重复 SETTLED cost。
+- 增加合法完全重复事件通过、冲突 RESERVED、冲突 SETTLED 及截断日志拒绝的测试。
 
-## Gate 与停止
+## P1-F：最终 SHA 的 clean-clone 复验
 
-Gate A：Agent 请求中不含真实 API key。
-Gate B：重启后 known spend 与 per-scope request counts 完整恢复。
-Gate C：相同 task 重复设置不会 ACK 超时；不同 arm/seed 预算独立。
-Gate D：未经认证的 bridge sibling 无法使用 Proxy。
-Gate E：请求 model/body/token 超限在发送前拒绝。
-Gate F：Fake Provider 端到端实际计数验证 cap-before-send。
-Gate G：CEA-v0/v1 多种离线分支被真实驱动触发；SHA 由独立 manifest 钉住。
-Gate H：clean clone/历史数据复算一致，冻结数据不变。
-Gate I：本轮新增真实模型 API 调用 0、费用 ¥0。
+- 完成所有修改后先 commit/push。
+- 确认最终本地 HEAD == `git ls-remote origin main`。
+- 使用该精确 SHA 重新运行 clean-clone；报告完整 SHA，不得只报告短 SHA。
+- 在 clean clone 中运行统计复算和关键测试（secret isolation、budget proxy、control channel、proxy E2E、CEA adapter smoke）。
+- 如果验证后再产生任何提交，必须重新运行最终 SHA Gate，或如实声明新提交未经 Gate 验证。
 
-所有 P0 Gate 通过后，设置 phase_status=READY_FOR_REVIEW、next_actor=GPT-Planner；任何 P0 未通过则 BLOCKED。推送 main、核验 HEAD 与工作区 clean 后立即停止，等待 Planner 审查。不得进入付费 pilot 或 Phase 5。
+## Gate
+
+A. 缺失/非法/超限 output limit 全部在上游发送前拒绝。
+B. scope A 的 reconcile 不解除 scope B 的 UNKNOWN；重启后状态仍一致。
+C. GitHub 存在并可执行真实 canary secret-isolation 测试。
+D. Docker CLI argv、日志、异常不含真实 upstream key；Proxy 收到凭证且能通过 Fake Provider 鉴权。
+E. ledger 的冲突重复事件 fail-closed。
+F. 最终 HEAD 与 origin/main 完全一致，最终 SHA 的 clean-clone 复算成功。
+G. Phase 0–3 与历史 312 行实验数据零改动。
+H. 本轮真实 DeepSeek 模型 API 调用 0 次、费用 ¥0。
+
+任意 P0 未通过：`phase_status=BLOCKED`。全部 Gate 通过后：`phase_status=READY_FOR_REVIEW`、`next_actor=GPT-Planner`。推送后停止等待 Planner，不得启动 live pilot。

@@ -3,18 +3,18 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4-R1.3",
-  "previous_plan_id": "CE-DSH-P4-R1.2",
-  "phase": "Phase 4 R1.3",
-  "phase_status": "READY_FOR_REVIEW",
+  "plan_id": "CE-DSH-P4-R1.4",
+  "previous_plan_id": "CE-DSH-P4-R1.3",
+  "phase": "Phase 4 R1.4",
+  "phase_status": "CHANGES_REQUESTED",
   "planner_review": "CHANGES_REQUESTED",
-  "next_actor": "GPT-Planner",
-  "planner_review_date": "2026-10-10",
+  "next_actor": "Kimi-Executor",
+  "planner_review_date": "2026-10-20",
   "executor_fix_date": "2026-10-20",
-  "baseline_main_sha": "a2d22a127f2b7ba5f0738dda87a453371db45b59",
-  "reviewed_executor_head": "be14f380433e6b08788e8dc47950a3a90c640b72",
+  "baseline_main_sha": "9b1abcb18cdbe13700315a9ff101f5f8e41515ee",
+  "reviewed_executor_head": "9b1abcb18cdbe13700315a9ff101f5f8e41515ee",
   "plan_path": "planner/latest_plan.md",
-  "review_path": "planner/reviews/CE-DSH-P4-R1_2-independent-review.md",
+  "review_path": "planner/reviews/CE-DSH-P4-R1_3-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
@@ -84,7 +84,14 @@
     "budget_cap_runtime_cny": 4.83,
     "new_live_calls_this_round": 0
   },
-  "blockers": [],
+  "blockers": [
+    "P0: budget_proxy output cap check allows missing/non-integer max_tokens or max_completion_tokens to bypass the reserved output-token bound",
+    "P0: BudgetProxy.reconcile(scope=...) clears every unresolved UNKNOWN regardless of scope; unrelated unknown-cost requests can be unlocked",
+    "P0 validation blocker: status/report claim tests/test_secret_isolation.py 7/7, but the file is absent from remote Git tree and R1.2-to-R1.3 diff; key isolation canary evidence is not reproducible",
+    "P1: ProxyContainer passes real CE_PROXY_KEY as a docker CLI argument, exposing it to host process command-line inspection",
+    "P1: ledger replay treats conflicting duplicate RESERVED events as idempotent; only duplicate SETTLED cost conflicts are checked",
+    "P1: clean-clone output reports tested SHA 1ae933a while final remote HEAD is 9b1abcb; exact final SHA gate needs rerun"
+  ],
   "blockers_note": "R1.2-review P0-A..F and P1-1..6 are addressed in CE-DSH-P4-R1.3 (see phase4_r1_3); the stale R1.1-era blocker list was removed per plan S7. Historical review records preserved under phase4_r1_2_review and phase4.r1_1_planner_review. No currently open P0/P1 items at handback.",
   "limitations": [
     "actual billed cost unknown (balance resolution/lag)",
@@ -112,8 +119,8 @@
     "tests/test_causal_policy_adapter.py",
     "tests/test_phase4_v2_offline.py"
   ],
-  "notes": "R1.3 closes the R1.2-review P0s: real API key never enters agent space (proxied placeholder enforced at construction); proxy ledger fully replays (cost/scope counts survive restart, corrupt fail-closed); unique run/task/seed/arm scopes with generation-ACK control; per-run ingress token + upstream allowlist + request bounds enforced pre-send; CEA-v1 Pareto pinned by independent manifest; 4-scenario v2 offline driver. No paid pilot authorization.",
-  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.3",
+  "notes": "R1.3 not accepted. Two direct source defects remain: malformed/missing output token limits bypass validation, and reconcile(scope) clears all unknowns. The claimed tests/test_secret_isolation.py is absent from the remote tree. No live pilot authorization.",
+  "next_goal": "R1.4 offline: require valid explicit output token cap; scope-limit UNKNOWN reconciliation; add the missing secret isolation canary test; avoid API key in Docker argv; fail-closed on conflicting duplicate ledger events; rerun clean clone at exact final SHA",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -367,5 +374,26 @@
       "H_clean_clone_and_frozen_data_consistent": "PASS (clean-clone re-verified post-push)",
       "I_zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
     }
+  },
+  "phase4_r1_3_review": {
+    "status": "CHANGES_REQUESTED",
+    "reviewed_head": "9b1abcb18cdbe13700315a9ff101f5f8e41515ee",
+    "main_executor_commit": "1ae933a48623da26d6941e051da4157fa25bd3e7",
+    "reviewed_by": "GPT-Planner",
+    "review_method": "GitHub remote tree/diff/source/test/status inspection; did not rerun executor Windows/Docker test suite; no live API calls",
+    "credential_isolation": "PARTIAL_NOT_INDEPENDENTLY_VERIFIED_TEST_FILE_MISSING",
+    "ledger_recovery": "PARTIAL_PASS_WITH_SCOPED_RECONCILE_DEFECT",
+    "ingress_auth": "STATIC_IMPLEMENTATION_PRESENT_EXECUTOR_REPORTED_E2E_NOT_RERUN",
+    "output_token_bound": "FAIL",
+    "scoped_reconcile": "FAIL",
+    "ledger_duplicate_integrity": "PARTIAL_FAIL",
+    "clean_clone_final_sha": "NOT_VERIFIED",
+    "algorithm_adapter": "OFFLINE_ADAPTER_INTEGRATION_SMOKE_ONLY",
+    "direct_route": "DIRECT_ROUTE_UNVERIFIED",
+    "executor_reported_tests": 496,
+    "planner_reran_tests": false,
+    "new_api_calls": 0,
+    "new_spend_cny": 0,
+    "next_plan": "CE-DSH-P4-R1.4"
   }
 }
