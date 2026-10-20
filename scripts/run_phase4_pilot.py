@@ -46,6 +46,26 @@ def _attempt_tape(spec, attempt: int):
     ])}
 
 
+def _resolve_paths(args) -> tuple[Path, Path, str]:
+    """Resolve output paths BEFORE any live setup (R1.3-P1: the live branch
+    previously read out_dir before assignment when --out was set)."""
+    out_dir = Path(args.out) if args.out else \
+        REPO / "results" / "phase4" / ("live" if args.live else "dry-run")
+    run_id = f"phase4-{'live' if args.live else 'dry'}-{new_run_id()}"
+    return out_dir, out_dir / run_id, run_id
+
+
+def make_live_runner(proxy) -> ContainerHarnessRunner:
+    """The ONLY live runner shape: proxied, placeholder-credentialed. The
+    agent receives the per-run proxy client token (no upstream power); the
+    real DeepSeek key exists only in the proxy container's trusted env."""
+    return ContainerHarnessRunner(
+        image=IMAGE, patch_path=PATCH, model="deepseek-flash",
+        reasoning_effort="low", max_tokens=256, provider_kind="live",
+        provider_endpoint=proxy.endpoint, network="ceval-net",
+        agent_api_key=proxy.client_token)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     mode = parser.add_mutually_exclusive_group()
@@ -56,20 +76,17 @@ def main() -> int:
     args = parser.parse_args()
     live = bool(args.live)
 
+    out_dir, run_dir, run_id = _resolve_paths(args)
+
     specs = load_all_tasks(REPO / "benchmarks" / "tasks")
     if args.tasks:
         specs = specs[: args.tasks]
 
     providers: list = []
-    provider_holder: dict = {}
 
     def make_runner(attempt: int) -> ContainerHarnessRunner:
         if live:
-            proxy.set_current_task(_current_spec[0].task_id if _current_spec[0] else "unknown")
-            return ContainerHarnessRunner(
-                image=IMAGE, patch_path=PATCH, model="deepseek-flash",
-                reasoning_effort="low", max_tokens=256, provider_kind="live",
-                provider_endpoint=proxy.endpoint, network="ceval-net")
+            return make_live_runner(proxy)
         tape = _attempt_tape(_current_spec[0], attempt)
         provider = ProviderContainer(tape)
         provider.__enter__()
@@ -85,13 +102,13 @@ def main() -> int:
         from causalevo.eval.networks import ProxyContainer
         import os
         key = os.environ["DEEPSEEK_API_KEY"]
-        set_api_key(key)
+        # R1.3-P0-A: the real key is NEVER put into the agent-facing holder.
+        # It is used only for (a) the host-side balance query and (b) the
+        # trusted proxy container env. Agent containers get the proxy token.
         balance = query_balance_cny(key)
         cap = min(BUDGET_CAP_CNY, balance)
-        # the ONLY live path: proxy container holds the key and gates every
-        # request; agent containers get a placeholder and the internal net.
         proxy = ProxyContainer(upstream="https://api.deepseek.com",
-                               ledger_dir=(out_dir if args.out else REPO / "results" / "phase4" / "live") / f"proxy-ledger-{new_run_id()}",
+                               ledger_dir=out_dir / f"proxy-ledger-{run_id}",
                                upstream_api_key=key, cap_cny=cap)
         proxy.__enter__()
         providers.append(proxy)
@@ -102,9 +119,6 @@ def main() -> int:
 
     gate = BudgetGate(cap_cny=cap, worst_case_per_call_cny=0.02)
     judge = Judge(DockerExecutor())
-    run_id = f"phase4-{'live' if live else 'dry'}-{new_run_id()}"
-    out_dir = Path(args.out) if args.out else REPO / "results" / "phase4" / ("live" if live else "dry-run")
-    run_dir = out_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
     rows = []
@@ -116,6 +130,11 @@ def main() -> int:
             for spec in specs:
                 _current_spec[0] = spec
                 for arm in ARMS:
+                    if live:
+                        # unique evaluation scope (run/task/seed/arm) set BEFORE
+                        # the first provider request of this logical row;
+                        # both attempts of the row share the scope (R1.3-S3)
+                        proxy.set_current_scope(f"{run_id}/{spec.task_id}/{seed}/{arm}")
                     try:
                         gate.check_can_start(1)
                     except Exception as exc:

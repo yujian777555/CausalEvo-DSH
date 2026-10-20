@@ -5,9 +5,13 @@ snapshot — select_intervention is genuinely called; the policy is never
 updated during evaluation (frozen deployment, no test-set leakage).
 
 B5-live: loads the ACTUAL NSGA-III Pareto front artifact from
-results/phase3/evolution/pareto_front.json, verifies the genome id and the
-source-file hash, and derives the executable intervention text FROM the
-genome's active genes (never a hardcoded bundle).
+results/phase3/evolution/pareto_front.json, verifies the genome id, and
+derives the executable intervention text FROM the genome's active genes
+(never a hardcoded bundle). Since ADAPTER_VERSION r1.3 the artifact hash is
+pinned by an EXTERNAL frozen manifest (configs/phase3_artifact_manifest.json):
+cea_v1 requires the caller to supply the expected SHA-256 and raises before
+loading on mismatch or when no expected hash is given — the adapter never
+self-certifies by hashing the file it was pointed at.
 
 This module adds a new interface; it does not modify frozen Phase 3 code and
 its results must never be backfilled into the 2026-10-14 pilot rows.
@@ -25,7 +29,7 @@ from .genome import InterventionGenome
 from .memory import EpisodeMemory
 from .policy import ACTIONS, LinUCBPolicy
 
-ADAPTER_VERSION = "r1.1"
+ADAPTER_VERSION = "r1.3"
 
 # Observable-failure -> intervention-text key, used when the deployed genome
 # bundles multiple genes: the failure evidence picks the gene whose
@@ -72,9 +76,21 @@ class CausalPolicyAdapter:
     # ---------- B5-live: frozen Pareto genome from the NSGA-III artifact ----------
     @classmethod
     def cea_v1(cls, pareto_front_path: Path,
-               genome_id: str | None = None) -> "CausalPolicyAdapter":
-        front = json.loads(pareto_front_path.read_text(encoding="utf-8"))
-        source_sha = hashlib.sha256(pareto_front_path.read_bytes()).hexdigest()
+               genome_id: str | None = None, *,
+               expected_sha256: str | None = None) -> "CausalPolicyAdapter":
+        """Load the frozen front ONLY after verifying it against an externally
+        supplied expected SHA-256 (r1.3: no self-certification)."""
+        if not expected_sha256:
+            raise ValueError(
+                "cea_v1 requires expected_sha256 from the frozen artifact "
+                "manifest; hashing the file at load is not verification")
+        expected = expected_sha256.strip().lower()
+        actual = hashlib.sha256(Path(pareto_front_path).read_bytes()).hexdigest()
+        if actual != expected:
+            raise ValueError(
+                f"pareto front hash mismatch: expected {expected}, file has "
+                f"{actual} — refusing to load a tampered/unpinned artifact")
+        front = json.loads(Path(pareto_front_path).read_text(encoding="utf-8"))
         if not front:
             raise ValueError("empty pareto front")
         if genome_id is None:
@@ -89,10 +105,31 @@ class CausalPolicyAdapter:
         genome = InterventionGenome.from_dict(member["genome"])
         return cls("cea-v1", genome=genome,
                    provenance={"pareto_front_path": str(pareto_front_path),
-                               "pareto_front_sha256": source_sha,
+                               "pareto_front_sha256": expected,
                                "genome_id": genome.genome_id,
                                "train_fitness": member["train_fitness"],
                                "front_size": len(front)})
+
+    @classmethod
+    def cea_v1_from_manifest(cls, pareto_front_path: Path, manifest_path: Path,
+                             genome_id: str | None = None) -> "CausalPolicyAdapter":
+        """Load with the hash pinned by the frozen artifact manifest
+        (configs/phase3_artifact_manifest.json). The manifest lives outside the
+        artifact, so a tampered front cannot re-pin itself."""
+        manifest = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+        artifacts = manifest.get("artifacts", {})
+        repo_root = Path(manifest_path).resolve().parents[1]
+        try:
+            rel = Path(pareto_front_path).resolve().relative_to(repo_root).as_posix()
+        except ValueError:
+            rel = Path(pareto_front_path).as_posix()
+        entry = artifacts.get(rel)
+        if entry is None:
+            raise ValueError(
+                f"{rel} is not pinned in {manifest_path}; refusing to load an "
+                "artifact the frozen manifest does not cover")
+        return cls.cea_v1(pareto_front_path, genome_id=genome_id,
+                          expected_sha256=entry["sha256"])
 
     # frozen selection rule (P4-R1.2-S4): failure-conditioned genome choice.
     # Recorded at build time; never tuned on evaluation results.
@@ -136,10 +173,12 @@ class CausalPolicyAdapter:
     def _front_members(self) -> list[dict[str, Any]]:
         path = Path(self.provenance["pareto_front_path"])
         front = json.loads(path.read_text(encoding="utf-8"))
-        # re-verify the source hash on every read (frozen artifact integrity)
+        # re-verify against the PINNED expected hash on every read (frozen
+        # artifact integrity; the pinned value came from the manifest, not
+        # from hashing this file at load time)
         actual = hashlib.sha256(path.read_bytes()).hexdigest()
         if actual != self.provenance["pareto_front_sha256"]:
-            raise ValueError("pareto_front.json hash changed since adapter load")
+            raise ValueError("pareto_front.json diverged from the manifest-pinned hash")
         return front
 
     def intervention_for(self, *, failure_kind: str, edited: bool,

@@ -31,7 +31,7 @@ def test_scrub_removes_all_proxy_vars(monkeypatch):
     assert "api.deepseek.com" in os.environ["NO_PROXY"]
 
 
-def test_budget_proxy_upstream_ignores_env_proxy(monkeypatch):
+def test_budget_proxy_upstream_ignores_env_proxy(monkeypatch, tmp_path):
     """budget proxy builds a DIRECT opener (empty ProxyHandler) — the env must
     be irrelevant for upstream calls (proven by the working fake upstream)."""
     monkeypatch.setenv("HTTP_PROXY", "http://127.0.0.1:1")
@@ -42,11 +42,13 @@ def test_budget_proxy_upstream_ignores_env_proxy(monkeypatch):
     import json as _json
     with FakeProvider(lambda m, i: [("text", "ok")]) as up:
         with BudgetProxy(ProxyConfig(upstream_base_url=up.base_url,
-                                     max_requests_per_task=5, global_cap_cny=5.0),
-                         Path(os.environ.get("TEMP", "/tmp")) / "bpx-ledger.jsonl") as proxy:
+                                     max_requests_per_task=5, global_cap_cny=5.0,
+                                     allowed_upstream_hosts=("127.0.0.1",),
+                                     allow_insecure_upstream=True),
+                         tmp_path / "ledger.jsonl") as proxy:
             req = urllib.request.Request(
                 proxy.base_url + "/chat/completions",
-                data=_json.dumps({"messages": []}).encode(),
+                data=_json.dumps({"model": "deepseek-flash", "messages": []}).encode(),
                 headers={"Content-Type": "application/json"})
             assert urllib.request.urlopen(req, timeout=15).status == 200
 
@@ -80,17 +82,19 @@ def test_no_proxy_env_leaks_into_agent_container():
     # the placeholder — the real key is nowhere in this object.
     assert runner.agent_api_key == "sk-proxied"
     assert runner.provider_endpoint is not None
-    # and the run path would fail closed without the proxy endpoint
-    runner_bad = ContainerHarnessRunner(
-        image="causalevo-dsh-agent:0.2.1",
-        patch_path=REPO / "configs" / "dsh_task_patch.yml",
-        model="deepseek-flash", reasoning_effort="low", max_tokens=256,
-        provider_kind="live", provider_endpoint=None)
-    from causalevo.eval.task_spec import load_task
-    from causalevo.eval.runtime_budget import RuntimeBudget
-    import tempfile
-    with tempfile.TemporaryDirectory() as ws:
-        spec = load_task(REPO / "benchmarks" / "tasks" / "micro-000-clamp_value")
-        with pytest.raises(PermissionError):
-            runner_bad.run_task(spec, Path(ws), "x",
-                                RuntimeBudget(1, 100, 1, 60), api_key="sk-x")
+    # R1.3-S1: the fail-closed moved to CONSTRUCTION — live mode without the
+    # proxy endpoint (or without the placeholder token) cannot even be built
+    with pytest.raises(ValueError):
+        ContainerHarnessRunner(
+            image="causalevo-dsh-agent:0.2.1",
+            patch_path=REPO / "configs" / "dsh_task_patch.yml",
+            model="deepseek-flash", reasoning_effort="low", max_tokens=256,
+            provider_kind="live", provider_endpoint=None)
+    with pytest.raises(ValueError):
+        ContainerHarnessRunner(
+            image="causalevo-dsh-agent:0.2.1",
+            patch_path=REPO / "configs" / "dsh_task_patch.yml",
+            model="deepseek-flash", reasoning_effort="low", max_tokens=256,
+            provider_kind="live",
+            provider_endpoint="http://ceval-proxy-x:8081",
+            agent_api_key=None)

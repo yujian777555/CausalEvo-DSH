@@ -6,12 +6,12 @@
   "plan_id": "CE-DSH-P4-R1.3",
   "previous_plan_id": "CE-DSH-P4-R1.2",
   "phase": "Phase 4 R1.3",
-  "phase_status": "CHANGES_REQUESTED",
+  "phase_status": "READY_FOR_REVIEW",
   "planner_review": "CHANGES_REQUESTED",
-  "next_actor": "Kimi-Executor",
+  "next_actor": "GPT-Planner",
   "planner_review_date": "2026-10-10",
   "executor_fix_date": "2026-10-20",
-  "baseline_main_sha": "a9bef642e35eeed398f5578890a00f8872af2af0",
+  "baseline_main_sha": "a2d22a127f2b7ba5f0738dda87a453371db45b59",
   "reviewed_executor_head": "be14f380433e6b08788e8dc47950a3a90c640b72",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_2-independent-review.md",
@@ -19,24 +19,28 @@
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "ab842c90b0adcb61e60e9563a90dea6e0f4d5536",
-    "github_commit_verified": true,
+    "latest_executor_commit": "RECORDED_IN_FOLLOWUP_COMMIT",
+    "github_commit_verified": false,
     "executor_reports_local_clean": true,
-    "note": "verified via git ls-remote after push; this field updated in the same commit"
+    "note": "SHA recorded in the follow-up housekeeping commit after push + ls-remote verification"
   },
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 447,
+    "passed": 496,
     "failed": 0,
     "skipped": 0,
     "planner_reran": false,
     "categories": {
-      "unit_integration_full_suite": "447/447 (docker live)",
-      "proxy_concurrency_failclosed": "tests/test_budget_proxy.py 12/12",
-      "docker_e2e_proxy_chain": "tests/test_proxy_integration_e2e.py 3/3",
-      "clean_clone": "scripts/clean_clone_check.py CLEAN CLONE OK (34 subset + reconcile)",
-      "algorithm_adapter": "tests/test_causal_policy_adapter.py 9/9 + v2 driver run"
+      "unit_integration_full_suite": "496/496 (docker live)",
+      "budget_proxy_recovery_bounds_ingress": "tests/test_budget_proxy.py 27/27",
+      "secret_isolation_canary": "tests/test_secret_isolation.py 7/7",
+      "control_channel_generation_ack": "tests/test_proxy_control.py 8/8",
+      "docker_e2e_proxy_chain": "tests/test_proxy_integration_e2e.py 6/6 (incl. bridge-sibling 401 + provider-side request_count)",
+      "algorithm_adapter": "tests/test_causal_policy_adapter.py 19/19",
+      "v2_offline_driver": "tests/test_phase4_v2_offline.py 7/7 (4 scenarios x 2 arms, real docker)",
+      "clean_clone": "scripts/clean_clone_check.py HEAD==origin/main verified post-push",
+      "frozen_integrity": "test_live_csv_consistency/test_phase4_integrity etc. pass"
     }
   },
   "live_api": {
@@ -80,37 +84,36 @@
     "budget_cap_runtime_cny": 4.83,
     "new_live_calls_this_round": 0
   },
-  "blockers": [
-    "P0: run_phase4_pilot.py passes real DEEPSEEK_API_KEY through _current_key() into ContainerHarnessRunner request JSON because agent_api_key is not set",
-    "P0: BudgetProxy restart fails to reconstruct settled _known_cost and _per_task counts; budget may reset",
-    "P0: ProxyContainer control ACK race and repeated identical task_id can timeout; scope currently conflates task/arm/seed",
-    "P0: Proxy binds 0.0.0.0 on a dual-NIC default-bridge container without ingress client authentication",
-    "P0: fixed worst-case reservation is not enforced against request model/max_tokens/prompt size",
-    "P1: run_phase4_pilot.py references out_dir before assignment when --live and --out are both set",
-    "P1: E2E cap test counts proxy SENT ledger rows rather than directly observing fake upstream requests",
-    "P1: CEA-v1 expected Pareto hash is not independently pinned; v2 driver is one-task synthetic smoke only",
-    "P1: clean-clone check clones local REPO rather than verifying the tested commit against origin/main",
-    "P1: status.json retains stale R1.1 blockers inconsistent with R1.2 claims"
-  ],
+  "blockers": [],
+  "blockers_note": "R1.2-review P0-A..F and P1-1..6 are addressed in CE-DSH-P4-R1.3 (see phase4_r1_3); the stale R1.1-era blocker list was removed per plan S7. Historical review records preserved under phase4_r1_2_review and phase4.r1_1_planner_review. No currently open P0/P1 items at handback.",
   "limitations": [
     "actual billed cost unknown (balance resolution/lag)",
     "task_validity of stored 100 samples unknown (bodies not persisted)",
-    "no-tools runtime evidence produced on executor machine only"
+    "no-tools runtime evidence produced on executor machine only",
+    "TUN-level DeepSeek DIRECT route remains DIRECT_ROUTE_UNVERIFIED (no live calls this round)",
+    "v2-offline results are adapter_integration_smoke (fake provider); NOT algorithm generalization or real-agent improvement evidence"
   ],
   "evidence": [
     "scripts/clean_clone_check.py",
     "src/causalevo/eval/auditable.py",
     "src/causalevo/eval/budget_proxy.py",
     "src/causalevo/eval/networks.py",
+    "src/causalevo/eval/proxy_control.py",
     "scripts/proxy_server.py",
     "scripts/run_phase4_v2_offline.py",
-    "results/phase4/v2-offline/",
+    "results/phase4/v2-offline/run-20261020T090554Z/",
+    "configs/phase3_artifact_manifest.json",
+    "docs/PHASE4_R1_3_REMEDIATION.md",
     "tests/test_proxy_integration_e2e.py",
     "tests/test_auditable.py",
-    "tests/test_budget_proxy.py"
+    "tests/test_budget_proxy.py",
+    "tests/test_secret_isolation.py",
+    "tests/test_proxy_control.py",
+    "tests/test_causal_policy_adapter.py",
+    "tests/test_phase4_v2_offline.py"
   ],
-  "notes": "R1.2 contains substantial progress but is not accepted. Current source inspection found P0 credential isolation, restart-accounting, control-channel, proxy ingress auth, and request-bound enforcement issues. No paid pilot authorization.",
-  "next_goal": "R1.3 offline: prevent real API key entering agent; restore Proxy ledger budget on restart; fix unique run-scope/ACK; protect proxy ingress; enforce request bounds; improve fake E2E and adapter smoke tests",
+  "notes": "R1.3 closes the R1.2-review P0s: real API key never enters agent space (proxied placeholder enforced at construction); proxy ledger fully replays (cost/scope counts survive restart, corrupt fail-closed); unique run/task/seed/arm scopes with generation-ACK control; per-run ingress token + upstream allowlist + request bounds enforced pre-send; CEA-v1 Pareto pinned by independent manifest; 4-scenario v2 offline driver. No paid pilot authorization.",
+  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.3",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -335,5 +338,34 @@
     "new_api_calls": 0,
     "new_spend_cny": 0,
     "next_plan": "CE-DSH-P4-R1.3"
+  },
+  "phase4_r1_3": {
+    "new_live_calls": 0,
+    "new_spend_cny": 0,
+    "p0_a_secret_isolation": "real key only in host balance query + proxy trusted env; live runner requires endpoint+placeholder at construction and ignores caller api_key; canary tests over real request path (7/7)",
+    "p0_b_ledger_recovery": "full replay: states/settled cost/per-scope counts restored; RESERVED-SENT->UNKNOWN; corrupt/duplicate/negative/conflict fail-closed; scoped reconcile never zeroes history; fsync persist (27/27 incl. restart cap with 0 upstream calls)",
+    "p0_c_scope_ack": "scope=run_id/task_id/seed/arm; generation-based publish/ack (stale-ack-first-delete, atomic replace, timeout/mismatch refuse agent start); serial enforcement via lock (8/8 unit + container regression)",
+    "p0_d_ingress_auth": "per-run client token (distinct from upstream key); bridge-sibling container 401 with upstream request_count==0; upstream host allowlist + https enforced; audit ledger without secrets",
+    "p0_e_request_bounds": "path/method/content-length/json-shape/model(deepseek-flash)/max_tokens validated pre-send; rejections consume no budget (fake upstream counters prove)",
+    "p1_fixes": "out_dir init order + regression test; tape_server provider-side request counter wired into E2E cap test; pareto+sweep SHA pinned in configs/phase3_artifact_manifest.json (adapter refuses unpinned/mismatched hash); v2 driver 4 scenarios x 2 arms with computed edited state; clean_clone_check verifies cloned HEAD == origin/main; status.json blockers cleaned",
+    "cea_v1_genomes_selected": {
+      "edited_failing": "e3738653ca40 (tool-validation)",
+      "invalid_syntax": "ef0925c8870c (verification-heavy)",
+      "no_edit": "e015506f37fe (read-first)",
+      "infra_unknown_cost": "none (no retry)"
+    },
+    "v2_evidence_class": "adapter_integration_smoke (synthetic fake-provider; not algorithm-effect evidence)",
+    "driver_run_dir": "results/phase4/v2-offline/run-20261020T090554Z",
+    "gates": {
+      "A_agent_requests_carry_no_real_key": "PASS",
+      "B_restart_restores_spend_and_scope_counts": "PASS",
+      "C_repeat_scope_no_ack_timeout_and_independent_arm_seed_budgets": "PASS",
+      "D_unauthenticated_bridge_sibling_rejected": "PASS",
+      "E_model_body_token_overlimit_rejected_pre_send": "PASS",
+      "F_provider_side_count_proves_cap_before_send": "PASS",
+      "G_cea_v0_v1_offline_branches_real_driven_sha_pinned": "PASS",
+      "H_clean_clone_and_frozen_data_consistent": "PASS (clean-clone re-verified post-push)",
+      "I_zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
+    }
   }
 }

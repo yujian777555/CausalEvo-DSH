@@ -1,8 +1,13 @@
-"""Clean-clone reproducibility check (P4-R1.2-S1): clone the repo to a temp
-dir, create a FRESH venv, install the lockfile, run the Phase 4 recomputation
-subset. Proves fresh-clone recompute without the developer's raw files.
+"""Clean-clone reproducibility check (P4-R1.2-S1, hardened P4-R1.3-S5):
+verify the tested HEAD matches the REMOTE origin/main (or an explicit target
+SHA), clone to a temp dir, create a FRESH venv, install the lockfile, run the
+Phase 4 recomputation subset. Proves fresh-clone recompute without the
+developer's raw files — and that the claim covers the REMOTE commit, not an
+unpushed local one.
 
-Usage: .venv/Scripts/python.exe scripts/clean_clone_check.py
+Usage: .venv/Scripts/python.exe scripts/clean_clone_check.py [expected_sha]
+Exit 0: CLEAN CLONE OK. Exit 2: remote/HEAD mismatch. Exit 3: remote SHA
+could not be determined (REMOTE_UNVERIFIED).
 """
 import shutil
 import subprocess
@@ -13,12 +18,36 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 
 
+def _git(args, cwd, check=True, env=None):
+    return subprocess.run(["git", *args], cwd=cwd, check=check,
+                          capture_output=True, text=True, env=env)
+
+
+def _remote_sha() -> str | None:
+    import os
+    env = dict(os.environ)
+    try:
+        proc = _git(["ls-remote", "origin", "main"], cwd=REPO, env=env)
+        return proc.stdout.split()[0]
+    except (subprocess.CalledProcessError, IndexError):
+        return None
+
+
 def main() -> int:
+    expected = sys.argv[1] if len(sys.argv) > 1 else _remote_sha()
+    if not expected:
+        print("REMOTE_UNVERIFIED: could not determine origin/main SHA")
+        return 3
     work = Path(tempfile.mkdtemp(prefix="ce-cleanclone-"))
     try:
         clone = work / "repo"
         subprocess.run(["git", "clone", "--quiet", str(REPO), str(clone)],
                        check=True, cwd=work)
+        head = _git(["rev-parse", "HEAD"], cwd=clone).stdout.strip()
+        if head != expected:
+            print(f"HEAD MISMATCH: cloned {head} != expected {expected} "
+                  "(local commits not on origin/main)")
+            return 2
         assert not (clone / "results/phase4/live/phase4-live-20261014T110259Z/tasks.jsonl").exists(), \
             "raw tasks.jsonl must NOT be in a fresh clone"
         py = clone / "venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
@@ -45,7 +74,8 @@ def main() -> int:
              "tests/test_phase4_analysis.py", "tests/test_phase4_integrity.py",
              "tests/test_auditable.py"],
             check=True, cwd=clone)
-        print("CLEAN CLONE OK: 312 auditable rows recompute in a fresh clone")
+        print(f"CLEAN CLONE OK: HEAD {expected[:12]} == origin/main; "
+              "312 auditable rows recompute in a fresh clone")
         return 0
     finally:
         shutil.rmtree(work, ignore_errors=True)

@@ -1,0 +1,12 @@
+{
+  "manifest_version": "r1.3",
+  "frozen_for_plan": "CE-DSH-P4-R1.3-S6",
+  "artifacts": {
+    "results/phase3/evolution/pareto_front.json": {
+      "sha256": "20fdb5120f44f31e58d4a9b6070508140eee568b432ccc01549dbc239bd871de"
+    },
+    "results/phase3/replay_sweep/sweep_results.jsonl": {
+      "sha256": "15e2cb844584398d5ce2e65c4ccb1c5bf6be052ab6436cee75815e14e4540ab4"
+    }
+  }
+}

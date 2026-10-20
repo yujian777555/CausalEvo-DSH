@@ -6,7 +6,9 @@ Usage: python tape_server.py /tape/tape.json  (binds 0.0.0.0:8080)
 
 Tape format: {"0": [["tool_call", "read", {"file_path": "solution.py"}], ...], ...}
 Out-of-range call indices receive a plain text completion so the agent loop
-terminates. "sleep" actions hang the response (timeout testing).
+terminates. "sleep" actions hang the response (timeout testing). "no_usage"
+suppresses the usage chunk (unknown-cost fail-closed testing). Every POST is
+counted in /tape/requests.jsonl (upstream-side receive counter).
 """
 
 from __future__ import annotations
@@ -32,6 +34,7 @@ def _chunk(delta: dict, finish: str | None = None, usage: dict | None = None) ->
 def render(actions: list, call_index: int) -> bytes:
     tool_calls = [a for a in actions if a[0] == "tool_call"]
     texts = [a for a in actions if a[0] == "text"]
+    suppress_usage = any(a[0] == "no_usage" for a in actions)
     parts: list[str] = []
     if tool_calls:
         calls = [
@@ -52,7 +55,7 @@ def render(actions: list, call_index: int) -> bytes:
         "prompt_cache_hit_tokens": 64,
         "prompt_cache_miss_tokens": 36 + call_index * 50,
     }
-    parts.append(_chunk({}, finish=finish, usage=usage))
+    parts.append(_chunk({}, finish=finish, usage=None if suppress_usage else usage))
     parts.append("data: [DONE]\n\n")
     return "".join(parts).encode()
 
@@ -61,12 +64,21 @@ def main() -> int:
     tape_path = Path(sys.argv[1])
     tape = json.loads(tape_path.read_text(encoding="utf-8"))
     observations_path = tape_path.parent / "observations.jsonl"
+    requests_path = tape_path.parent / "requests.jsonl"
     counter = {"n": 0}
 
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self):
             length = int(self.headers.get("Content-Length", 0))
             body = self.rfile.read(length)
+            # upstream-side request counter: every POST that REACHED this
+            # provider, appended before any processing (host-side assertions)
+            try:
+                with open(requests_path, "a", encoding="utf-8") as fh:
+                    fh.write(json.dumps({"i": counter["n"],
+                                         "bytes": length}) + "\n")
+            except Exception:
+                pass
             try:
                 parsed = json.loads(body or b"{}")
                 with open(observations_path, "a", encoding="utf-8") as fh:

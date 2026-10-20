@@ -264,9 +264,22 @@ class ContainerHarnessRunner:
         cap-drop ALL, no-new-privileges, internal network only. The sole
         reachable endpoint is `provider_endpoint` on the internal network.
 
-        agent_api_key: the key handed to the agent container. When a budget
-        proxy fronts the provider, this is a placeholder (the proxy injects
-        the trusted key upstream); the real key never enters agent space."""
+        agent_api_key: the credential handed to the agent container. When a
+        budget proxy fronts the provider (provider_kind="live"), this is the
+        per-run proxy client token — a placeholder with NO upstream power
+        (the proxy injects the trusted key); the real key never enters agent
+        space. Live mode REQUIRES both provider_endpoint and agent_api_key at
+        construction (explicit proxied mode, not a default)."""
+        if provider_kind == "live":
+            if not provider_endpoint:
+                raise ValueError(
+                    "provider_kind='live' requires provider_endpoint (budget "
+                    "proxy); direct-to-API construction is forbidden")
+            if agent_api_key is None:
+                raise ValueError(
+                    "provider_kind='live' requires an explicit agent_api_key "
+                    "placeholder (the proxy client token); the runner will "
+                    "never forward a real key to the agent")
         self.image = image
         self.patch_path = patch_path
         self.model = model
@@ -294,6 +307,14 @@ class ContainerHarnessRunner:
         prompt = spec.instructions
         if extra_prompt:
             prompt = f"{spec.instructions}\n\nADDITIONAL INSTRUCTION (retry policy): {extra_prompt}"
+        if self.provider_kind == "live":
+            # Proxied mode: the agent receives ONLY the constructor-supplied
+            # placeholder (proxy client token). The api_key argument — which
+            # may hold a real key from the caller's context — is deliberately
+            # never serialized into the container request.
+            key_for_agent = self.agent_api_key
+        else:
+            key_for_agent = self.agent_api_key or api_key
         request = {
             "session_id": f"task-{spec.task_id}-{uuid.uuid4().hex[:6]}",
             "prompt": prompt,
@@ -302,7 +323,7 @@ class ContainerHarnessRunner:
             "max_tokens": self.max_tokens,
             "patch_yml": self.patch_path.read_text(encoding="utf-8"),
             "base_url": self.provider_endpoint,
-            "api_key": self.agent_api_key or api_key,
+            "api_key": key_for_agent,
             "request_timeout_s": max(60, budget.wall_time_s),
         }
         cmd = [
