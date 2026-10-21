@@ -144,12 +144,23 @@ def _validate_output_limit(obj: dict) -> int | None:
 
 
 def _valid_amount(v: Any) -> bool:
-    """Ledger monetary amounts (P4-R1.5 P0-B): JSON number, finite,
-    nonnegative, never bool (bool is an int subclass; NaN is non-finite AND
-    defeats tolerance comparisons — abs(nan - x) > tol is always False).
-    Shared by initial and duplicate RESERVED/SETTLED replay validation."""
-    return (isinstance(v, (int, float)) and not isinstance(v, bool)
-            and math.isfinite(v) and v >= 0)
+    """Ledger monetary amounts: JSON number, finite, nonnegative, never bool,
+    and representable in the ledger's float accounting representation.
+
+    TOTAL for any json-decoded value (P4-R1.6 P1-A): bool is an int subclass;
+    NaN/Inf are non-finite; and math.isfinite(10**400) / float(10**400) raise
+    OverflowError, so the float-conversion itself is attempted under a guard —
+    any failure or non-finite result rejects the amount WITHOUT leaking
+    OverflowError / ValueError / TypeError into proxy construction."""
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return False
+    if v < 0:
+        return False
+    try:
+        f = float(v)
+    except (OverflowError, ValueError, TypeError):
+        return False
+    return math.isfinite(f)
 
 
 class BudgetProxy:
@@ -196,6 +207,13 @@ class BudgetProxy:
                 e = json.loads(line)
             except json.JSONDecodeError:
                 corrupt = f"line {lineno}: invalid JSON (truncated/corrupt ledger)"
+                break
+            except ValueError as exc:
+                # e.g. an integer literal exceeding the runtime's configured
+                # int-str digit limit (runtimes that enforce one): a numeric
+                # parser failure is ledger corruption, not an escaping exception
+                corrupt = (f"line {lineno}: numeric parse failure "
+                           f"({type(exc).__name__})")
                 break
             if not isinstance(e, dict):
                 corrupt = f"line {lineno}: entry is not a JSON object"

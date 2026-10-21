@@ -6,48 +6,47 @@
   "plan_id": "CE-DSH-P4-R1.6",
   "previous_plan_id": "CE-DSH-P4-R1.5",
   "phase": "Phase 4 R1.6",
-  "phase_status": "READY_FOR_EXECUTION",
+  "phase_status": "READY_FOR_REVIEW",
   "planner_review": "ACCEPTED_WITH_LIVE_READINESS_BLOCKERS",
-  "next_actor": "Kimi-Executor",
+  "next_actor": "GPT-Planner",
   "planner_review_date": "2026-10-20",
-  "executor_fix_date": "2026-10-20",
-  "baseline_main_sha": "d9fbfa2697eb68f760fd3c9c2813376cbda679f8",
-  "reviewed_executor_head": "a6e6b6e4490ba56ec67fe694fc307242fc8b1af3",
+  "executor_fix_date": "2026-10-21",
+  "baseline_main_sha": "a6e6b6e4490ba56ec67fe694fc307242fc8b1af3",
+  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
+  "live_readiness": "NOT_READY (diagnostics only; no live budget authorization)",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_5-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "63e80e894c08a8bb90d5e006d96d5c3cbc740bbb",
-    "github_commit_verified": true,
+    "latest_executor_commit": "RECORDED_IN_FOLLOWUP_COMMIT",
+    "github_commit_verified": false,
     "executor_reports_local_clean": true,
-    "note": "main R1.5 commit 171e07089222... + clone-suite commit 63e80e8...; final-SHA clean-clone PASS executed on 63e80e894c08a8bb90d5e006d96d5c3cbc740bbb (see phase4_r1_5.clean_clone_final); this housekeeping commit records the result (docs-only)"
+    "note": "SHA recorded in the follow-up housekeeping commit after push + ls-remote verification; final-SHA clean-clone executed on the Gate-verified SHA (see phase4_r1_6.clean_clone_final)"
   },
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 567,
+    "passed": 574,
     "failed": 0,
     "skipped": 0,
     "planner_reran": false,
-    "count_unification": "P1-C: R1.4 discrepancy was report=523 (stale from run1 '2 failed, 523 passed' before two test-body fixes) vs status=525 (run2 after fixes; 525 collected in both). This round: run1 566 passed/1 failed (docker-timing flake, 3/3 standalone), run2 567 passed/0 failed/0 skipped after operational timeout hardening (no assertion changes, no test-count changes between runs). Both files now cite run2=567.",
+    "count_note": "567 (R1.5 unified) + 7 new R1.6 tests = 574; R1.5 subgroup split corrected to 21 alias + 21 ledger via pytest --collect-only",
     "categories": {
-      "unit_integration_full_suite": "567/567 (docker live)",
+      "unit_integration_full_suite": "574/574 (docker live)",
       "budget_proxy_recovery_bounds_ingress": "tests/test_budget_proxy.py 27/27",
       "r14_output_limit_scoped_reconcile_duplicates": "tests/test_budget_proxy_r14.py 25/25",
-      "r15_alias_strictness_and_ledger_numerics": "tests/test_budget_proxy_r15.py 42/42 (defect reproduction: 6 failed pre-fix incl. True==1 / 256.0==256 bypass and NaN duplicate)",
+      "r15_alias_strictness_and_ledger_numerics": "tests/test_budget_proxy_r15.py 42/42 (21 alias + 21 ledger, measured)",
+      "r16_overflow_safe_replay": "tests/test_budget_proxy_r16.py 7/7 (defect reproduction: 6 failed pre-fix, OverflowError escaped construction)",
       "credential_isolation_canary": "tests/test_credential_isolation.py 9/9",
       "control_channel_generation_ack": "tests/test_proxy_control.py 8/8",
       "docker_e2e_proxy_chain": "tests/test_proxy_integration_e2e.py 7/7 (incl. key env-delivery, bridge-sibling 401, provider-side request_count)",
       "algorithm_adapter": "tests/test_causal_policy_adapter.py 19/19",
       "v2_offline_driver": "tests/test_phase4_v2_offline.py 7/7 (4 scenarios x 2 arms, real docker)",
-      "clean_clone": "final-SHA clean clone incl. 7 key suites (see phase4_r1_5.clean_clone_final)",
+      "clean_clone": "final-SHA clean clone incl. 8 key suites (see phase4_r1_6.clean_clone_final)",
       "frozen_integrity": "test_live_csv_consistency/test_phase4_integrity etc. pass"
-    },
-    "planner_reviewed_head": "a6e6b6e4490ba56ec67fe694fc307242fc8b1af3",
-    "clean_clone_tested_sha": "63e80e894c08a8bb90d5e006d96d5c3cbc740bbb",
-    "current_remote_head": "a6e6b6e4490ba56ec67fe694fc307242fc8b1af3"
+    }
   },
   "live_api": {
     "run": true,
@@ -91,11 +90,9 @@
     "new_live_calls_this_round": 0
   },
   "blockers": [
-    "Live pilot remains unauthorized while TUN-level direct routing to api.deepseek.com:443 is DIRECT_ROUTE_UNVERIFIED",
-    "R1.6 should harden corrupted-ledger handling for extremely large integer literals that may raise OverflowError/ValueError rather than controlled ledger_corrupt state",
-    "R1.5 clean-clone passed at 63e80e894c08a8bb90d5e006d96d5c3cbc740bbb; later docs-only HEAD a6e6b6e4490ba56ec67fe694fc307242fc8b1af3 is explicitly disclosed as not re-gated"
+    "Live pilot remains unauthorized: no live budget authorization exists (direct-route diagnostics do not grant authorization)"
   ],
-  "blockers_note": "R1.4-review P0-A/P0-B and P1-C/D/E are addressed in CE-DSH-P4-R1.5 (see phase4_r1_5). Historical review records preserved under phase4_r1_2_review / phase4_r1_3_review / phase4_r1_4_review. No currently open P0/P1 items at handback.",
+  "blockers_note": "R1.5-review non-blocking overflow robustness fixed in R1.6 (P1-A); R1.5 count split corrected (21+21 by measured collection); DIRECT_ROUTE upgraded to VERIFIED for the direct-opener path on this host at 2026-10-21T11:22 local (see phase4_r1_6.direct_route) — this does NOT authorize live calls. R1.5 final-SHA clean-clone superseded by R1.6 final-SHA gate (see phase4_r1_6.clean_clone_final).",
   "limitations": [
     "actual billed cost unknown (balance resolution/lag)",
     "task_validity of stored 100 samples unknown (bodies not persisted)",
@@ -114,6 +111,7 @@
     "scripts/run_phase4_v2_offline.py",
     "results/phase4/v2-offline/run-20261020T104048Z/",
     "configs/phase3_artifact_manifest.json",
+    "docs/PHASE4_R1_6_REMEDIATION.md",
     "docs/PHASE4_R1_5_REMEDIATION.md",
     "docs/PHASE4_R1_4_REMEDIATION.md",
     "docs/PHASE4_R1_3_REMEDIATION.md",
@@ -122,13 +120,14 @@
     "tests/test_budget_proxy.py",
     "tests/test_budget_proxy_r14.py",
     "tests/test_budget_proxy_r15.py",
+    "tests/test_budget_proxy_r16.py",
     "tests/test_credential_isolation.py",
     "tests/test_proxy_control.py",
     "tests/test_causal_policy_adapter.py",
     "tests/test_phase4_v2_offline.py"
   ],
-  "notes": "R1.5 accepted for offline engineering after GitHub source/test/report inspection; GPT did not independently rerun Windows/Docker tests. No live API pilot authorization. Remaining live-readiness blocker: DIRECT_ROUTE_UNVERIFIED. R1.6 adds overflow-safe corrupt-ledger handling and TCP/TLS-only route diagnostics with zero HTTP/API requests.",
-  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.5",
+  "notes": "R1.6: overflow-safe ledger replay (_valid_amount total; ValueError-caught parse) with controlled corrupt/stopped state and byte-preserved corrupt ledgers; R1.5 subgroup counts corrected (21+21 measured); direct-route diagnostics (zero HTTP) upgraded to DIRECT_ROUTE_VERIFIED for the direct-opener path on this host (TUN off, mihomo connection log shows 0 deepseek entries amid 109 logged flows, genuine TrustAsia cert) — this is NOT live authorization; live_readiness stays NOT_READY.",
+  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.6",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -447,7 +446,7 @@
   "phase4_r1_5": {
     "new_live_calls": 0,
     "new_spend_cny": 0,
-    "p0_a_alias_strictness": "every supplied output-token field validated independently via _strict_positive_int (real int, non-bool, >0) BEFORE alias comparison; True==1 and 256.0==256 bypass closed; 20 alias cases: all illegal shapes rejected pre-send with upstream_count==0, no scope count, no reservation; valid single/pair/boundary pass",
+    "p0_a_alias_strictness": "every supplied output-token field validated independently via _strict_positive_int (real int, non-bool, >0) BEFORE alias comparison; True==1 and 256.0==256 bypass closed; 21 alias cases (verified by pytest --collect-only in R1.6): all illegal shapes rejected pre-send with upstream_count==0, no scope count, no reservation; valid single/pair/boundary pass",
     "p0_b_ledger_numerics": "shared _valid_amount (numeric, non-bool, finite, >=0) for initial+duplicate RESERVED/SETTLED; NaN/Inf/bool/negative/conflict -> ledger corrupt fail-closed; identical valid duplicates idempotent; corrupt ledger refuses new requests, never auto-rewritten, fail-closed after restart; valid histories and crash recovery preserved",
     "p1_c_count_unification": "run1 566 passed/1 failed (docker-timing flake, 3/3 standalone); run2 567 passed/0 failed/0 skipped after operational timeout hardening (no assertion/test-count changes); R1.4 523-vs-525 cause documented (stale run1 count in report vs run2 in status)",
     "p1_d_clean_clone_final_sha": "executed on the exact post-push origin/main SHA with clone HEAD==ls-remote enforced; see clean_clone_final",
@@ -479,5 +478,23 @@
     "new_api_calls": 0,
     "new_spend_cny": 0,
     "next_plan": "CE-DSH-P4-R1.6"
+  },
+  "phase4_r1_6": {
+    "new_live_calls": 0,
+    "new_spend_cny": 0,
+    "p1_a_overflow_safe_ledger": "_valid_amount total for any JSON value (guarded float conversion; OverflowError/ValueError/TypeError -> reject); replay json.loads catches ValueError beyond JSONDecodeError; 10**400 reserved/cost/duplicate and 5000-digit literal -> controlled ledger_corrupt+stopped, construction never raises; corrupt ledger bytes preserved; valid histories/recovery/idempotence/scoped reconcile preserved (tests/test_budget_proxy_r16.py 7/7; 6 failed pre-fix)",
+    "p1_b_count_correction": "pytest tests/test_budget_proxy_r15.py --collect-only -q: 42 collected = 21 output-alias (18 parametrized + 3 standalone) + 21 ledger; docs/report/status corrected; no tests added/removed to match prose",
+    "p1_c_direct_route": "DIRECT_ROUTE_VERIFIED (scoped): Clash Verge + verge-mihomo, mode=global, tun.enable=false (no TUN adapter); system proxy 127.0.0.1:7897 only affects voluntary clients; budget-proxy opener ProxyHandler({}) bypasses; 2026-10-21T11:22 local DNS/TCP/TLS to api.deepseek.com:443 with ZERO HTTP bytes; genuine TrustAsia cert CN=api.deepseek.com; mihomo sidecar log: 109 flows logged 11:20-11:24, 0 deepseek entries => diagnostic connection did not traverse mihomo; Sangfor aTrust underlay noted; NOT a live authorization",
+    "p1_d_final_sha_gate": "clean-clone on exact final SHA with 8 key suites incl. r16 (see clean_clone_final)",
+    "gates": {
+      "A_overflow_inputs_controlled_fail_closed": "PASS",
+      "B_counts_corrected": "PASS",
+      "C_direct_route_diagnostics": "PASS (VERIFIED scoped; live NOT authorized)",
+      "D_full_regression": "PASS (574/574)",
+      "E_frozen_and_secret_audit": "PASS (no frozen diff; calls.csv 1961bdd8; auditable 35b9e67a; sweep 15e2cb84; key scan 0)",
+      "F_final_sha_clean_clone": "PENDING_RECORDED_IN_FOLLOWUP",
+      "G_zero_new_model_api_calls": "PASS (0 calls, CNY 0, zero HTTP bytes in diagnostics)"
+    },
+    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
   }
 }

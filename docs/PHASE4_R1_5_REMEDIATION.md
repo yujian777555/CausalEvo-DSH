@@ -38,6 +38,8 @@
 测试（真实账本文件经正式重放入口）：
 
 - 重复 SETTLED：NaN / Infinity / bool / 负数 / 冲突合法金额 → corrupt；相同合法金额 → 幂等且历史费用恰好恢复一次。
+
+> **R1.6 P1-B 计数更正**：经 `pytest tests/test_budget_proxy_r15.py --collect-only -q` 实测收集 42 项：输出 token 别名组 **21**（parametrized 18 + 独立 3）+ 账本数值组 **21**（5+1+4+4+5+1+1）。初版文档与报告按 20+22 拆分为误写，总数 42 不变；未为对齐文档增删任何测试。
 - 初始 SETTLED：NaN / Infinity / bool / 负 → corrupt。
 - 初始 RESERVED：bool / NaN / Infinity / 负 → corrupt。
 - 重复 RESERVED：bool / NaN / Infinity / 负 / 冲突金额 → corrupt（合法完全重复幂等由 r14 套件保持）。
