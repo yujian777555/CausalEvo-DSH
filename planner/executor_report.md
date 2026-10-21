@@ -75,7 +75,20 @@
 
 ## 10. Git 交付（最终 SHA / clean-clone / 同步）
 
-（push 后实测填写。）
+- **R1.7 主提交：`1f6c324af86c2d517358df823d757d426956150e`**（push 后 `git ls-remote origin main` 与本地 HEAD 一致）。
+- **最终 SHA Gate（逐字输出）**：
+  ```
+  verified: 312 auditable rows recompute to the committed analysis (incl. cluster bootstrap)
+  34 passed in 5.61s (phase4 subset)
+  152 passed in 281.41s (credential_isolation 9 + budget_proxy 27 + r14 25 + r15 42 + r16 8
+      + proxy_control 8 + proxy_integration_e2e 7 + causal_policy_adapter 19 + phase4_v2_offline 7)
+  CLEAN CLONE OK: HEAD 1f6c324af86c == origin/main; 312 auditable rows recompute in a fresh clone
+  exit=0
+  ```
+- **clean-clone 验证 SHA（完整）**：`1f6c324af86c2d517358df823d757d426956150e`（脚本强制 clone HEAD == ls-remote）。
+- 本记录提交（housekeeping）仅改 status.json 与 executor_report.md，不含代码/测试变更；Gate 在 `1f6c324…` 通过，记录提交本身未再触发 Gate（如实声明）。
+- 同步状态：本地 HEAD == `git ls-remote origin main`；`git status --porcelain` = 0（clean）。
+- 冻结校验：staged diff 中冻结内容零改动（仅新增脱敏诊断工件与文档）；密钥扫描 0 命中。
 
 ## 停止
 
