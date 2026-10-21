@@ -59,7 +59,21 @@
 
 ## G. Git 交付（最终 SHA / clean-clone / 同步状态）
 
-（push 后实测填写。）
+- **R1.6 主提交：`ff64acfc4ddfc97c65f65ca6c7575e7440ea051f`**（push 后 `git ls-remote origin main` 与本地 HEAD 一致）。
+- **最终 SHA Gate（逐字输出）**：
+  ```
+  verified: 312 auditable rows recompute to the committed analysis (incl. cluster bootstrap)
+  34 passed in 4.24s (phase4 subset)
+  151 passed in 222.25s (credential_isolation 9 + budget_proxy 27 + budget_proxy_r14 25
+      + budget_proxy_r15 42 + budget_proxy_r16 7 + proxy_control 8
+      + proxy_integration_e2e 7 + causal_policy_adapter 19 + phase4_v2_offline 7)
+  CLEAN CLONE OK: HEAD ff64acfc4ddf == origin/main; 312 auditable rows recompute in a fresh clone
+  exit=0
+  ```
+- **clean-clone 验证 SHA（完整）**：`ff64acfc4ddfc97c65f65ca6c7575e7440ea051f`（脚本强制 clone HEAD == ls-remote，失配 exit 2）。
+- 本记录提交（housekeeping）仅改 status.json 与 executor_report.md，不含代码/测试变更；按惯例如实声明：Gate 在 `ff64acf…` 通过，记录提交本身未再触发 Gate（如需可用 `python scripts/clean_clone_check.py` 随时对当前 HEAD 重验）。
+- 同步状态：本地 HEAD == `git ls-remote origin main`；`git status --porcelain` = 0（clean）。
+- 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 零改动；密钥扫描 0 命中。
 
 ## 停止
 
