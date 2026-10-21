@@ -3,19 +3,19 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4-R1.7",
-  "previous_plan_id": "CE-DSH-P4-R1.6",
-  "phase": "Phase 4 R1.7",
-  "phase_status": "READY_FOR_REVIEW",
-  "planner_review": "ACCEPTED_FOR_OFFLINE_ENGINEERING_WITH_NONBLOCKING_FOLLOWUPS",
-  "next_actor": "GPT-Planner",
+  "plan_id": "CE-DSH-P4-R1.8",
+  "previous_plan_id": "CE-DSH-P4-R1.7",
+  "phase": "Phase 4 R1.8",
+  "phase_status": "READY_FOR_EXECUTION",
+  "planner_review": "R1.7_OFFLINE_ENGINEERING_ACCEPTED; LIVE_PILOT_PROPOSAL_NOT_APPROVED",
+  "next_actor": "Kimi-Executor",
   "planner_review_date": "2026-10-21",
   "executor_fix_date": "2026-10-21",
-  "baseline_main_sha": "b35e6dcc5c966b75df99d72b6a9621aed09528a1",
-  "reviewed_executor_head": "1f6c324af86c2d517358df823d757d426956150e",
-  "live_readiness": "NOT_READY (no budget authorization; R1.7 is offline algorithm-fidelity and preregistration only)",
+  "baseline_main_sha": "8286d38d38d6c1812e26225031a85690852f0068",
+  "reviewed_executor_head": "8286d38d38d6c1812e26225031a85690852f0068",
+  "live_readiness": "NOT_READY (R1.7 pilot proposal not approved; R1.8 offline online-evolution implementation only)",
   "plan_path": "planner/latest_plan.md",
-  "review_path": "planner/reviews/CE-DSH-P4-R1_6-independent-review.md",
+  "review_path": "planner/reviews/CE-DSH-P4-R1_7-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
@@ -23,7 +23,8 @@
     "latest_executor_commit": "1f6c324af86c2d517358df823d757d426956150e",
     "github_commit_verified": true,
     "executor_reports_local_clean": true,
-    "note": "main R1.6 commit verified via git ls-remote after push; final-SHA clean-clone PASS executed on ff64acfc4ddfc97c65f65ca6c7575e7440ea051f; this housekeeping commit records the result (docs-only)"
+    "note": "R1.7 implementation/test commit 1f6c324 was clean-clone tested. Follow-up 8286d38 changes only status.json and planner/executor_report.md; exact follow-up SHA was not rerun through clean-clone.",
+    "latest_executor_followup_commit": "8286d38d38d6c1812e26225031a85690852f0068"
   },
   "tests": {
     "executor_reported_run": true,
@@ -32,7 +33,7 @@
     "failed": 0,
     "skipped": 0,
     "planner_reran": false,
-    "count_note": "567 (R1.5 unified) + 8 R1.6 tests (incl. R1.7 zero-limit regression) = 575; R1.5 subgroup split corrected to 21 alias + 21 ledger via pytest --collect-only",
+    "count_note": "Executor-reported full suite 575 passed / 0 failed / 0 skipped. Clean-clone and 312-row reconciliation passed at implementation SHA 1f6c324af86c2d517358df823d757d426956150e; current HEAD 8286d38 is docs/status-only and was not rerun.",
     "categories": {
       "unit_integration_full_suite": "575/575 (docker live)",
       "budget_proxy_recovery_bounds_ingress": "tests/test_budget_proxy.py 27/27",
@@ -47,9 +48,9 @@
       "clean_clone": "final-SHA clean clone incl. 8 key suites (see phase4_r1_6.clean_clone_final)",
       "frozen_integrity": "test_live_csv_consistency/test_phase4_integrity etc. pass"
     },
-    "planner_reviewed_head": "b35e6dcc5c966b75df99d72b6a9621aed09528a1",
-    "clean_clone_tested_sha": "ff64acfc4ddfc97c65f65ca6c7575e7440ea051f",
-    "current_remote_head": "b35e6dcc5c966b75df99d72b6a9621aed09528a1"
+    "planner_reviewed_head": "8286d38d38d6c1812e26225031a85690852f0068",
+    "clean_clone_tested_sha": "1f6c324af86c2d517358df823d757d426956150e",
+    "current_remote_head": "8286d38d38d6c1812e26225031a85690852f0068"
   },
   "live_api": {
     "run": true,
@@ -93,19 +94,20 @@
     "new_live_calls_this_round": 0
   },
   "blockers": [
-    "Live pilot remains unauthorized: no explicit user budget authorization and separate GPT Planner approval",
-    "R1.7 must fix test portability when sys.get_int_max_str_digits() returns 0",
-    "Route diagnostics were accepted only in a scoped sense; raw underlying mihomo diagnostic logs are not committed for independent re-check",
-    "Before any new spend, audit whether runtime performs evolutionary updates or only static Pareto-front genome selection, and require a preregistered GO decision"
+    "Live pilot is NOT APPROVED: R1.7 recovery-rate endpoint is conditional on arm-specific first-attempt failures, while the proposed McNemar analysis assumes paired binary outcomes on a common denominator",
+    "The current live_pilot.py B5 path still uses fixed CEAV1_BUNDLE; CausalPolicyAdapter.cea_v1_from_manifest is only demonstrated in fake-provider offline integration",
+    "R1.8 must implement and validate an actual online evolutionary update loop before a live experiment is considered",
+    "Future pilot sample size/power, exact task IDs/hash, and effective per-scope/request/token/cost limits must be frozen and justified",
+    "Route evidence is scoped to the observed direct-opener connection; raw mihomo log is not committed and Sangfor aTrust underlay remains a limitation"
   ],
-  "blockers_note": "R1.5-review non-blocking overflow robustness fixed in R1.6 (P1-A); R1.5 count split corrected (21+21 by measured collection); DIRECT_ROUTE upgraded to VERIFIED for the direct-opener path on this host at 2026-10-21T11:22 local (see phase4_r1_6.direct_route) — this does NOT authorize live calls. R1.5 final-SHA clean-clone superseded by R1.6 final-SHA gate (see phase4_r1_6.clean_clone_final).",
+  "blockers_note": "R1.7 Tasks A-C accepted by source review. R1.7 Task D proposal is NOT APPROVED for live execution. The R1.7 implementation commit 1f6c324af86c2d517358df823d757d426956150e was clean-clone tested; current HEAD 8286d38d38d6c1812e26225031a85690852f0068 is a docs/status-only follow-up and was not rerun. No live API authorization.",
   "limitations": [
-    "actual billed cost unknown (balance resolution/lag)",
-    "task_validity of stored 100 samples unknown (bodies not persisted)",
-    "no-tools runtime evidence produced on executor machine only",
-    "TUN-level DeepSeek DIRECT route remains DIRECT_ROUTE_UNVERIFIED (no live calls this round)",
-    "v2-offline results are adapter_integration_smoke (fake provider); NOT algorithm generalization or real-agent improvement evidence",
-    "docker inspect Config.Env readable by host-privileged users (documented host trust boundary; key no longer in CLI argv)"
+    "575/575 full-suite result is executor-reported; GPT did not independently rerun tests",
+    "clean-clone passed at 1f6c324af86c2d517358df823d757d426956150e, not at the current docs/status-only HEAD 8286d38d38d6c1812e26225031a85690852f0068",
+    "route classification is scoped to the observed direct-opener path and diagnostic interval; raw rotated log is not committed; Sangfor aTrust underlay not fully excluded",
+    "R1.7 adapter integration uses fake provider and does not establish real-model efficacy",
+    "CEA-v1 runtime is frozen selection; no runtime evolutionary update loop; L4 RSI not implemented",
+    "historical 312-row experiment uses proxy/static B4/B5 implementations and remains immutable"
   ],
   "evidence": [
     "scripts/clean_clone_check.py",
@@ -132,8 +134,8 @@
     "tests/test_causal_policy_adapter.py",
     "tests/test_phase4_v2_offline.py"
   ],
-  "notes": "R1.7 offline complete: digit-limit test portability fixed (limit==0 branch + regression); sanitized route-diagnostic artifact committed (results/phase4/route_diagnostics/20261021.json, reproducible from the rotated mihomo log hash); algorithm-fidelity audit docs/PHASE4_R1_7_ALGORITHM_FIDELITY.md (offline NSGA-III real but tape-simulated and small; runtime = frozen static selection; NO runtime evolution loop; L4 RSI NOT_IMPLEMENTED; historical B4/B5 remain proxy/static, 312 rows immutable); preregistered proposal docs/PHASE4_R1_7_PILOT_PROPOSAL.md = conditional GO for a small frozen-adapter pilot (B5-v2 vs B1-random), NOT executed. No live authorization.",
-  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.7",
+  "notes": "R1.7 offline engineering accepted by source review. The live pilot proposal is not approved as written. R1.8 must implement and test an actual offline runtime evolutionary update loop, repair endpoint/statistical definitions, verify a real adapter execution path using fake provider, and keep all real API calls at zero.",
+  "next_goal": "CE-DSH-P4-R1.8: implement a genuine offline runtime evolutionary update loop and repair the experimental estimand/statistical protocol",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -533,5 +535,23 @@
       "zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
     },
     "clean_clone_final": "PASS at 1f6c324af86c2d517358df823d757d426956150e: 'CLEAN CLONE OK: HEAD 1f6c324af86c == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 152 key-suite tests passed (exit 0). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)"
+  },
+  "phase4_r1_7_review": {
+    "decision": "OFFLINE_ENGINEERING_ACCEPTED; LIVE_PILOT_PROPOSAL_NOT_APPROVED",
+    "reviewed_head": "8286d38d38d6c1812e26225031a85690852f0068",
+    "implementation_test_sha": "1f6c324af86c2d517358df823d757d426956150e",
+    "docs_status_followup_sha": "8286d38d38d6c1812e26225031a85690852f0068",
+    "review_method": "GitHub source/artifact/commit review; GPT did not independently run Windows/Docker tests or reproduce local route diagnostics",
+    "task_a": "ACCEPTED_BY_SOURCE_REVIEW; 8/8 and full 575/575 are executor-reported",
+    "task_b": "ACCEPTED_SCOPED_EVIDENCE_ONLY; raw rotated mihomo log is not committed; no global route guarantee",
+    "task_c": "ACCEPTED; offline NSGA-III is small/tape-simulated; runtime static selection; L4 RSI NOT_IMPLEMENTED",
+    "task_d": "NOT_APPROVED_FOR_LIVE; recovery denominator/statistical test mismatch; proposed B5-v2 path not wired into current live runner; power and exact task/budget freezing incomplete",
+    "current_remote_head": "8286d38d38d6c1812e26225031a85690852f0068",
+    "clean_clone_tested_sha": "1f6c324af86c2d517358df823d757d426956150e",
+    "current_head_clean_clone_status": "NOT_RUN_ON_DOCS_ONLY_FOLLOWUP",
+    "live_readiness": "NOT_READY",
+    "new_api_calls": 0,
+    "new_spend_cny": 0,
+    "next_plan": "CE-DSH-P4-R1.8"
   }
 }
