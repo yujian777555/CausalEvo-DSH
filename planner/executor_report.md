@@ -1,80 +1,82 @@
-# Executor Report — CE-DSH-P4-R1.6（溢出安全账本 / 计数更正 / 直连路由诊断）
+# Executor Report — CE-DSH-P4-R1.7（测试兼容性 / 诊断工件 / 算法真实性审计 / 预注册提案）
 
-日期：2026-10-21。Executor：Kimi。本轮**新增真实 DeepSeek 模型 API 调用 0 次、费用 ¥0**；未运行 `--live`；直连诊断**未发送任何 HTTP 数据或 API 请求体**。
+日期：2026-10-21。Executor：Kimi。本轮**新增真实 DeepSeek 模型 API 调用 0 次、费用 ¥0**；未运行 `--live`；未查询余额；无任何真实实验。
 
-计划：planner/latest_plan.md（CE-DSH-P4-R1.6）；审查：planner/reviews/CE-DSH-P4-R1_5-independent-review.md（R1.5 已验收，离线范围）。证据文档：docs/PHASE4_R1_6_REMEDIATION.md。
+计划：planner/latest_plan.md（CE-DSH-P4-R1.7）；审查：planner/reviews/CE-DSH-P4-R1_6-independent-review.md（R1.6 已验收，离线范围）。
 
-## A. Git 状态
+## 1. Git 状态
 
-- 起始 SHA：`a6e6b6e4490ba56ec67fe694fc307242fc8b1af3`（接管时工作区 clean）
+- 起始 SHA：`b35e6dcc5c966b75df99d72b6a9621aed09528a1`（接管时工作区 clean；远端实际 HEAD 与预期基线一致）
 - 最终 SHA / 远端 SHA / clean-clone 验证 SHA：见末节「Git 交付」
 
-## B. 账本修复（P1-A，PASS）
+## 2. Task A：数字位数测试兼容性（PASS）
 
-- **根因**：`math.isfinite(10**400)` / `float(10**400)` 抛 `OverflowError`（本机 Python 3.10.1 实测），R1.5 的 `_valid_amount` 将异常泄漏进 `BudgetProxy.__init__`，启动以未处理异常中止而非受控 corrupt；`json.loads` 对超位数限制字面量可抛 `ValueError`（本运行时不限制，已实测），重放仅捕获 `JSONDecodeError`。
-- **修改文件**：`src/causalevo/eval/budget_proxy.py`（`_valid_amount` 全域化 + 重放捕获 `ValueError`）。
-- **修复方案**：金额校验对任意 JSON 值无异常——非 bool、数值、≥0，guard 下试转 float；转换失败或非有限即拒绝（金额必须可安全进入 float 记账表示）。数字解析失败 = 损坏账本。损坏账本：启动受控 `ledger_corrupt+stopped`、拒绝新请求、重启仍 fail-closed、**原始字节零改动**。
-- **新增测试**：`tests/test_budget_proxy_r16.py` 7 项。
-- **原始异常输入与实际结果**：`reserved_cny=10**400`、`cost_cny=10**400`、重复 SETTLED `10**400`、5000 位整数字面量 → 全部受控 corrupt（构造不抛异常）；`_valid_amount` 19 种样本（±10**400、NaN、Inf、bool、None、str、list、dict、±1e308、10**4300）无异常返回 bool。
-- **修复前失败证据**：r16 首跑 `6 failed, 1 passed`（OverflowError 逃逸）。
-- **重启后 fail-closed 证据**：每种异常种子账本 —— 代理 1：新请求 429；代理 2（同账本重启）：仍 429；测试前后账本文件字节一致。
-- 合法历史（有限 int/float）精确恢复 known_cost=2.004；R1.4/R1.5 既有账本回归全部保持。
+- **缺陷**：`test_digit_limit_literal_controlled_corrupt` 用 `hasattr + limit + 10`；`get_int_max_str_digits()` 在限制被禁用时返回 `0`，此时构造出无害的 10 位整数而非超限夹具。
+- **修复**（tests/test_budget_proxy_r16.py）：抽出 `_extreme_int_literal(getter)`——limit>0 → `9*(limit+10)`；接口不存在或 limit==0 → 5000 位（解析后经 `_valid_amount` 的 float 转换溢出兜底，仍受控 corrupt）。
+- **新增回归**：`test_digit_limit_zero_means_unlimited_falls_back_to_overflow`（注入式 getter，**不改全局解释器设置**；断言 0→5000 位、4300→4310 位、当前运行时选择为极端形态之一）。
+- **保留断言**：代理构造不抛异常、corrupt+stopped、拒绝新请求、重启 fail-closed、账本字节不变——全部保留；正常金额重放不受影响。
+- 结果：`pytest tests/test_budget_proxy_r16.py -q` → **8 passed**（原 7 + 新增 1）。
 
-## C. 测试结果
+## 3. Task B：可审计脱敏直连诊断记录（PASS）
+
+- 产物：`results/phase4/route_diagnostics/20261021.json`（本轮**未发起任何新探测**；仅整理既有证据）。
+- 关键可复现性核查：原诊断所读 `sidecar_latest.log` 已轮转——诚实降级并修正：找到覆盖诊断窗口的轮转文件 `sidecar_2026-10-21_11-16-08.log`（SHA-256 `06b0c3f8f9612accbbb7bf22018389e70b72519b11219cc5e7d10934d9681682`，131116 字节），窗口 11:20–11:24 实测 **128 条连接、api.deepseek.com 0 条**（R1.6 报告的 109 为轮转前快照读数，结论不变；两处读数均已如实记录）。
+- 工件含：时间戳与时区、mihomo Meta v1.19.20（`verge-mihomo -v` 实测）、mode=global、TUN 关闭、系统代理状态、直连 opener 与白名单上游、DNS/TCP/TLS 结果与证书身份、窗口/总数/匹配数、复现方法（grep 命令）、Sangfor aTrust 残余限制、零 HTTP/零调用/不构成授权声明。
+- 未提交：原始日志文件（含无关连接历史）、任何凭据、完整环境变量转储。
+
+## 4. Task C：算法真实性审计（核心结论）
+
+产物：`docs/PHASE4_R1_7_ALGORITHM_FIDELITY.md`（逐行源码审计，全部结论附文件/函数/测试证据）。
+
+- **C1 离线进化**：真实执行——`run_evolution.py::nsga3_evolve` 驱动真实 NSGA-III（支配排序 + Das-Dennis 参考方向 + ASF 归一化 + 小生境选择；pop 6 × 3 代），适应度来自容器世界**反事实重放测量**（非模型预测），多目标真实参与选择。**IMPLEMENTED_AND_TESTED**，但为 tape 模拟干预、小规模（基因型 144→表型 16）。
+- **C2 Pareto 工件**：由 run_evolution 产生并写 train+test 适应度；独立 manifest 钉住 canonical SHA-256；adapter 加载前强制比对、每次读取复检。**IMPLEMENTED_AND_TESTED**。瑕疵如实记录：前沿 6 成员仅 4 唯一基因组（重复个体）；一个成员含 reserved 基因（无表型效果）。
+- **C3 运行时**：**STATIC_ARTIFACT_ONLY**——冻结部署：失败证据→选前沿成员→派生干预文本；**不更新** genome/适应度/种群/前沿；无运行时演化闭环。
+- **C4 递归自我改进**：**NOT_IMPLEMENTED（L4）**。L1 运行时修复重试 ✔；L2 策略更新仅离线模拟（部署侧 frozen-no-update）；L3 演化搜索仅离线；L4 不存在（无元演化/算子自适应/自我修改）。
+- **C6 基线保真**：历史 B4=if/else 代理、B5=静态 bundle（名义与执行不符，已如实标注，历史文件不改）；R1.1+ 适配器仅有 fake-provider 离线 smoke。
+- **C7 科学证据**：历史 312 行（¥0.715）：B0 0.808 / B1 0.923 / B2 0.885 / B3 0.827 / B4 0.846 / B5 0.885；B5 vs B0 p=0.344（ns）、B5 vs B1 p=0.727（ns，随机基线更高）；CI 跨 0。**算法优越性无证据，递归自我改进未实现**——两项均如实写明。
+
+## 5. Task D：预注册实验提案（已撰写，未执行）
+
+- 位置：`docs/PHASE4_R1_7_PILOT_PROPOSAL.md`。
+- **判定：有条件 GO**——理由：历史 312 行未测试真实算法臂（B4/B5 为代理实现），真实冻结适配器臂从未 live 测试，存在新的可证伪公平比较；若结果为负，应先做运行时在线更新（L2）再谈 L3/L4。明确标注：该 pilot 验证冻结策略部署效果，不是 RSI 证据。
+- 内容：H1（B5-v2 恢复率 > B1-random ≥ +0.10）+ H2 成本 ≤1.2×；26 任务 × 2 种子 × 4 臂配对；McNemar 精确检验 + task-level cluster bootstrap + Cohen's h + Holm；每 scope ≤8 请求、硬上限 ¥2.00；费用估算低/基准/高 = ¥0.35/¥0.50/¥1.00（来自历史实测 ¥0.715/312 行，标注假设）；fail-closed 停止规则；可复现 manifest；312 行历史数据隔离不可合并。
+- **提案 ≠ 授权**；需用户显式预算授权 + Planner 批准。
+
+## 6. 测试结果（实际命令与真实输出）
 
 | 项 | 命令 | 结果 |
 |---|---|---|
-| 新增 r16 | `pytest tests/test_budget_proxy_r16.py -q` | 7 passed |
-| 预算三套件 | `pytest tests/test_budget_proxy.py tests/test_budget_proxy_r14.py tests/test_budget_proxy_r15.py tests/test_budget_proxy_r16.py -q` | 101 passed |
-| 凭证/控制/e2e/适配器/v2 | 五文件联合 | 50 passed |
-| **全量** | `pytest tests/ -q` | **574 passed / 0 failed / 0 skipped** |
-| Docker | e2e 7 + v2 7 真实容器 | 通过（daemon 29.3.1 可用，无 NOT_VERIFIED） |
-| clean-clone | 最终 SHA（见 Git 交付） | 见末节 |
-| P1-B 计数 | `pytest tests/test_budget_proxy_r15.py --collect-only -q` | 42 = **21 别名（18 参数化 + 3 独立）+ 21 账本**；三处文档已更正，未增删测试 |
+| r16（含新回归） | `pytest tests/test_budget_proxy_r16.py -q` | 8 passed |
+| 预算四套件 | `pytest tests/test_budget_proxy{,_r14,_r15,_r16}.py -q` | 102 passed |
+| 五关键套件 | credential/control/e2e/adapter/v2 | 50 passed |
+| **全量** | `pytest tests/ -q` | **575 passed / 0 failed / 0 skipped** |
+| clean-clone | `python scripts/clean_clone_check.py`（最终 SHA） | 见 Git 交付节 |
 
-失败与重试：本轮全量一次通过，无失败重试；r16 修复前 6 failed 为缺陷复现（已修复并全绿）。
+本轮无失败重试粉饰：唯一失败的初跑为 Task A 缺陷复现期（修复后全绿）；Docker 全程可用，无 NOT_VERIFIED。
 
-## D. TUN 直连诊断（无 HTTP）
+## 7. 数据与安全
 
-- **实际代理/TUN 软件与模式**：Clash Verge + verge-mihomo（运行命令行实测）；运行时配置 `mode: global`、`tun.enable: false`（verge `enable_tun_mode: false`）；无 mihomo/wintun 活动适配器；Windows 系统代理 127.0.0.1:7897（仅作用于自愿客户端）；无 api.deepseek.com 规则条目。
-- **DNS**：8 个公网 CDN IP。**TCP**：`api.deepseek.com:443` 连接成功。**TLS**：TLSv1.3，证书 CN=api.deepseek.com / TrustAsia DV TLS RSA CA 2025（真实边缘，无 MITM）；握手后立即关闭，零 HTTP 字节。
-- **路由分类证据**：mihomo sidecar 连接日志在诊断时间窗（11:20–11:24）记录 **109 条**其他连接（均 using GLOBAL），**deepseek 条目 0 条** → 诊断连接未经过 mihomo；TUN 关闭（配置+无适配器）；代码层 `ProxyHandler({})` + 白名单固定 https 上游复核一致。
-- **`DIRECT_ROUTE_UNVERIFIED` 是否解除**：**解除（限定口径）**——升级为 `DIRECT_ROUTE_VERIFIED`（本机/本时刻/直连 opener 路径；Sangfor aTrust 底层路由已注明为残余限制）。
-- **是否发送 HTTP/API 请求**：**否**（仅 DNS 解析、TCP 连接、TLS 握手，握手后立即终止）。
-- 本诊断**不构成**真实模型调用授权；live readiness 仍为 **NOT_READY**。
+- 历史数据哈希：`calls.csv` `1961bdd8…`、`auditable_tasks.jsonl` `35b9e67a…`、sweep `15e2cb84…`（均未变）。
+- 本轮 `results/`、`benchmarks/` diff：仅新增 `results/phase4/route_diagnostics/20261021.json`（脱敏工件）；无冻结内容修改。
+- 密钥扫描：`git diff --cached | grep -cE "sk-[A-Za-z0-9]{32}"` = 0。
+- 新增真实模型调用 0 次；费用 ¥0；新增测试不含真实 API 调用。
 
-## E. 数据与安全
+## 8. 费用与授权
 
-- **冻结数据哈希**：`results/phase0/live/calls.csv` SHA-256 = `1961bdd81a7f6a4ad4169d6f246530ed3df3170f70948f85de13ca136e364c59`（与记录一致）；`auditable_tasks.jsonl` = `35b9e67a418cfd55fd9e820ab48980750da7ab12d24bc61392768f24b27e4afa`；sweep 工件工作区 = `15e2cb844584398d5ce2e65c4ccb1c5bf6be052ab6436cee75815e14e4540ab4`（R1.5 记录的 CRLF/LF 规范化规则未变）。
-- **历史数据是否变化**：`git diff a6e6b6e..HEAD -- results/ benchmarks/` 为空（本轮零冻结变更）。
-- **密钥扫描**：`git diff --cached | grep -cE "sk-[A-Za-z0-9]{32}"` = 0；诊断过程未打印任何凭据（代理配置读取仅限模式/端口/规则字段）。
-- **新增真实模型调用次数**：0。**新增费用**：¥0。新增测试不含任何真实 API 调用（r16 全为本地账本文件）。
+真实 API 调用 0 次、费用 ¥0；未授权任何真实实验；预注册提案仅为文档。
 
-## F. 未解决问题
+## 9. 未解决问题
 
-1. Sangfor aTrust VNIC 处于 Up（企业 VPN 底层路由无法从用户态完全排除；TLS 端到端认证已通过，记录为残余限制）。
-2. Planner 未在本机独立重跑测试；全部数字为 Executor 实际终端输出。
-3. `docker inspect` Config.Env 对本机特权用户可见（既有宿主信任边界，未变化）。
-4. live readiness：**NOT_READY**（无预算授权；直连诊断仅为工程就绪信号之一）。
+1. live readiness 仍为 **NOT_READY**（无预算授权）。
+2. 冻结 Pareto 前沿含重复基因组（6 成员 4 唯一）+ reserved 基因成员——选择空间狭窄，已如实记录（不影响工件可验证性）。
+3. Sangfor aTrust 底层路由残余限制（TLS 端到端认证已通过）。
+4. Planner 未独立重跑本机测试套件；数字为 Executor 实际输出。
+5. 若未来批准 pilot：须先重检 TUN/代理配置未变，再按提案前置条件执行。
 
-## G. Git 交付（最终 SHA / clean-clone / 同步状态）
+## 10. Git 交付（最终 SHA / clean-clone / 同步）
 
-- **R1.6 主提交：`ff64acfc4ddfc97c65f65ca6c7575e7440ea051f`**（push 后 `git ls-remote origin main` 与本地 HEAD 一致）。
-- **最终 SHA Gate（逐字输出）**：
-  ```
-  verified: 312 auditable rows recompute to the committed analysis (incl. cluster bootstrap)
-  34 passed in 4.24s (phase4 subset)
-  151 passed in 222.25s (credential_isolation 9 + budget_proxy 27 + budget_proxy_r14 25
-      + budget_proxy_r15 42 + budget_proxy_r16 7 + proxy_control 8
-      + proxy_integration_e2e 7 + causal_policy_adapter 19 + phase4_v2_offline 7)
-  CLEAN CLONE OK: HEAD ff64acfc4ddf == origin/main; 312 auditable rows recompute in a fresh clone
-  exit=0
-  ```
-- **clean-clone 验证 SHA（完整）**：`ff64acfc4ddfc97c65f65ca6c7575e7440ea051f`（脚本强制 clone HEAD == ls-remote，失配 exit 2）。
-- 本记录提交（housekeeping）仅改 status.json 与 executor_report.md，不含代码/测试变更；按惯例如实声明：Gate 在 `ff64acf…` 通过，记录提交本身未再触发 Gate（如需可用 `python scripts/clean_clone_check.py` 随时对当前 HEAD 重验）。
-- 同步状态：本地 HEAD == `git ls-remote origin main`；`git status --porcelain` = 0（clean）。
-- 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 零改动；密钥扫描 0 命中。
+（push 后实测填写。）
 
 ## 停止
 
-停在 Phase 4 R1.6。未进入付费 pilot，未进入 Phase 5。
+停在 Phase 4 R1.7。未进入付费 pilot，未进入 Phase 5。`next_actor = GPT-Planner`。

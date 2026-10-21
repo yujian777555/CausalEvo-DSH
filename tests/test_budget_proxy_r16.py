@@ -86,20 +86,48 @@ def test_duplicate_settled_huge_int_controlled_corrupt(logp):
     _assert_controlled_corrupt(logp)
 
 
+def _extreme_int_literal(getter=None) -> str:
+    """Pick a JSON integer literal that must be rejected as a ledger amount.
+
+    - Runtime enforces a positive int-str digit limit: emit limit+10 digits
+      (parse-time numeric failure -> controlled corrupt).
+    - No limit API or limit == 0 (limit disabled): emit a 5000-digit literal,
+      which parses fine but overflows float conversion -> the amount validator
+      must reject it (still a controlled corrupt).
+
+    R1.7 Task A: `get_int_max_str_digits()` may RETURN 0 when the limit is
+    disabled; `limit + 10` would then build a harmless 10-digit integer.
+    """
+    if getter is None:
+        getter = getattr(sys, "get_int_max_str_digits", None)
+    limit = getter() if getter is not None else 0
+    if limit and limit > 0:
+        return "9" * (limit + 10)
+    return "9" * 5000
+
+
 def test_digit_limit_literal_controlled_corrupt(logp):
     """A JSON integer literal beyond the runtime's int_str_digits limit must
     also end in a controlled corrupt state (parse-time ValueError), not an
     escaping exception. This runtime (3.10.1) has no such limit, in which case
     the literal parses and the overflow validator must still corrupt it."""
-    if hasattr(sys, "get_int_max_str_digits"):
-        limit = sys.get_int_max_str_digits()
-        literal = "9" * (limit + 10)
-    else:
-        literal = "9" * 5000  # no runtime limit: parses, validator must reject
+    literal = _extreme_int_literal()
     logp.write_text(
         '{"request_id": "a", "state": "RESERVED", "scope": "s", '
         f'"reserved_cny": {literal}}}\n', encoding="utf-8")
     _assert_controlled_corrupt(logp)
+
+
+def test_digit_limit_zero_means_unlimited_falls_back_to_overflow():
+    """R1.7 regression: when the digit-limit API reports 0 (limit DISABLED),
+    the fixture must still be an extreme literal (5000 digits) — never a short
+    limit+10 integer. Scoped monkeypatch; no global interpreter change."""
+    getter = lambda: 0
+    assert len(_extreme_int_literal(getter)) == 5000
+    getter_pos = lambda: 4300
+    assert len(_extreme_int_literal(getter_pos)) == 4310
+    # and the current runtime's actual choice is one of the two extreme forms
+    assert len(_extreme_int_literal()) >= 4310
 
 
 def test_normal_finite_int_and_float_amounts_replay(logp):

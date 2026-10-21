@@ -1,0 +1,60 @@
+{
+  "artifact": "route_diagnostics",
+  "plan_id": "CE-DSH-P4-R1.6",
+  "recorded_in": "CE-DSH-P4-R1.7 (P1-B sanitized artifact; no new network probes were made for this record)",
+  "diagnostic_time_local": "2026-10-21T11:22:11+08:00",
+  "diagnostic_timezone": "UTC+8 (Windows local)",
+  "target": "api.deepseek.com:443",
+  "proxy_environment": {
+    "software": "Clash Verge (tauri shell) + verge-mihomo core",
+    "mihomo_core_version": "Mihomo Meta v1.19.20 windows/amd64 (verified via `verge-mihomo -v`)",
+    "clash_verge_app_version": "not captured (not printed by the diagnostics)",
+    "runtime_mode": "global (from the LIVE runtime config clash-verge.yaml; mihomo -f flag verified via the running process command line)",
+    "tun_enabled": false,
+    "tun_evidence": "clash-verge.yaml tun.enable=false; verge.yaml enable_tun_mode=false; Get-NetAdapter shows no mihomo/wintun adapter",
+    "system_proxy": "enabled, 127.0.0.1:7897 (HKCU Internet Settings ProxyEnable=1); only affects clients that voluntarily use it",
+    "shell_proxy_env": "HTTP(S)_PROXY/ALL_PROXY=127.0.0.1:7897; NO_PROXY=localhost,127.0.0.1,::1 (does NOT list api.deepseek.com)",
+    "deepseek_specific_rule": "none found in the active ruleset",
+    "credentials": "no secrets/tokens/keys are included in this artifact"
+  },
+  "code_configuration": {
+    "direct_opener": "urllib.request.build_opener(urllib.request.ProxyHandler({})) in src/causalevo/eval/budget_proxy.py (ignores env and system proxies)",
+    "upstream_allowlist": "ProxyConfig.allowed_upstream_hosts (live: api.deepseek.com only), https enforced by ProxyConfig.__post_init__",
+    "frozen_path": "upstream_base_url.rstrip('/') + '/chat/completions' (fixed; agents cannot redirect it)"
+  },
+  "diagnostics": {
+    "method": "DNS lookup + TCP connect + TLS handshake only; socket closed immediately after the handshake; ZERO HTTP bytes, ZERO API calls, ZERO credentials sent",
+    "dns_result_ips": ["1.71.87.129", "123.182.162.200", "123.54.208.173", "144.7.103.140", "150.138.234.105", "150.139.230.233", "182.40.68.184", "27.128.147.100"],
+    "tcp_result": "connect OK (peer 1.71.87.129:443)",
+    "tls_result": {
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "cert_subject_cn": "api.deepseek.com",
+      "cert_issuer": "TrustAsia Technologies, Inc. / TrustAsia DV TLS RSA CA 2025 (CN)",
+      "cert_san": ["api.deepseek.com"],
+      "cert_not_after": "2026-12-01 23:59:59 GMT",
+      "interpretation": "TLS terminated at the genuine DeepSeek edge; no TLS-terminating MITM on this path"
+    }
+  },
+  "route_classification_evidence": {
+    "primary": "mihomo core connection log (sidecar) shows the diagnostic connection did NOT traverse mihomo",
+    "log_file_sha256": "06b0c3f8f9612accbbb7bf22018389e70b72519b11219cc5e7d10934d9681682",
+    "log_file_description": "mihomo sidecar log rotated file sidecar_2026-10-21_11-16-08.log (131116 bytes; file itself NOT committed: it contains unrelated connection history)",
+    "diagnostic_window_local": "11:20-11:24 (+08:00)",
+    "total_flows_logged_in_window": 128,
+    "matching_api_deepseek_com_entries": 0,
+    "log_was_active": "yes — the same window contains logged TCP flows to other hosts (e.g. chatgpt.com, api.openai.com, chat.openai.com)",
+    "reproduction_method": "grep -cE '11:2[0-4].*-->' <rotated sidecar log>; grep -ci 'api.deepseek.com' <same file>",
+    "note_on_earlier_count": "the R1.6 report quoted 109 flows from the then-current sidecar_latest.log; after rotation the stable rotated file covering the window shows 128 flows (file-boundary difference); both readings show 0 api.deepseek.com entries"
+  },
+  "conclusion": {
+    "classification": "DIRECT_ROUTE_VERIFIED (scoped)",
+    "scope": "this machine, this moment, the direct-opener path used by src/causalevo/eval/budget_proxy.py upstream calls",
+    "not_authorized": "this diagnostic grants NO authorization for real model calls; a live pilot still requires explicit budget authorization and GPT Planner approval",
+    "residual_limitations": [
+      "Sangfor aTrust VNIC is Up: corporate underlay routing cannot be fully excluded from userland (end-to-end TLS authenticated regardless)",
+      "single machine, single moment; future configuration changes (e.g. TUN enabled later) invalidate this record",
+      "absence-of-entry is valid here only because the log demonstrably recorded other flows in the same window"
+    ]
+  }
+}

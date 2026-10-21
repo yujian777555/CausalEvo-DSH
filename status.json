@@ -6,13 +6,13 @@
   "plan_id": "CE-DSH-P4-R1.7",
   "previous_plan_id": "CE-DSH-P4-R1.6",
   "phase": "Phase 4 R1.7",
-  "phase_status": "READY_FOR_EXECUTION",
+  "phase_status": "READY_FOR_REVIEW",
   "planner_review": "ACCEPTED_FOR_OFFLINE_ENGINEERING_WITH_NONBLOCKING_FOLLOWUPS",
-  "next_actor": "Kimi-Executor",
+  "next_actor": "GPT-Planner",
   "planner_review_date": "2026-10-21",
   "executor_fix_date": "2026-10-21",
-  "baseline_main_sha": "a6e6b6e4490ba56ec67fe694fc307242fc8b1af3",
-  "reviewed_executor_head": "b35e6dcc5c966b75df99d72b6a9621aed09528a1",
+  "baseline_main_sha": "b35e6dcc5c966b75df99d72b6a9621aed09528a1",
+  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
   "live_readiness": "NOT_READY (no budget authorization; R1.7 is offline algorithm-fidelity and preregistration only)",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_6-independent-review.md",
@@ -28,17 +28,17 @@
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 574,
+    "passed": 575,
     "failed": 0,
     "skipped": 0,
     "planner_reran": false,
-    "count_note": "567 (R1.5 unified) + 7 new R1.6 tests = 574; R1.5 subgroup split corrected to 21 alias + 21 ledger via pytest --collect-only",
+    "count_note": "567 (R1.5 unified) + 8 R1.6 tests (incl. R1.7 zero-limit regression) = 575; R1.5 subgroup split corrected to 21 alias + 21 ledger via pytest --collect-only",
     "categories": {
-      "unit_integration_full_suite": "574/574 (docker live)",
+      "unit_integration_full_suite": "575/575 (docker live)",
       "budget_proxy_recovery_bounds_ingress": "tests/test_budget_proxy.py 27/27",
       "r14_output_limit_scoped_reconcile_duplicates": "tests/test_budget_proxy_r14.py 25/25",
       "r15_alias_strictness_and_ledger_numerics": "tests/test_budget_proxy_r15.py 42/42 (21 alias + 21 ledger, measured)",
-      "r16_overflow_safe_replay": "tests/test_budget_proxy_r16.py 7/7 (defect reproduction: 6 failed pre-fix, OverflowError escaped construction)",
+      "r16_overflow_safe_replay": "tests/test_budget_proxy_r16.py 8/8 (incl. R1.7 limit==0 regression)",
       "credential_isolation_canary": "tests/test_credential_isolation.py 9/9",
       "control_channel_generation_ack": "tests/test_proxy_control.py 8/8",
       "docker_e2e_proxy_chain": "tests/test_proxy_integration_e2e.py 7/7 (incl. key env-delivery, bridge-sibling 401, provider-side request_count)",
@@ -132,8 +132,8 @@
     "tests/test_causal_policy_adapter.py",
     "tests/test_phase4_v2_offline.py"
   ],
-  "notes": "R1.6 accepted for offline engineering only. No real DeepSeek API pilot is authorized. R1.7 is offline-only: fix digit-limit test portability, package sanitized route diagnostic evidence, audit whether deployed CEA-v1 performs evolutionary feedback/update versus static Pareto-front selection, and draft a preregistered GO/NO-GO pilot proposal without executing it.",
-  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.6",
+  "notes": "R1.7 offline complete: digit-limit test portability fixed (limit==0 branch + regression); sanitized route-diagnostic artifact committed (results/phase4/route_diagnostics/20261021.json, reproducible from the rotated mihomo log hash); algorithm-fidelity audit docs/PHASE4_R1_7_ALGORITHM_FIDELITY.md (offline NSGA-III real but tape-simulated and small; runtime = frozen static selection; NO runtime evolution loop; L4 RSI NOT_IMPLEMENTED; historical B4/B5 remain proxy/static, 312 rows immutable); preregistered proposal docs/PHASE4_R1_7_PILOT_PROPOSAL.md = conditional GO for a small frozen-adapter pilot (B5-v2 vs B1-random), NOT executed. No live authorization.",
+  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.7",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -518,5 +518,20 @@
     "new_spend_cny": 0,
     "nonblocking_followup": "test_budget_proxy_r16.py assumes get_int_max_str_digits() is positive; if it returns 0 (disabled), test creates only a 10-digit integer. Fix in R1.7 and add zero-limit regression.",
     "next_plan": "CE-DSH-P4-R1.7"
+  },
+  "phase4_r1_7": {
+    "new_live_calls": 0,
+    "new_spend_cny": 0,
+    "task_a_digit_limit_portability": "_extreme_int_literal() handles limit==0/absent (5000-digit overflow fixture) vs limit>0 (limit+10); focused zero-limit regression added; existing fail-closed assertions preserved; 8/8",
+    "task_b_route_artifact": "results/phase4/route_diagnostics/20261021.json: sanitized structured record (timestamps+TZ, mihomo Meta v1.19.20, global mode/TUN off/system proxy, opener+allowlist, DNS/TCP/TLS + TrustAsia cert identity, window 128 flows vs 0 deepseek entries, rotated-log SHA-256 06b0c3f8, reproduction method, Sangfor aTrust limitation, zero-HTTP/zero-call/no-authorization statements); earlier 109-flow figure documented as pre-rotation snapshot",
+    "task_c_algorithm_fidelity": "docs/PHASE4_R1_7_ALGORITHM_FIDELITY.md: C1 offline NSGA-III IMPLEMENTED_AND_TESTED (real sort/refdir/niching; replay-measured fitness; small scale, tape-simulated); C2 artifact production/pinning IMPLEMENTED_AND_TESTED (front has 6 members but only 4 unique genomes; one member carries reserved genes); C3 runtime = STATIC_ARTIFACT_ONLY frozen selection (no runtime evolution); C4 L4 recursive self-improvement NOT_IMPLEMENTED; C5/C6/C7 evidence classification + historical proxy/static disclosure + negative Phase-4 statistics restated",
+    "task_d_preregistration": "docs/PHASE4_R1_7_PILOT_PROPOSAL.md: conditional GO for a small preregistered pilot (B5-v2 frozen Pareto failure-conditioned vs B1-random; primary endpoint recovery rate, effect threshold +0.10, McNemar + cluster bootstrap, Holm for secondary; hard cap CNY 2.00 from measured CNY 0.715/312 rows; 312-row historical data immutable and non-poolable); NOT executed; proposal is not authorization",
+    "gates": {
+      "offline_regression": "PASS (575/575)",
+      "final_sha_clean_clone": "PENDING_RECORDED_IN_FOLLOWUP",
+      "frozen_integrity": "PASS (no results/benchmarks diff this round; hashes unchanged)",
+      "zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
+    },
+    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
   }
 }
