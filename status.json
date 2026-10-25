@@ -12,7 +12,7 @@
   "planner_review_date": "2026-10-21",
   "executor_fix_date": "2026-10-25",
   "baseline_main_sha": "7778773f61d67c88e94e7801ca49ecc89c3e9ac3",
-  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
+  "reviewed_executor_head": "d2a42357ecd353d9502ce04b92feffcee1379265",
   "live_readiness": "NOT_READY (this round's user-authorized pilot complete; no further live authorization)",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_7-independent-review.md",
@@ -20,7 +20,7 @@
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "1f6c324af86c2d517358df823d757d426956150e",
+    "latest_executor_commit": "d2a42357ecd353d9502ce04b92feffcee1379265",
     "github_commit_verified": true,
     "executor_reports_local_clean": true,
     "note": "R1.7 implementation/test commit 1f6c324 was clean-clone tested. Follow-up 8286d38 changes only status.json and planner/executor_report.md; exact follow-up SHA was not rerun through clean-clone.",
@@ -52,10 +52,6 @@
       "clean_clone": "final-SHA clean clone incl. key suites (see phase4_r1_9.clean_clone_final)",
       "frozen_integrity": "test_live_csv_consistency/test_phase4_integrity etc. pass"
     }
-  },
-    "planner_reviewed_head": "8286d38d38d6c1812e26225031a85690852f0068",
-    "clean_clone_tested_sha": "1f6c324af86c2d517358df823d757d426956150e",
-    "current_remote_head": "8286d38d38d6c1812e26225031a85690852f0068"
   },
   "live_api": {
     "run": true,
@@ -587,6 +583,6 @@
     "run_dir": "results/phase4/live2/phase4-r19-pilot-20261024T151323Z",
     "report": "docs/PHASE4_FORMAL_EXPERIMENT_REPORT.md",
     "l4_rsi": "NOT_IMPLEMENTED (L2/L3 online update only)",
-    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
+    "clean_clone_final": "PASS at d2a42357ecd353d9502ce04b92feffcee1379265: 'CLEAN CLONE OK: HEAD d2a42357ecd3 == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 193 key-suite tests passed (exit 0; includes online_evolution, cea_v2_integration, cea_v2_offline, analyze_r19). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)"
   }
 }

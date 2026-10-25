@@ -79,7 +79,22 @@
 
 ## J. Git 交付（最终 SHA / clean-clone / 同步）
 
-（push 后实测填写。）
+- **工程实现提交：`45c51eb66c2c30ef34693278f15cf415193c3424`**
+- **实验数据与报告提交：`d2a42357ecd353d9502ce04b92feffcee1379265`**（push 后 `git ls-remote origin main` 与本地 HEAD 一致）。
+- **最终 SHA Gate（逐字输出）**：
+  ```
+  verified: 312 auditable rows recompute to the committed analysis (incl. cluster bootstrap)
+  34 passed in 4.78s (phase4 subset)
+  193 passed in 339.40s (credential_isolation 9 + budget_proxy 27 + r14 25 + r15 42 + r16 8
+      + online_evolution 16 + cea_v2_integration 6 + cea_v2_offline 14 + analyze_r19 4
+      + proxy_control 8 + proxy_integration_e2e 8 + causal_policy_adapter 19 + phase4_v2_offline 7)
+  CLEAN CLONE OK: HEAD d2a42357ecd3 == origin/main; 312 auditable rows recompute in a fresh clone
+  exit=0
+  ```
+- **clean-clone 验证 SHA（完整）**：`d2a42357ecd353d9502ce04b92feffcee1379265`（脚本强制 clone HEAD == ls-remote，失配 exit 2）。
+- 本记录提交（housekeeping）仅改 status.json 与 executor_report.md，不含代码/测试变更；按惯例如实声明：Gate 在 `d2a4235…` 通过，记录提交本身未再触发 Gate（如需可用 `python scripts/clean_clone_check.py` 随时对当前 HEAD 重验）。
+- 同步状态：本地 HEAD == `git ls-remote origin main`；`git status --porcelain` = 0（clean）。
+- 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 零改动；密钥扫描 0 命中。
 
 ## 停止
 
