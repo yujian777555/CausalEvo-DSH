@@ -1,95 +1,86 @@
-# Executor Report — CE-DSH-P4-R1.7（测试兼容性 / 诊断工件 / 算法真实性审计 / 预注册提案）
+# Executor Report — CE-DSH-P4-R1.9（真实 DeepSeek 四臂在线演化 pilot）
 
-日期：2026-10-21。Executor：Kimi。本轮**新增真实 DeepSeek 模型 API 调用 0 次、费用 ¥0**；未运行 `--live`；未查询余额；无任何真实实验。
+日期：2026-10-25。Executor：Kimi。**用户已显式授权真实 API 调用，硬上限 ¥2.00。**
 
-计划：planner/latest_plan.md（CE-DSH-P4-R1.7）；审查：planner/reviews/CE-DSH-P4-R1_6-independent-review.md（R1.6 已验收，离线范围）。
+计划差异说明：仓库正式计划为 R1.8（离线 NO-GO），本指令为 **R1.9（用户授权真实 pilot）**。先完成 R1.8 的在线演化控制器与离线验证，再按用户授权执行真实 pilot。历史 312 行与 Phase 0–3 冻结工件未修改。
 
-## 1. Git 状态
+## A. Git 状态
 
-- 起始 SHA：`b35e6dcc5c966b75df99d72b6a9621aed09528a1`（接管时工作区 clean；远端实际 HEAD 与预期基线一致）
+- 起始 SHA：`7778773f61d67c88e94e7801ca49ecc89c3e9ac3`
+- 工程实现提交：`45c51eb66c2c30ef34693278f15cf415193c3424`
 - 最终 SHA / 远端 SHA / clean-clone 验证 SHA：见末节「Git 交付」
 
-## 2. Task A：数字位数测试兼容性（PASS）
+## B. Task A：真正的在线演化控制器（实现并验证）
 
-- **缺陷**：`test_digit_limit_literal_controlled_corrupt` 用 `hasattr + limit + 10`；`get_int_max_str_digits()` 在限制被禁用时返回 `0`，此时构造出无害的 10 位整数而非超限夹具。
-- **修复**（tests/test_budget_proxy_r16.py）：抽出 `_extreme_int_literal(getter)`——limit>0 → `9*(limit+10)`；接口不存在或 limit==0 → 5000 位（解析后经 `_valid_amount` 的 float 转换溢出兜底，仍受控 corrupt）。
-- **新增回归**：`test_digit_limit_zero_means_unlimited_falls_back_to_overflow`（注入式 getter，**不改全局解释器设置**；断言 0→5000 位、4300→4310 位、当前运行时选择为极端形态之一）。
-- **保留断言**：代理构造不抛异常、corrupt+stopped、拒绝新请求、重启 fail-closed、账本字节不变——全部保留；正常金额重放不受影响。
-- 结果：`pytest tests/test_budget_proxy_r16.py -q` → **8 passed**（原 7 + 新增 1）。
+- `src/causalevo/evolution/online_evolution.py`：manifest 校验初始化（失败即拒）；按**有效表型**去重（reserved 基因不计多样性）；有界种群（≤16）；`select(context, episode_id)` 返回 genome/理由/policy_version/population_version；`observe()` 在独立 Judge + 账本结算后更新，**恰好一次**；每 4 条行为观察执行 **NSGA-III 演化步骤**（多目标适应度 = 成功率/负成本/负调用数），交叉变异、谱系、去重、受控探索。
+- 基础设施结局（unknown_cost/budget_stop/transport/protocol）**不产生行为学习更新、不重试**。
+- 缺陷修复（均被测试/验证驱动发现）：**CEA-V2-D1 livelock**（表型耗尽时后代生成死循环 + 未测后代永不淘汰）→ 有界生成 + 淘汰；Windows 文件锁（publish/ack 两侧重试）；续跑时陈旧 control.json 高 generation 导致 ACK 超时（启动清理）。
+- 离线验证：控制器 16 tests（含 livelock 回归）、agent smoke 6 tests（真实容器闭环 + evolve 版本前进 + infra 不重试）、合成驱动 14 tests（stationary/shift/tradeoff/iid_noise 全周期）、分析 4 tests。
 
-## 3. Task B：可审计脱敏直连诊断记录（PASS）
+## C. Task B/C：四臂与冻结协议
 
-- 产物：`results/phase4/route_diagnostics/20261021.json`（本轮**未发起任何新探测**；仅整理既有证据）。
-- 关键可复现性核查：原诊断所读 `sidecar_latest.log` 已轮转——诚实降级并修正：找到覆盖诊断窗口的轮转文件 `sidecar_2026-10-21_11-16-08.log`（SHA-256 `06b0c3f8f9612accbbb7bf22018389e70b72519b11219cc5e7d10934d9681682`，131116 字节），窗口 11:20–11:24 实测 **128 条连接、api.deepseek.com 0 条**（R1.6 报告的 109 为轮转前快照读数，结论不变；两处读数均已如实记录）。
-- 工件含：时间戳与时区、mihomo Meta v1.19.20（`verge-mihomo -v` 实测）、mode=global、TUN 关闭、系统代理状态、直连 opener 与白名单上游、DNS/TCP/TLS 结果与证书身份、窗口/总数/匹配数、复现方法（grep 命令）、Sangfor aTrust 残余限制、零 HTTP/零调用/不构成授权声明。
-- 未提交：原始日志文件（含无关连接历史）、任何凭据、完整环境变量转储。
+- 四臂真实代码路径（B0/B1-random/B5-v1-frozen-pareto/CEA-v2-online），`scripts/run_phase4_r19_pilot.py`。
+- 冻结协议 `docs/PHASE4_R1_9_EXPERIMENT_PROTOCOL.md`：final_success 主终点（固定分母）、McNemar + 任务簇 bootstrap + Holm、per-scope cap=8（实测真实 agent 每 attempt 3 请求、历史分布 ≤8）、全局 ¥2.00（预警 1.80）、未知费用 fail-closed、历史 312 行隔离。
+- `--resume`：账本重放 + 控制器事件重放 + scope 人工对账（记录原因）+ 扣除未知上界的剩余 cap。
 
-## 4. Task C：算法真实性审计（核心结论）
+## D. 真实实验执行
 
-产物：`docs/PHASE4_R1_7_ALGORITHM_FIDELITY.md`（逐行源码审计，全部结论附文件/函数/测试证据）。
+- canary（8 行）：真实响应/usage/费用/独立 Judge 全部正确（费用 ¥0.029164 peak）。
+- 完整 pilot：26 任务 × 2 种子 × 4 臂 = **208 行**，经多次 fail-closed 中断与 `--resume` 续跑完成，aborted=None。
+- 每次 run 的 `proxy-ledger/ledger.jsonl` 完整；所有失败样本保留。
 
-- **C1 离线进化**：真实执行——`run_evolution.py::nsga3_evolve` 驱动真实 NSGA-III（支配排序 + Das-Dennis 参考方向 + ASF 归一化 + 小生境选择；pop 6 × 3 代），适应度来自容器世界**反事实重放测量**（非模型预测），多目标真实参与选择。**IMPLEMENTED_AND_TESTED**，但为 tape 模拟干预、小规模（基因型 144→表型 16）。
-- **C2 Pareto 工件**：由 run_evolution 产生并写 train+test 适应度；独立 manifest 钉住 canonical SHA-256；adapter 加载前强制比对、每次读取复检。**IMPLEMENTED_AND_TESTED**。瑕疵如实记录：前沿 6 成员仅 4 唯一基因组（重复个体）；一个成员含 reserved 基因（无表型效果）。
-- **C3 运行时**：**STATIC_ARTIFACT_ONLY**——冻结部署：失败证据→选前沿成员→派生干预文本；**不更新** genome/适应度/种群/前沿；无运行时演化闭环。
-- **C4 递归自我改进**：**NOT_IMPLEMENTED（L4）**。L1 运行时修复重试 ✔；L2 策略更新仅离线模拟（部署侧 frozen-no-update）；L3 演化搜索仅离线；L4 不存在（无元演化/算子自适应/自我修改）。
-- **C6 基线保真**：历史 B4=if/else 代理、B5=静态 bundle（名义与执行不符，已如实标注，历史文件不改）；R1.1+ 适配器仅有 fake-provider 离线 smoke。
-- **C7 科学证据**：历史 312 行（¥0.715）：B0 0.808 / B1 0.923 / B2 0.885 / B3 0.827 / B4 0.846 / B5 0.885；B5 vs B0 p=0.344（ns）、B5 vs B1 p=0.727（ns，随机基线更高）；CI 跨 0。**算法优越性无证据，递归自我改进未实现**——两项均如实写明。
+## E. 结果（探索性 pilot）
 
-## 5. Task D：预注册实验提案（已撰写，未执行）
+| 臂 | 最终成功率 | off-peak 费用 | 请求数 |
+|---|---|---|---|
+| B0-original | 0.8269 | ¥0.119527 | 163 |
+| B1-random | 0.9038 | ¥0.122124 | 180 |
+| B5-v1-frozen-pareto | 0.9038 | ¥0.133524 | 185 |
+| CEA-v2-online | 0.8654 | ¥0.122265 | 171 |
 
-- 位置：`docs/PHASE4_R1_7_PILOT_PROPOSAL.md`。
-- **判定：有条件 GO**——理由：历史 312 行未测试真实算法臂（B4/B5 为代理实现），真实冻结适配器臂从未 live 测试，存在新的可证伪公平比较；若结果为负，应先做运行时在线更新（L2）再谈 L3/L4。明确标注：该 pilot 验证冻结策略部署效果，不是 RSI 证据。
-- 内容：H1（B5-v2 恢复率 > B1-random ≥ +0.10）+ H2 成本 ≤1.2×；26 任务 × 2 种子 × 4 臂配对；McNemar 精确检验 + task-level cluster bootstrap + Cohen's h + Holm；每 scope ≤8 请求、硬上限 ¥2.00；费用估算低/基准/高 = ¥0.35/¥0.50/¥1.00（来自历史实测 ¥0.715/312 行，标注假设）；fail-closed 停止规则；可复现 manifest；312 行历史数据隔离不可合并。
-- **提案 ≠ 授权**；需用户显式预算授权 + Planner 批准。
+- CEA-v2 在线更新：4 行为观察 → 1 演化步骤，5 个选中基因组，population_version 0→1，子代带谱系。
+- **无提升证据**：CEA-v2 vs B1-random（−0.038, p=0.6875, CI[−0.154,0.058]）、vs B5-v1（−0.038, p=0.6875, CI[−0.115,0.038]）、vs B0（+0.038, p=0.7266, CI[−0.058,0.135]）；全部 CI 跨 0、Holm p>0.05。B5-v1 vs B1 持平（p=1.0）。
+- 与历史 Phase 4 负面结论一致；**不得宣称 CEA-v2 优于随机或静态策略，不宣称 RSI**。
 
-## 6. 测试结果（实际命令与真实输出）
+## F. 费用与授权
+
+- 真实调用 **912 次**（SETTLED 计）。
+- 本轮 settled 费用（peak）**¥1.306339**；未知请求 1 次（IncompleteRead）按上界 **¥0.157041** 计 → **合计 ¥1.463380（< ¥2.00）**。
+- 无超额、无账本重置；中断 run 费用全部计入。
+
+## G. 测试与验证矩阵
 
 | 项 | 命令 | 结果 |
 |---|---|---|
-| r16（含新回归） | `pytest tests/test_budget_proxy_r16.py -q` | 8 passed |
+| 控制器 | `pytest tests/test_online_evolution.py -q` | 16 passed |
+| agent smoke | `pytest tests/test_cea_v2_integration.py -q` | 6 passed |
+| 合成驱动 | `pytest tests/test_cea_v2_offline.py -q` | 14 passed |
+| 分析 | `pytest tests/test_analyze_r19.py -q` | 4 passed |
 | 预算四套件 | `pytest tests/test_budget_proxy{,_r14,_r15,_r16}.py -q` | 102 passed |
-| 五关键套件 | credential/control/e2e/adapter/v2 | 50 passed |
-| **全量** | `pytest tests/ -q` | **575 passed / 0 failed / 0 skipped** |
-| clean-clone | `python scripts/clean_clone_check.py`（最终 SHA） | 见 Git 交付节 |
+| 控制通道 | `pytest tests/test_proxy_control.py -q` | 8 passed |
+| Docker E2E | `pytest tests/test_proxy_integration_e2e.py -q` | 8 passed（含续跑陈旧控制回归） |
+| **全量** | `pytest tests/ -q` | **616 passed / 0 failed / 0 skipped** |
+| clean-clone | 最终 SHA（见末节） | 见末节 |
 
-本轮无失败重试粉饰：唯一失败的初跑为 Task A 缺陷复现期（修复后全绿）；Docker 全程可用，无 NOT_VERIFIED。
+无 NOT_VERIFIED 项；Docker daemon 全程可用。
 
-## 7. 数据与安全
+## H. 数据与安全
 
-- 历史数据哈希：`calls.csv` `1961bdd8…`、`auditable_tasks.jsonl` `35b9e67a…`、sweep `15e2cb84…`（均未变）。
-- 本轮 `results/`、`benchmarks/` diff：仅新增 `results/phase4/route_diagnostics/20261021.json`（脱敏工件）；无冻结内容修改。
-- 密钥扫描：`git diff --cached | grep -cE "sk-[A-Za-z0-9]{32}"` = 0。
-- 新增真实模型调用 0 次；费用 ¥0；新增测试不含真实 API 调用。
+- 历史 312 行与 Phase 0–3 冻结工件零改动（diff 审计）；`calls.csv` `1961bdd8…`、`auditable_tasks.jsonl` `35b9e67a…`、sweep `15e2cb84…` 未变。
+- 密钥扫描：`git diff --cached | grep -cE "sk-[A-Za-z0-9]{32}"` = 0；真实 key 仅经受控环境进入 Proxy（裸 -e 透传），agent 仅持 per-run token。
+- 新增测试不含真实 API 调用（除授权的 pilot 数据外）。
 
-## 8. 费用与授权
+## I. 未解决问题
 
-真实 API 调用 0 次、费用 ¥0；未授权任何真实实验；预注册提案仅为文档。
+1. CEA-v2 在真实模型上**未显示收益**（与历史负面一致）；若要继续，应先解决学习信号稀疏问题（仅 4 行为观察/52 行）或实现更丰富上下文/在线更新频率。
+2. 探索性 pilot：小样本、工程任务，不能作论文级确认性结论。
+3. L4 递归自我改进未实现。
+4. Planner 未独立重跑本机测试；数字为 Executor 实际终端输出。
 
-## 9. 未解决问题
+## J. Git 交付（最终 SHA / clean-clone / 同步）
 
-1. live readiness 仍为 **NOT_READY**（无预算授权）。
-2. 冻结 Pareto 前沿含重复基因组（6 成员 4 唯一）+ reserved 基因成员——选择空间狭窄，已如实记录（不影响工件可验证性）。
-3. Sangfor aTrust 底层路由残余限制（TLS 端到端认证已通过）。
-4. Planner 未独立重跑本机测试套件；数字为 Executor 实际输出。
-5. 若未来批准 pilot：须先重检 TUN/代理配置未变，再按提案前置条件执行。
-
-## 10. Git 交付（最终 SHA / clean-clone / 同步）
-
-- **R1.7 主提交：`1f6c324af86c2d517358df823d757d426956150e`**（push 后 `git ls-remote origin main` 与本地 HEAD 一致）。
-- **最终 SHA Gate（逐字输出）**：
-  ```
-  verified: 312 auditable rows recompute to the committed analysis (incl. cluster bootstrap)
-  34 passed in 5.61s (phase4 subset)
-  152 passed in 281.41s (credential_isolation 9 + budget_proxy 27 + r14 25 + r15 42 + r16 8
-      + proxy_control 8 + proxy_integration_e2e 7 + causal_policy_adapter 19 + phase4_v2_offline 7)
-  CLEAN CLONE OK: HEAD 1f6c324af86c == origin/main; 312 auditable rows recompute in a fresh clone
-  exit=0
-  ```
-- **clean-clone 验证 SHA（完整）**：`1f6c324af86c2d517358df823d757d426956150e`（脚本强制 clone HEAD == ls-remote）。
-- 本记录提交（housekeeping）仅改 status.json 与 executor_report.md，不含代码/测试变更；Gate 在 `1f6c324…` 通过，记录提交本身未再触发 Gate（如实声明）。
-- 同步状态：本地 HEAD == `git ls-remote origin main`；`git status --porcelain` = 0（clean）。
-- 冻结校验：staged diff 中冻结内容零改动（仅新增脱敏诊断工件与文档）；密钥扫描 0 命中。
+（push 后实测填写。）
 
 ## 停止
 
-停在 Phase 4 R1.7。未进入付费 pilot，未进入 Phase 5。`next_actor = GPT-Planner`。
+停在 Phase 4 R1.9。未进入 Phase 5。`next_actor = GPT-Planner`。

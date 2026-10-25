@@ -63,14 +63,19 @@ def publish_control(ledger_dir: Path, generation: int, scope: str) -> None:
 
 
 def await_ack(ledger_dir: Path, generation: int, timeout_s: float = 10.0) -> dict[str, Any]:
-    """Host side: wait for the proxy to echo THIS generation."""
+    """Host side: wait for the proxy to echo THIS generation.
+
+    Windows: reading the ack can transiently fail with PermissionError while
+    the proxy replaces it (Docker Desktop mount + file-lock race). Retry
+    until the deadline; persistent failure raises ControlChannelError so the
+    runner refuses to start the agent."""
     deadline = time.monotonic() + timeout_s
     ack = ledger_dir / ACK_NAME
     while time.monotonic() < deadline:
         try:
             data = json.loads(ack.read_text(encoding="utf-8"))
-        except FileNotFoundError:
-            time.sleep(0.05)
+        except (FileNotFoundError, PermissionError, OSError):
+            time.sleep(0.05)  # ack not yet written or mid-replace; retry
             continue
         except json.JSONDecodeError:
             time.sleep(0.05)  # ack mid-replace; retry
@@ -107,5 +112,16 @@ def apply_control(proxy: Any, data: Any, last_generation: int,
     proxy.set_current_scope(scope)
     tmp = ack_path.with_name(f".{ACK_NAME}.{os.getpid()}.tmp")
     tmp.write_text(json.dumps({"generation": gen, "scope": scope}), encoding="utf-8")
-    os.replace(tmp, ack_path)
-    return gen
+    # Windows/Docker Desktop mount: os.replace can fail transiently with
+    # WinError 5 while the host reads the ack; retry briefly. A persistent
+    # failure propagates to the control loop (host times out and refuses to
+    # start the agent — fail-closed preserved).
+    last_exc: OSError | None = None
+    for _ in range(20):
+        try:
+            os.replace(tmp, ack_path)
+            return gen
+        except OSError as exc:
+            last_exc = exc
+            time.sleep(0.05)
+    raise ControlChannelError(f"ack publish failed after retries: {last_exc}")

@@ -1,0 +1,274 @@
+{
+  "run_id": "phase4-r19-pilot-20261024T151323Z",
+  "canary": false,
+  "arms": [
+    "B0-original",
+    "B1-random",
+    "B5-v1-frozen-pareto",
+    "CEA-v2-online"
+  ],
+  "seeds": [
+    20261014,
+    20261015
+  ],
+  "task_count": 26,
+  "rows": 58,
+  "aborted": null,
+  "global_cap_cny": 2.0,
+  "warn_cap_cny": 1.3370786652000002,
+  "cap_cny_this_run": 1.5370786652000001,
+  "resumed_from": "results/phase4/live2/phase4-r19-pilot-20261024T151323Z",
+  "previous_runs": [
+    "results/phase4/live2/phase4-r19-canary-20261024T144121Z",
+    "results/phase4/live2/phase4-r19-pilot-20261024T144512Z",
+    "results/phase4/live2/phase4-r19-pilot-20261024T144813Z"
+  ],
+  "proxy_final": {
+    "settled_cost_cny": 0.9948804851999997,
+    "ledger_entries": 2092,
+    "unsettled_or_unknown": {
+      "unknown": 1,
+      "unsettled": 0
+    },
+    "per_scope_count": 208
+  },
+  "controller": {
+    "controller_version": "cea-v2-r1.8",
+    "config": {
+      "max_population": 16,
+      "update_every": 4,
+      "mutation_p": 0.25,
+      "n_offspring": 4,
+      "exploration_beta": 0.05,
+      "lambda_cost": 50.0,
+      "lambda_calls": 0.02,
+      "seed": 20261021
+    },
+    "config_sha256": "a8e0df5784ce3339caefe2d9b0942c3d430f8c25879a816d6f6513a46b018969",
+    "population_version": 1,
+    "generation": 1,
+    "evolution_updates": 1,
+    "population": [
+      {
+        "genome": {
+          "tool_validation": 0,
+          "read_before_write": 1,
+          "verification_level": 0,
+          "stagnation_break": 0,
+          "reflection_step": 0,
+          "retry_strategy": 0
+        },
+        "genome_id": "e015506f37fe",
+        "phenotype": [
+          "prepend_read_step"
+        ],
+        "parent_ids": [],
+        "born_generation": 0,
+        "n": 1,
+        "successes": 1,
+        "costs": 0.0035557367999999997,
+        "calls": 5,
+        "ctx_n": {
+          "planning": 1
+        },
+        "ctx_successes": {
+          "planning": 1
+        }
+      },
+      {
+        "genome": {
+          "tool_validation": 1,
+          "read_before_write": 1,
+          "verification_level": 0,
+          "stagnation_break": 1,
+          "reflection_step": 0,
+          "retry_strategy": 0
+        },
+        "genome_id": "e3738653ca40",
+        "phenotype": [
+          "replace_unknown_tool_with_read",
+          "prepend_read_step",
+          "break_repeat_with_read"
+        ],
+        "parent_ids": [],
+        "born_generation": 0,
+        "n": 1,
+        "successes": 0,
+        "costs": 0.0043049004,
+        "calls": 5,
+        "ctx_n": {
+          "planning": 1
+        },
+        "ctx_successes": {
+          "planning": 0
+        }
+      },
+      {
+        "genome": {
+          "tool_validation": 1,
+          "read_before_write": 0,
+          "verification_level": 2,
+          "stagnation_break": 0,
+          "reflection_step": 1,
+          "retry_strategy": 2
+        },
+        "genome_id": "ef0925c8870c",
+        "phenotype": [
+          "replace_unknown_tool_with_read",
+          "append_readback_and_fix"
+        ],
+        "parent_ids": [],
+        "born_generation": 0,
+        "n": 1,
+        "successes": 0,
+        "costs": 0.0035096435999999996,
+        "calls": 4,
+        "ctx_n": {
+          "planning": 1
+        },
+        "ctx_successes": {
+          "planning": 0
+        }
+      },
+      {
+        "genome": {
+          "tool_validation": 0,
+          "read_before_write": 0,
+          "verification_level": 1,
+          "stagnation_break": 1,
+          "reflection_step": 0,
+          "retry_strategy": 0
+        },
+        "genome_id": "6bf09f6f0262",
+        "phenotype": [
+          "break_repeat_with_read",
+          "append_readback_and_fix"
+        ],
+        "parent_ids": [],
+        "born_generation": 0,
+        "n": 1,
+        "successes": 0,
+        "costs": 0.0039821628,
+        "calls": 5,
+        "ctx_n": {
+          "planning": 1
+        },
+        "ctx_successes": {
+          "planning": 0
+        }
+      },
+      {
+        "genome": {
+          "tool_validation": 0,
+          "read_before_write": 1,
+          "verification_level": 1,
+          "stagnation_break": 1,
+          "reflection_step": 1,
+          "retry_strategy": 0
+        },
+        "genome_id": "617c9d1ce96b",
+        "phenotype": [
+          "prepend_read_step",
+          "break_repeat_with_read",
+          "append_readback_and_fix"
+        ],
+        "parent_ids": [
+          "6bf09f6f0262",
+          "e015506f37fe"
+        ],
+        "born_generation": 1,
+        "n": 0,
+        "successes": 0,
+        "costs": 0.0,
+        "calls": 0,
+        "ctx_n": {},
+        "ctx_successes": {}
+      },
+      {
+        "genome": {
+          "tool_validation": 1,
+          "read_before_write": 0,
+          "verification_level": 0,
+          "stagnation_break": 0,
+          "reflection_step": 0,
+          "retry_strategy": 0
+        },
+        "genome_id": "66dcbb925ba5",
+        "phenotype": [
+          "replace_unknown_tool_with_read"
+        ],
+        "parent_ids": [
+          "e015506f37fe",
+          "ef0925c8870c"
+        ],
+        "born_generation": 1,
+        "n": 0,
+        "successes": 0,
+        "costs": 0.0,
+        "calls": 0,
+        "ctx_n": {},
+        "ctx_successes": {}
+      },
+      {
+        "genome": {
+          "tool_validation": 1,
+          "read_before_write": 1,
+          "verification_level": 1,
+          "stagnation_break": 0,
+          "reflection_step": 0,
+          "retry_strategy": 1
+        },
+        "genome_id": "5548b030dbaf",
+        "phenotype": [
+          "replace_unknown_tool_with_read",
+          "prepend_read_step",
+          "append_readback_and_fix"
+        ],
+        "parent_ids": [
+          "e3738653ca40",
+          "e3738653ca40"
+        ],
+        "born_generation": 1,
+        "n": 0,
+        "successes": 0,
+        "costs": 0.0,
+        "calls": 0,
+        "ctx_n": {},
+        "ctx_successes": {}
+      },
+      {
+        "genome": {
+          "tool_validation": 0,
+          "read_before_write": 0,
+          "verification_level": 0,
+          "stagnation_break": 0,
+          "reflection_step": 0,
+          "retry_strategy": 2
+        },
+        "genome_id": "db2ecd09b90a",
+        "phenotype": [
+          "identity"
+        ],
+        "parent_ids": [
+          "e015506f37fe",
+          "e015506f37fe"
+        ],
+        "born_generation": 1,
+        "n": 0,
+        "successes": 0,
+        "costs": 0.0,
+        "calls": 0,
+        "ctx_n": {},
+        "ctx_successes": {}
+      }
+    ],
+    "events": 5,
+    "stopped": null
+  },
+  "provenance": {
+    "repo_head_sha": "45c51eb66c2c30ef34693278f15cf415193c3424",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-25T13:52:14.919387+00:00"
+  }
+}
