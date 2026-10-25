@@ -1,0 +1,692 @@
+{
+  "arms": {
+    "cea_v2": "OnlineEvolutionController under its frozen default config (cea-v2-r1.8)",
+    "linucb_frozen": "frozen LinUCB snapshot trained from the manifest-pinned replay sweep (cea_v0); never updates",
+    "random": "uniform random over the deduplicated front phenotypes (seeded); never updates",
+    "rule": "fixed frozen failure_type -> front-phenotype rule; never updates",
+    "static_pareto": "frozen Pareto front via CausalPolicyAdapter.cea_v1_from_manifest + frozen select_genome rule; never updates"
+  },
+  "artifact_hashes": {
+    "pareto_front_sha256": "41119e591d055f10a7712095d6c67752969023bb78d9923580b04ba660f7c10d",
+    "sweep_sha256": "564f7d18927bcc2b485fbab8cb2d858d66a54dec31912d13a3b894baa7f77262"
+  },
+  "config_sha256": "ee8a28207a5b5d0824dec2722f765a299238d46bd4806ae19b08a40d064d015b",
+  "environment_sha256": "d2491eb064b6db73eca6034a0d79a518f8c0bac307a429dd648795f805de5383",
+  "evidence_class": "synthetic_mechanism_test",
+  "experiment_version": "p4-r1.8-cea-v2-offline",
+  "known_defects": [
+    {
+      "consequence": "cea_v2, cea_v2_no_context and cea_v2_single_objective are truncated to a 15-episode prefix in all regimes; their cumulative metrics cover only that prefix and are NOT comparable to full-horizon arms — compare regret_per_behavioral_episode and success_rate only, and treat the livelock itself as the validation's primary finding.",
+      "id": "CEA-V2-D1",
+      "mechanism": "offspring generation loops until n_offspring NOVEL phenotypes are found; unmeasured offspring are protected from eviction forever; once per-context incumbents score above the exploration bonus (0.55) offspring stop being measured, so free phenotype slots drain monotonically. Under the frozen defaults (update_every=4, n_offspring=4, max_population=16) the 4th evolve — behavioral observation 16 — cannot terminate.",
+      "reproduction": "run scripts/run_cea_v2_offline.py: every evolving arm is truncated by the structural guard at episode 15 in every regime (guard precondition: unique phenotypes > 16 - n_offspring at evolve time).",
+      "severity": "blocking for long-horizon online operation",
+      "summary": "OnlineEvolutionController._evolve() livelocks once the population holds more than 16 - n_offspring of the 16 possible effective phenotypes."
+    }
+  ],
+  "note": "Synthetic regimes are mechanism tests ONLY: they exercise selection/observation/update/evolution wiring under controlled reward tables. They are NOT evidence of real-agent improvement, algorithm generalization, or NSGA-III superiority on real tasks. No real model was invoked anywhere in this run.",
+  "real_agent_improvement_evidence": false,
+  "regimes": {
+    "abrupt_shift": {
+      "description": "abrupt reward+context shift at episode 8: the tool context's best effective phenotype flips from the tool bundle (T,R,B) to the verification phenotype (T,V) among frozen-front members — the unconstrained post-shift oracle is the singleton (V,) — and the context mix becomes tool-heavy. The shift is placed early on purpose: under frozen defaults the CEA-v2 controller livelocks at behavioral observation 16 (see known_defects), so only an early shift leaves a post-shift window inside the controller's maximum viable horizon; frozen arms demonstrate the full 232-episode post-shift regret.",
+      "n_episodes": 240,
+      "shift_at": 8
+    },
+    "iid_noise": {
+      "description": "negative control: i.i.d. Bernoulli(0.45) rewards with identical cost/calls for every phenotype in every context. There is no signal; any adaptation is overfitting and should NOT win.",
+      "n_episodes": 160,
+      "shift_at": null
+    },
+    "stationary_contextual": {
+      "description": "stationary context-conditioned rewards; each failure_type has a distinct best effective phenotype",
+      "n_episodes": 160,
+      "shift_at": null
+    },
+    "success_cost_tradeoff": {
+      "description": "context-dependent success/cost trade-off: in the verification context the success-argmax phenotype (tool+verification genes) is expensive (verification transform cost x4, +1 call) while the lambda-scalarized argmax is the cheaper tool bundle; the tool context is unambiguous.",
+      "n_episodes": 160,
+      "shift_at": null
+    }
+  },
+  "results": {
+    "abrupt_shift": {
+      "cea_v2": {
+        "adaptation_lag": {
+          "first_hit_lag": null,
+          "post_shift_oracle_phenotype": [
+            "append_readback_and_fix"
+          ],
+          "post_shift_tool_episodes": 2,
+          "pre_shift_tool_last_phenotype": [
+            "replace_unknown_tool_with_read"
+          ],
+          "reason": "controller livelocked before a measurable post-shift window (tool-context episodes observed post-shift: 2); adaptation lag not measurable — see known_defects CEA-V2-D1",
+          "shift_episode": 8,
+          "stable_lag_80pct_window10": null,
+          "target_phenotype": [
+            "replace_unknown_tool_with_read",
+            "append_readback_and_fix"
+          ]
+        },
+        "behavioral_episodes": 15,
+        "cumulative_regret": 7.095,
+        "distinct_phenotypes": [
+          "break_repeat_with_read|append_readback_and_fix",
+          "identity",
+          "prepend_read_step",
+          "prepend_read_step|break_repeat_with_read",
+          "replace_unknown_tool_with_read",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|break_repeat_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read|append_readback_and_fix"
+        ],
+        "episodes_completed": 15,
+        "episodes_total": 240,
+        "evolution_updates": 3,
+        "final_population_version": 3,
+        "infra_episodes": 0,
+        "mean_calls": 3.0,
+        "mean_cost_cny": 0.0006066666666666667,
+        "phenotype_diversity": 10,
+        "regret_per_behavioral_episode": 0.473,
+        "success_rate": 0.3333333333333333,
+        "successes": 5,
+        "terminated": "controller_livelock_phenotype_exhaustion",
+        "termination_detail": {
+          "at_episode_index": 15,
+          "defect_id": "CEA-V2-D1",
+          "evolution_updates": 3,
+          "n_offspring": 4,
+          "pending_observations": 3,
+          "population_size": 16,
+          "population_version": 3,
+          "terminated": "controller_livelock_phenotype_exhaustion",
+          "unique_phenotypes": 16,
+          "update_every": 4
+        },
+        "total_scalar_reward": 3.645
+      },
+      "linucb_frozen": {
+        "adaptation_lag": {
+          "first_hit_lag": null,
+          "post_shift_oracle_phenotype": [
+            "append_readback_and_fix"
+          ],
+          "post_shift_tool_episodes": 160,
+          "pre_shift_tool_last_phenotype": [
+            "replace_unknown_tool_with_read"
+          ],
+          "reason": "target phenotype never reached an 80% trailing-window share post-shift",
+          "shift_episode": 8,
+          "stable_lag_80pct_window10": null,
+          "target_phenotype": [
+            "replace_unknown_tool_with_read",
+            "append_readback_and_fix"
+          ]
+        },
+        "behavioral_episodes": 234,
+        "cumulative_regret": 125.33499999999994,
+        "distinct_phenotypes": [
+          "append_readback_and_fix",
+          "replace_unknown_tool_with_read"
+        ],
+        "episodes_completed": 240,
+        "episodes_total": 240,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 6,
+        "mean_calls": 2.3076923076923075,
+        "mean_cost_cny": 0.0005307692307692317,
+        "phenotype_diversity": 2,
+        "regret_per_behavioral_episode": 0.5356196581196578,
+        "success_rate": 0.19230769230769232,
+        "successes": 45,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 27.989999999999927
+      },
+      "random": {
+        "adaptation_lag": {
+          "first_hit_lag": 0,
+          "post_shift_oracle_phenotype": [
+            "append_readback_and_fix"
+          ],
+          "post_shift_tool_episodes": 160,
+          "pre_shift_tool_last_phenotype": [
+            "replace_unknown_tool_with_read",
+            "append_readback_and_fix"
+          ],
+          "reason": "arm already selected the post-shift target before the shift (frozen/chance pick — NOT an adaptation event); lag fields are formally recorded but vacuous",
+          "shift_episode": 8,
+          "stable_lag_80pct_window10": null,
+          "target_phenotype": [
+            "replace_unknown_tool_with_read",
+            "append_readback_and_fix"
+          ]
+        },
+        "behavioral_episodes": 234,
+        "cumulative_regret": 100.79499999999997,
+        "distinct_phenotypes": [
+          "break_repeat_with_read|append_readback_and_fix",
+          "prepend_read_step",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 240,
+        "episodes_total": 240,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 6,
+        "mean_calls": 3.47008547008547,
+        "mean_cost_cny": 0.0006914529914529902,
+        "phenotype_diversity": 4,
+        "regret_per_behavioral_episode": 0.4307478632478631,
+        "success_rate": 0.34615384615384615,
+        "successes": 81,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 56.67000000000011
+      },
+      "rule": {
+        "adaptation_lag": {
+          "first_hit_lag": null,
+          "post_shift_oracle_phenotype": [
+            "append_readback_and_fix"
+          ],
+          "post_shift_tool_episodes": 160,
+          "pre_shift_tool_last_phenotype": [
+            "replace_unknown_tool_with_read",
+            "prepend_read_step",
+            "break_repeat_with_read"
+          ],
+          "reason": "target phenotype never reached an 80% trailing-window share post-shift",
+          "shift_episode": 8,
+          "stable_lag_80pct_window10": null,
+          "target_phenotype": [
+            "replace_unknown_tool_with_read",
+            "append_readback_and_fix"
+          ]
+        },
+        "behavioral_episodes": 234,
+        "cumulative_regret": 123.21000000000029,
+        "distinct_phenotypes": [
+          "break_repeat_with_read|append_readback_and_fix",
+          "prepend_read_step",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 240,
+        "episodes_total": 240,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 6,
+        "mean_calls": 3.7948717948717947,
+        "mean_cost_cny": 0.0007585470085470061,
+        "phenotype_diversity": 4,
+        "regret_per_behavioral_episode": 0.5265384615384627,
+        "success_rate": 0.23076923076923078,
+        "successes": 54,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 27.364999999999984
+      },
+      "static_pareto": {
+        "adaptation_lag": {
+          "first_hit_lag": null,
+          "post_shift_oracle_phenotype": [
+            "append_readback_and_fix"
+          ],
+          "post_shift_tool_episodes": 160,
+          "pre_shift_tool_last_phenotype": [
+            "replace_unknown_tool_with_read",
+            "prepend_read_step",
+            "break_repeat_with_read"
+          ],
+          "reason": "target phenotype never reached an 80% trailing-window share post-shift",
+          "shift_episode": 8,
+          "stable_lag_80pct_window10": null,
+          "target_phenotype": [
+            "replace_unknown_tool_with_read",
+            "append_readback_and_fix"
+          ]
+        },
+        "behavioral_episodes": 234,
+        "cumulative_regret": 134.46000000000024,
+        "distinct_phenotypes": [
+          "prepend_read_step",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 240,
+        "episodes_total": 240,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 6,
+        "mean_calls": 3.7948717948717947,
+        "mean_cost_cny": 0.0007585470085470061,
+        "phenotype_diversity": 3,
+        "regret_per_behavioral_episode": 0.5746153846153856,
+        "success_rate": 0.1794871794871795,
+        "successes": 42,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 15.365000000000018
+      }
+    },
+    "iid_noise": {
+      "cea_v2": {
+        "behavioral_episodes": 15,
+        "cumulative_regret": 0.0,
+        "distinct_phenotypes": [
+          "identity",
+          "prepend_read_step",
+          "prepend_read_step|break_repeat_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|break_repeat_with_read",
+          "replace_unknown_tool_with_read|prepend_read_step",
+          "replace_unknown_tool_with_read|prepend_read_step|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read|append_readback_and_fix"
+        ],
+        "episodes_completed": 15,
+        "episodes_total": 160,
+        "evolution_updates": 3,
+        "final_population_version": 3,
+        "infra_episodes": 0,
+        "mean_calls": 3.0,
+        "mean_cost_cny": 0.0005000000000000002,
+        "phenotype_diversity": 9,
+        "regret_per_behavioral_episode": 0.0,
+        "success_rate": 0.4,
+        "successes": 6,
+        "terminated": "controller_livelock_phenotype_exhaustion",
+        "termination_detail": {
+          "at_episode_index": 15,
+          "defect_id": "CEA-V2-D1",
+          "evolution_updates": 3,
+          "n_offspring": 4,
+          "pending_observations": 3,
+          "population_size": 16,
+          "population_version": 3,
+          "terminated": "controller_livelock_phenotype_exhaustion",
+          "unique_phenotypes": 16,
+          "update_every": 4
+        },
+        "total_scalar_reward": 4.7250000000000005
+      },
+      "linucb_frozen": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 0.0,
+        "distinct_phenotypes": [
+          "append_readback_and_fix",
+          "replace_unknown_tool_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 3.0,
+        "mean_cost_cny": 0.0005000000000000003,
+        "phenotype_diversity": 2,
+        "regret_per_behavioral_episode": 0.0,
+        "success_rate": 0.46153846153846156,
+        "successes": 72,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 58.73999999999989
+      },
+      "random": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 0.0,
+        "distinct_phenotypes": [
+          "break_repeat_with_read|append_readback_and_fix",
+          "prepend_read_step",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 3.0,
+        "mean_cost_cny": 0.0005000000000000003,
+        "phenotype_diversity": 4,
+        "regret_per_behavioral_episode": 0.0,
+        "success_rate": 0.5,
+        "successes": 78,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 64.73999999999991
+      },
+      "rule": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 0.0,
+        "distinct_phenotypes": [
+          "break_repeat_with_read|append_readback_and_fix",
+          "prepend_read_step",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 3.0,
+        "mean_cost_cny": 0.0005000000000000003,
+        "phenotype_diversity": 4,
+        "regret_per_behavioral_episode": 0.0,
+        "success_rate": 0.42948717948717946,
+        "successes": 67,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 53.73999999999989
+      },
+      "static_pareto": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 0.0,
+        "distinct_phenotypes": [
+          "prepend_read_step",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 3.0,
+        "mean_cost_cny": 0.0005000000000000003,
+        "phenotype_diversity": 3,
+        "regret_per_behavioral_episode": 0.0,
+        "success_rate": 0.4807692307692308,
+        "successes": 75,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 61.73999999999988
+      }
+    },
+    "stationary_contextual": {
+      "cea_v2": {
+        "behavioral_episodes": 15,
+        "cumulative_regret": 4.085,
+        "distinct_phenotypes": [
+          "append_readback_and_fix",
+          "break_repeat_with_read|append_readback_and_fix",
+          "identity",
+          "prepend_read_step",
+          "prepend_read_step|break_repeat_with_read",
+          "prepend_read_step|break_repeat_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step",
+          "replace_unknown_tool_with_read|prepend_read_step|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read|append_readback_and_fix"
+        ],
+        "episodes_completed": 15,
+        "episodes_total": 160,
+        "evolution_updates": 3,
+        "final_population_version": 3,
+        "infra_episodes": 0,
+        "mean_calls": 3.3333333333333335,
+        "mean_cost_cny": 0.0006266666666666665,
+        "phenotype_diversity": 11,
+        "regret_per_behavioral_episode": 0.2723333333333333,
+        "success_rate": 0.3333333333333333,
+        "successes": 5,
+        "terminated": "controller_livelock_phenotype_exhaustion",
+        "termination_detail": {
+          "at_episode_index": 15,
+          "defect_id": "CEA-V2-D1",
+          "evolution_updates": 3,
+          "n_offspring": 4,
+          "pending_observations": 3,
+          "population_size": 15,
+          "population_version": 3,
+          "terminated": "controller_livelock_phenotype_exhaustion",
+          "unique_phenotypes": 15,
+          "update_every": 4
+        },
+        "total_scalar_reward": 3.53
+      },
+      "linucb_frozen": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 49.59000000000011,
+        "distinct_phenotypes": [
+          "append_readback_and_fix",
+          "replace_unknown_tool_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 2.782051282051282,
+        "mean_cost_cny": 0.0005782051282051299,
+        "phenotype_diversity": 2,
+        "regret_per_behavioral_episode": 0.3178846153846161,
+        "success_rate": 0.4166666666666667,
+        "successes": 65,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 51.80999999999987
+      },
+      "random": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 60.81000000000006,
+        "distinct_phenotypes": [
+          "break_repeat_with_read|append_readback_and_fix",
+          "prepend_read_step",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 3.448717948717949,
+        "mean_cost_cny": 0.0006820512820512805,
+        "phenotype_diversity": 4,
+        "regret_per_behavioral_episode": 0.3898076923076927,
+        "success_rate": 0.2948717948717949,
+        "successes": 46,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 29.91999999999998
+      },
+      "rule": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 2.800000000000005,
+        "distinct_phenotypes": [
+          "break_repeat_with_read|append_readback_and_fix",
+          "prepend_read_step",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 3.3846153846153846,
+        "mean_cost_cny": 0.0006717948717948705,
+        "phenotype_diversity": 4,
+        "regret_per_behavioral_episode": 0.017948717948717982,
+        "success_rate": 0.6858974358974359,
+        "successes": 107,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 91.19999999999987
+      },
+      "static_pareto": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 18.1,
+        "distinct_phenotypes": [
+          "prepend_read_step",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 3.3846153846153846,
+        "mean_cost_cny": 0.0006717948717948705,
+        "phenotype_diversity": 3,
+        "regret_per_behavioral_episode": 0.11602564102564103,
+        "success_rate": 0.6025641025641025,
+        "successes": 94,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 78.19999999999996
+      }
+    },
+    "success_cost_tradeoff": {
+      "cea_v2": {
+        "behavioral_episodes": 15,
+        "cumulative_regret": 3.034999999999999,
+        "distinct_phenotypes": [
+          "identity",
+          "prepend_read_step",
+          "prepend_read_step|break_repeat_with_read",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step",
+          "replace_unknown_tool_with_read|prepend_read_step|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 15,
+        "episodes_total": 160,
+        "evolution_updates": 3,
+        "final_population_version": 3,
+        "infra_episodes": 0,
+        "mean_calls": 2.6666666666666665,
+        "mean_cost_cny": 0.0004733333333333333,
+        "phenotype_diversity": 7,
+        "regret_per_behavioral_episode": 0.20233333333333325,
+        "success_rate": 0.8,
+        "successes": 12,
+        "terminated": "controller_livelock_phenotype_exhaustion",
+        "termination_detail": {
+          "at_episode_index": 15,
+          "defect_id": "CEA-V2-D1",
+          "evolution_updates": 3,
+          "n_offspring": 4,
+          "pending_observations": 3,
+          "population_size": 15,
+          "population_version": 3,
+          "terminated": "controller_livelock_phenotype_exhaustion",
+          "unique_phenotypes": 15,
+          "update_every": 4
+        },
+        "total_scalar_reward": 10.845
+      },
+      "linucb_frozen": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 39.40500000000002,
+        "distinct_phenotypes": [
+          "append_readback_and_fix",
+          "replace_unknown_tool_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 2.9615384615384617,
+        "mean_cost_cny": 0.0011249999999999993,
+        "phenotype_diversity": 2,
+        "regret_per_behavioral_episode": 0.25259615384615397,
+        "success_rate": 0.7051282051282052,
+        "successes": 110,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 91.98500000000003
+      },
+      "random": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 50.490000000000016,
+        "distinct_phenotypes": [
+          "break_repeat_with_read|append_readback_and_fix",
+          "prepend_read_step",
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 3.6923076923076925,
+        "mean_cost_cny": 0.0009743589743589729,
+        "phenotype_diversity": 4,
+        "regret_per_behavioral_episode": 0.32365384615384624,
+        "success_rate": 0.6538461538461539,
+        "successes": 102,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 82.87999999999991
+      },
+      "rule": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 12.55499999999997,
+        "distinct_phenotypes": [
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 4.480769230769231,
+        "mean_cost_cny": 0.0014249999999999966,
+        "phenotype_diversity": 2,
+        "regret_per_behavioral_episode": 0.08048076923076904,
+        "success_rate": 0.9615384615384616,
+        "successes": 150,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 124.90499999999999
+      },
+      "static_pareto": {
+        "behavioral_episodes": 156,
+        "cumulative_regret": 12.55499999999997,
+        "distinct_phenotypes": [
+          "replace_unknown_tool_with_read|append_readback_and_fix",
+          "replace_unknown_tool_with_read|prepend_read_step|break_repeat_with_read"
+        ],
+        "episodes_completed": 160,
+        "episodes_total": 160,
+        "evolution_updates": 0,
+        "final_population_version": 0,
+        "infra_episodes": 4,
+        "mean_calls": 4.480769230769231,
+        "mean_cost_cny": 0.0014249999999999966,
+        "phenotype_diversity": 2,
+        "regret_per_behavioral_episode": 0.08048076923076904,
+        "success_rate": 0.9615384615384616,
+        "successes": 150,
+        "terminated": "completed",
+        "termination_detail": null,
+        "total_scalar_reward": 124.90499999999999
+      }
+    }
+  },
+  "seeds": {
+    "context_stream": {
+      "abrupt_shift": 20261046,
+      "iid_noise": 20261068,
+      "stationary_contextual": 20261035,
+      "success_cost_tradeoff": 20261057
+    },
+    "controller": 20261021,
+    "master": 20261024,
+    "random_arm": 20261123
+  }
+}

@@ -34,7 +34,12 @@ class ControlChannelError(RuntimeError):
 
 
 def publish_control(ledger_dir: Path, generation: int, scope: str) -> None:
-    """Host side: clear the stale ACK first, then atomically publish."""
+    """Host side: clear the stale ACK first, then atomically publish.
+
+    Windows note: os.replace can fail transiently with WinError 5 when the
+    proxy container (or AV) holds a momentary read handle on control.json.
+    Retry briefly; a persistent failure raises ControlChannelError so the
+    runner refuses to start the agent (attribution must be certain)."""
     if not ledger_dir.is_dir():
         raise ControlChannelError(f"ledger dir unavailable: {ledger_dir}")
     ack = ledger_dir / ACK_NAME
@@ -45,7 +50,16 @@ def publish_control(ledger_dir: Path, generation: int, scope: str) -> None:
     tmp = ledger_dir / f".{CONTROL_NAME}.{os.getpid()}.tmp"
     tmp.write_text(json.dumps({"generation": generation, "scope": scope}),
                    encoding="utf-8")
-    os.replace(tmp, ledger_dir / CONTROL_NAME)
+    last_exc: OSError | None = None
+    for _ in range(20):
+        try:
+            os.replace(tmp, ledger_dir / CONTROL_NAME)
+            return
+        except OSError as exc:
+            last_exc = exc
+            time.sleep(0.05)
+    raise ControlChannelError(
+        f"control publish failed after retries: {last_exc}")
 
 
 def await_ack(ledger_dir: Path, generation: int, timeout_s: float = 10.0) -> dict[str, Any]:

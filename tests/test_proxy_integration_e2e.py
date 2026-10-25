@@ -170,6 +170,24 @@ def test_bridge_sibling_cannot_use_proxy(tmp_path):
             "the 401 must be audited in the ledger"
 
 
+def test_stale_control_file_does_not_block_resume(tmp_path):
+    """R1.9-resume regression: a stale control.json with a HIGH generation
+    must not block a new proxy's bootstrap handshake (it gets removed before
+    the proxy starts, so the fresh generation is applied)."""
+    with ProviderContainer(GOOD_TAPE) as upstream:
+        ledger_dir = tmp_path / "ledger"
+        ledger_dir.mkdir()
+        (ledger_dir / "control.json").write_text(
+            '{"generation": 99, "scope": "stale/old-run"}', encoding="utf-8")
+        (ledger_dir / "control_ack.json").write_text(
+            '{"generation": 99, "scope": "stale/old-run"}', encoding="utf-8")
+        with ProxyContainer(upstream=upstream.endpoint,
+                            ledger_dir=ledger_dir) as proxy:
+            # bootstrap in __enter__ must have succeeded (no 30s timeout)
+            proxy.set_current_scope("resume/new-scope")
+            assert upstream.request_count() == 0  # no traffic yet
+
+
 def test_agent_cannot_bypass_proxy_when_endpoint_absent(tmp_path, spec):
     ws = tmp_path / "ws"
     ws.mkdir()

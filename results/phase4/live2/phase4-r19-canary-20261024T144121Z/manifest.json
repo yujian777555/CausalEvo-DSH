@@ -1,0 +1,144 @@
+{
+  "run_id": "phase4-r19-canary-20261024T144121Z",
+  "canary": true,
+  "arms": [
+    "B0-original",
+    "B1-random",
+    "B5-v1-frozen-pareto",
+    "CEA-v2-online"
+  ],
+  "seeds": [
+    20261014,
+    20261015
+  ],
+  "task_count": 1,
+  "rows": 8,
+  "aborted": null,
+  "global_cap_cny": 2.0,
+  "warn_cap_cny": 1.8,
+  "proxy_final": {
+    "settled_cost_cny": 0.029163619199999997,
+    "ledger_entries": 72,
+    "unsettled_or_unknown": 48,
+    "per_scope_count": 8
+  },
+  "controller": {
+    "controller_version": "cea-v2-r1.8",
+    "config": {
+      "max_population": 16,
+      "update_every": 4,
+      "mutation_p": 0.25,
+      "n_offspring": 4,
+      "exploration_beta": 0.05,
+      "lambda_cost": 50.0,
+      "lambda_calls": 0.02,
+      "seed": 20261021
+    },
+    "config_sha256": "a8e0df5784ce3339caefe2d9b0942c3d430f8c25879a816d6f6513a46b018969",
+    "population_version": 0,
+    "generation": 0,
+    "evolution_updates": 0,
+    "population": [
+      {
+        "genome": {
+          "tool_validation": 0,
+          "read_before_write": 1,
+          "verification_level": 0,
+          "stagnation_break": 0,
+          "reflection_step": 0,
+          "retry_strategy": 0
+        },
+        "genome_id": "e015506f37fe",
+        "phenotype": [
+          "prepend_read_step"
+        ],
+        "parent_ids": [],
+        "born_generation": 0,
+        "n": 0,
+        "successes": 0,
+        "costs": 0.0,
+        "calls": 0,
+        "ctx_n": {},
+        "ctx_successes": {}
+      },
+      {
+        "genome": {
+          "tool_validation": 1,
+          "read_before_write": 1,
+          "verification_level": 0,
+          "stagnation_break": 1,
+          "reflection_step": 0,
+          "retry_strategy": 0
+        },
+        "genome_id": "e3738653ca40",
+        "phenotype": [
+          "replace_unknown_tool_with_read",
+          "prepend_read_step",
+          "break_repeat_with_read"
+        ],
+        "parent_ids": [],
+        "born_generation": 0,
+        "n": 0,
+        "successes": 0,
+        "costs": 0.0,
+        "calls": 0,
+        "ctx_n": {},
+        "ctx_successes": {}
+      },
+      {
+        "genome": {
+          "tool_validation": 1,
+          "read_before_write": 0,
+          "verification_level": 2,
+          "stagnation_break": 0,
+          "reflection_step": 1,
+          "retry_strategy": 2
+        },
+        "genome_id": "ef0925c8870c",
+        "phenotype": [
+          "replace_unknown_tool_with_read",
+          "append_readback_and_fix"
+        ],
+        "parent_ids": [],
+        "born_generation": 0,
+        "n": 0,
+        "successes": 0,
+        "costs": 0.0,
+        "calls": 0,
+        "ctx_n": {},
+        "ctx_successes": {}
+      },
+      {
+        "genome": {
+          "tool_validation": 0,
+          "read_before_write": 0,
+          "verification_level": 1,
+          "stagnation_break": 1,
+          "reflection_step": 0,
+          "retry_strategy": 0
+        },
+        "genome_id": "6bf09f6f0262",
+        "phenotype": [
+          "break_repeat_with_read",
+          "append_readback_and_fix"
+        ],
+        "parent_ids": [],
+        "born_generation": 0,
+        "n": 0,
+        "successes": 0,
+        "costs": 0.0,
+        "calls": 0,
+        "ctx_n": {},
+        "ctx_successes": {}
+      }
+    ],
+    "events": 0,
+    "stopped": null
+  },
+  "provenance": {
+    "repo_head_sha": "7778773f61d67c88e94e7801ca49ecc89c3e9ac3",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-24T14:43:18.756861+00:00"
+  }
+}

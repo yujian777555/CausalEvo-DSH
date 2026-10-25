@@ -1,0 +1,239 @@
+{
+  "artifact_manifest": "configs/phase3_artifact_manifest.json",
+  "artifact_manifest_sha256": "88eb788ed13aad1892b6f0abcc0abb0c4a0772d7e36b34b1b435dd595ddec6e7",
+  "config": {
+    "ablations": [
+      "cea_v2_no_update",
+      "cea_v2_no_variation",
+      "cea_v2_no_context",
+      "cea_v2_single_objective"
+    ],
+    "arms": [
+      "random",
+      "rule",
+      "static_pareto",
+      "linucb_frozen",
+      "cea_v2"
+    ],
+    "calls_envelope": {
+      "append_readback_and_fix": 2,
+      "base": 1,
+      "break_repeat_with_read": 1,
+      "prepend_read_step": 1,
+      "replace_unknown_tool_with_read": 1
+    },
+    "cost_envelope": {
+      "append_readback_and_fix": 0.0004,
+      "base": 0.0002,
+      "break_repeat_with_read": 0.0002,
+      "prepend_read_step": 0.0001,
+      "replace_unknown_tool_with_read": 0.0003
+    },
+    "experiment_version": "p4-r1.8-cea-v2-offline",
+    "infra_every": 37,
+    "lambda_calls": 0.02,
+    "lambda_cost": 50.0,
+    "other_calls": 1,
+    "other_cost": 0.0001,
+    "regimes": {
+      "abrupt_shift": {
+        "base_p": 0.3,
+        "context_mix": {
+          "knowledge": 0.25,
+          "planning": 0.25,
+          "tool": 0.25,
+          "verification": 0.25
+        },
+        "context_mix_after": {
+          "knowledge": 0.1,
+          "planning": 0.1,
+          "tool": 0.7,
+          "verification": 0.1
+        },
+        "effects": {
+          "knowledge": {
+            "append_readback_and_fix": 0.15,
+            "break_repeat_with_read": 0.3,
+            "prepend_read_step": -0.1,
+            "replace_unknown_tool_with_read": -0.2
+          },
+          "planning": {
+            "append_readback_and_fix": -0.2,
+            "break_repeat_with_read": -0.1,
+            "prepend_read_step": 0.35,
+            "replace_unknown_tool_with_read": -0.1
+          },
+          "tool": {
+            "append_readback_and_fix": -0.25,
+            "break_repeat_with_read": 0.1,
+            "prepend_read_step": 0.1,
+            "replace_unknown_tool_with_read": 0.3
+          },
+          "verification": {
+            "append_readback_and_fix": 0.3,
+            "break_repeat_with_read": 0.1,
+            "prepend_read_step": -0.25,
+            "replace_unknown_tool_with_read": 0.15
+          }
+        },
+        "effects_after": {
+          "knowledge": {
+            "append_readback_and_fix": 0.15,
+            "break_repeat_with_read": 0.3,
+            "prepend_read_step": -0.1,
+            "replace_unknown_tool_with_read": -0.2
+          },
+          "planning": {
+            "append_readback_and_fix": -0.2,
+            "break_repeat_with_read": -0.1,
+            "prepend_read_step": 0.35,
+            "replace_unknown_tool_with_read": -0.1
+          },
+          "tool": {
+            "append_readback_and_fix": 0.45,
+            "break_repeat_with_read": -0.3,
+            "prepend_read_step": -0.1,
+            "replace_unknown_tool_with_read": -0.2
+          },
+          "verification": {
+            "append_readback_and_fix": 0.3,
+            "break_repeat_with_read": 0.1,
+            "prepend_read_step": -0.25,
+            "replace_unknown_tool_with_read": 0.15
+          }
+        },
+        "n_episodes": 240,
+        "shift_at": 8
+      },
+      "iid_noise": {
+        "context_mix": {
+          "knowledge": 0.25,
+          "planning": 0.25,
+          "tool": 0.25,
+          "verification": 0.25
+        },
+        "flat": {
+          "calls": 3,
+          "cost_cny": 0.0005,
+          "p": 0.45
+        },
+        "n_episodes": 160
+      },
+      "stationary_contextual": {
+        "base_p": 0.3,
+        "context_mix": {
+          "knowledge": 0.25,
+          "planning": 0.25,
+          "tool": 0.25,
+          "verification": 0.25
+        },
+        "effects": {
+          "knowledge": {
+            "append_readback_and_fix": 0.15,
+            "break_repeat_with_read": 0.3,
+            "prepend_read_step": -0.1,
+            "replace_unknown_tool_with_read": -0.2
+          },
+          "planning": {
+            "append_readback_and_fix": -0.2,
+            "break_repeat_with_read": -0.1,
+            "prepend_read_step": 0.35,
+            "replace_unknown_tool_with_read": -0.1
+          },
+          "tool": {
+            "append_readback_and_fix": -0.25,
+            "break_repeat_with_read": 0.1,
+            "prepend_read_step": 0.1,
+            "replace_unknown_tool_with_read": 0.3
+          },
+          "verification": {
+            "append_readback_and_fix": 0.3,
+            "break_repeat_with_read": 0.1,
+            "prepend_read_step": -0.25,
+            "replace_unknown_tool_with_read": 0.15
+          }
+        },
+        "n_episodes": 160
+      },
+      "success_cost_tradeoff": {
+        "base_p": 0.3,
+        "calls_extra": {
+          "verification": {
+            "append_readback_and_fix": 1
+          }
+        },
+        "context_mix": {
+          "tool": 0.5,
+          "verification": 0.5
+        },
+        "cost_multiplier": {
+          "verification": {
+            "append_readback_and_fix": 4.0
+          }
+        },
+        "effects": {
+          "tool": {
+            "append_readback_and_fix": -0.2,
+            "break_repeat_with_read": -0.05,
+            "prepend_read_step": 0.35,
+            "replace_unknown_tool_with_read": 0.4
+          },
+          "verification": {
+            "append_readback_and_fix": 0.5,
+            "break_repeat_with_read": -0.05,
+            "prepend_read_step": 0.52,
+            "replace_unknown_tool_with_read": 0.15
+          }
+        },
+        "n_episodes": 160
+      }
+    },
+    "seed": 20261024
+  },
+  "config_sha256": "ee8a28207a5b5d0824dec2722f765a299238d46bd4806ae19b08a40d064d015b",
+  "controller_config_frozen": true,
+  "environment_sha256": "d2491eb064b6db73eca6034a0d79a518f8c0bac307a429dd648795f805de5383",
+  "episodes_recorded": 4500,
+  "evidence_class": "synthetic_mechanism_test",
+  "experiment_version": "p4-r1.8-cea-v2-offline",
+  "known_defects": [
+    {
+      "consequence": "cea_v2, cea_v2_no_context and cea_v2_single_objective are truncated to a 15-episode prefix in all regimes; their cumulative metrics cover only that prefix and are NOT comparable to full-horizon arms — compare regret_per_behavioral_episode and success_rate only, and treat the livelock itself as the validation's primary finding.",
+      "id": "CEA-V2-D1",
+      "mechanism": "offspring generation loops until n_offspring NOVEL phenotypes are found; unmeasured offspring are protected from eviction forever; once per-context incumbents score above the exploration bonus (0.55) offspring stop being measured, so free phenotype slots drain monotonically. Under the frozen defaults (update_every=4, n_offspring=4, max_population=16) the 4th evolve — behavioral observation 16 — cannot terminate.",
+      "reproduction": "run scripts/run_cea_v2_offline.py: every evolving arm is truncated by the structural guard at episode 15 in every regime (guard precondition: unique phenotypes > 16 - n_offspring at evolve time).",
+      "severity": "blocking for long-horizon online operation",
+      "summary": "OnlineEvolutionController._evolve() livelocks once the population holds more than 16 - n_offspring of the 16 possible effective phenotypes."
+    }
+  ],
+  "note": "Synthetic regimes are mechanism tests ONLY: they exercise selection/observation/update/evolution wiring under controlled reward tables. They are NOT evidence of real-agent improvement, algorithm generalization, or NSGA-III superiority on real tasks. No real model was invoked anywhere in this run.",
+  "outputs": [
+    "manifest.json",
+    "episodes.jsonl",
+    "summary.json",
+    "ablations.json"
+  ],
+  "pareto_front_sha256": "41119e591d055f10a7712095d6c67752969023bb78d9923580b04ba660f7c10d",
+  "provenance": {
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-24T14:49:37.817084+00:00",
+    "repo_head_sha": "7778773f61d67c88e94e7801ca49ecc89c3e9ac3"
+  },
+  "provider": "none (pure synthetic arithmetic; zero API calls; no docker)",
+  "real_agent_improvement_evidence": false,
+  "run_id": "run-20261024T144935Z",
+  "seeds": {
+    "context_stream": {
+      "abrupt_shift": 20261046,
+      "iid_noise": 20261068,
+      "stationary_contextual": 20261035,
+      "success_cost_tradeoff": 20261057
+    },
+    "controller": 20261021,
+    "master": 20261024,
+    "random_arm": 20261123
+  },
+  "sweep_sha256": "564f7d18927bcc2b485fbab8cb2d858d66a54dec31912d13a3b894baa7f77262",
+  "task": "CE-DSH-P4-R1.8 Task C — deterministic synthetic validation"
+}

@@ -1,0 +1,16 @@
+{
+  "evidence_class": "adapter_integration_smoke",
+  "note": "fake provider; mechanism wiring only; NOT real-model efficacy",
+  "arms": [
+    "B0-original",
+    "B1-random",
+    "B5-v1-frozen-pareto",
+    "CEA-v2-online"
+  ],
+  "provenance": {
+    "repo_head_sha": "7778773f61d67c88e94e7801ca49ecc89c3e9ac3",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-24T13:36:42.641847+00:00"
+  }
+}

@@ -78,6 +78,15 @@ class ProxyContainer:
         return f"http://{self.name}:8081"
 
     def __enter__(self) -> "ProxyContainer":
+        # R1.9-resume fix: remove stale control/ack files BEFORE the proxy
+        # starts. Otherwise the proxy applies the previous run's higher
+        # generation first and every later (lower) generation is ignored as
+        # stale, so the bootstrap handshake can never complete.
+        for stale in ("control.json", "control_ack.json"):
+            try:
+                (self.ledger_dir / stale).unlink()
+            except FileNotFoundError:
+                pass
         ensure_internal_network(self.network)
         self.ledger_dir.mkdir(parents=True, exist_ok=True)
         repo = Path(__file__).resolve().parents[3]
