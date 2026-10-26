@@ -3,19 +3,19 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4-R1.10",
-  "previous_plan_id": "CE-DSH-P4-R1.9",
-  "phase": "Phase 4 R1.10",
-  "phase_status": "READY_FOR_REVIEW",
-  "planner_review": "R1.9_REPORTED_EXPLORATORY_PILOT_ACCEPTED_WITH_REMEDIATION; NOT_INDEPENDENTLY_REPRODUCIBLE; NSGA3_SELECTION_NOT_EXERCISED_IN_LIVE_RUN",
-  "next_actor": "GPT-Planner",
+  "plan_id": "CE-DSH-P4-R1.11",
+  "previous_plan_id": "CE-DSH-P4-R1.10",
+  "phase": "Phase 4 R1.11",
+  "phase_status": "READY_FOR_EXECUTION",
+  "planner_review": "R1.10_CORE_ACCEPTED_WITH_REMEDIATION; SENSITIVITY_GENERATOR_AND_STATUS_METADATA_CLOSURE_REMAIN",
+  "next_actor": "Kimi-Executor",
   "planner_review_date": "2026-10-26",
   "executor_fix_date": "2026-10-26",
-  "baseline_main_sha": "62d9738281b9f4c3186ef09ea711c61cb8ad361a",
-  "reviewed_executor_head": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
-  "live_readiness": "NO_NEW_LIVE_CALLS_AUTHORIZED (R1.10 offline remediation complete; any future live run needs a new explicit user budget authorization)",
+  "baseline_main_sha": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
+  "reviewed_executor_head": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
+  "live_readiness": "NO_NEW_LIVE_CALLS_AUTHORIZED; R1.9 reported spend CNY 1.4633796936 including UNKNOWN bound under CNY 2.00; no Phase 5 or paid pilot authorized",
   "plan_path": "planner/latest_plan.md",
-  "review_path": "planner/reviews/CE-DSH-P4-R1_7-independent-review.md",
+  "review_path": "planner/reviews/CE-DSH-P4-R1_10-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
@@ -23,8 +23,8 @@
     "latest_executor_commit": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
     "github_commit_verified": true,
     "executor_reports_local_clean": true,
-    "note": "R1.9 code/data report commit d2a42357ecd353d9502ce04b92feffcee1379265 was clean-clone tested per Executor report; final docs/status-only commit 62d9738281b9f4c3186ef09ea711c61cb8ad361a was not independently rerun through clean-clone.",
-    "latest_executor_followup_commit": "62d9738281b9f4c3186ef09ea711c61cb8ad361a"
+    "note": "R1.10 code/data commit 5d5777c passed clean-clone per Executor report; docs/status-only follow-up 2bb9e5c was not clean-clone tested. GPT did not rerun local tests.",
+    "latest_executor_followup_commit": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e"
   },
   "tests": {
     "executor_reported_run": true,
@@ -36,10 +36,10 @@
     "count_note": "R1.10 final suite: 623 passed / 0 failed / 0 skipped (actual terminal output; includes NSGA-III invocation counting and incremental fitness)",
     "categories": {
       "unit_integration_full_suite": "623/623 (docker live)",
-      "online_evolution_controller": "tests/test_online_evolution.py 16/16",
+      "online_evolution_controller": "tests/test_online_evolution.py 19/19 (Executor-reported)",
       "cea_v2_agent_smoke": "tests/test_cea_v2_integration.py 6/6",
       "cea_v2_synthetic_driver": "tests/test_cea_v2_offline.py 14/14",
-      "r19_analysis": "tests/test_analyze_r19.py 4/4",
+      "r19_analysis": "tests/test_analyze_r19.py 4/4 (Executor-reported)",
       "budget_proxy_recovery_bounds_ingress": "tests/test_budget_proxy.py 27/27",
       "r14_output_limit_scoped_reconcile_duplicates": "tests/test_budget_proxy_r14.py 25/25",
       "r15_alias_strictness_and_ledger_numerics": "tests/test_budget_proxy_r15.py 42/42 (21 alias + 21 ledger, measured)",
@@ -49,13 +49,14 @@
       "docker_e2e_proxy_chain": "tests/test_proxy_integration_e2e.py 8/8 (incl. stale-control resume regression)",
       "algorithm_adapter": "tests/test_causal_policy_adapter.py 19/19",
       "v2_offline_driver": "tests/test_phase4_v2_offline.py 7/7",
-      "clean_clone": "final-SHA clean clone incl. key suites (see phase4_r1_9.clean_clone_final)",
-      "frozen_integrity": "test_live_csv_consistency/test_phase4_integrity etc. pass"
+      "clean_clone": "PASS at 5d5777c80713356e2c0e2049e94e8499f8dc16dd; current docs-only HEAD not tested",
+      "frozen_integrity": "test_live_csv_consistency/test_phase4_integrity etc. pass",
+      "incremental_fitness": "tests/test_incremental_fitness.py 4/4 (Executor-reported)"
     },
-    "planner_reviewed_head": "62d9738281b9f4c3186ef09ea711c61cb8ad361a",
-    "clean_clone_tested_sha": "d2a42357ecd353d9502ce04b92feffcee1379265",
-    "current_remote_head": "62d9738281b9f4c3186ef09ea711c61cb8ad361a",
-    "final_head_clean_clone_status": "NOT_RUN_ON_DOCS_STATUS_ONLY_FOLLOWUP"
+    "planner_reviewed_head": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
+    "clean_clone_tested_sha": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
+    "current_remote_head": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
+    "final_head_clean_clone_status": "Code/data SHA 5d5777c80713356e2c0e2049e94e8499f8dc16dd passed clean-clone per Executor report; current docs-only HEAD 2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e was not clean-clone tested; R1.11 must test exact final SHA."
   },
   "live_api": {
     "run": true,
@@ -98,15 +99,19 @@
     "budget_cap_runtime_cny": 4.83,
     "new_live_calls_this_round": 0
   },
-  "blockers": [],
-  "blockers_note": "R1.9 independent-review issues are addressed in R1.10: sanitized 208-row/event/ledger projections committed with hashes (no missing originals); request and cost reconciliation completed with exact formulas (912 settled = 24+2+13+180+693; 699 = 693 SETTLED + 1 UNKNOWN + 5 REJECTED); the sole live evolve event invoked NSGA-III 0 times (instrumented now); incremental intervention cost/calls + no-op feedback implemented (CEA-v2.1) with tests; cluster-aware sensitivity analysis added (preregistered result preserved); status.json key uniqueness and metadata normalized. No currently open P0/P1 items at handback.",
+  "blockers": [
+    "Post-hoc cluster sign-flip sensitivity.json has no committed generating script; add deterministic exact analysis and tests, and hash script/output in reconciled manifest",
+    "Top-level status.json fields remain stale/contradictory (review label, notes, review path, test counts and SHAs) despite nested R1.10 summary",
+    "Audit proxy ledger does not persist per-request token buckets/pricing tier; document this limitation explicitly and do not claim per-request token-level repricing"
+  ],
+  "blockers_note": "R1.10 core reconciliation and algorithm-fidelity work accepted with remediation. The 208 task rows, success rates, 912 SETTLED + 1 UNKNOWN, settled cost CNY 1.3063390536, UNKNOWN bound CNY 0.15704064 and total CNY 1.4633796936 were independently recomputed from committed projections. Exact cluster sensitivity values also independently confirm a non-significant conclusion, but its generating source is missing. No new live calls authorized.",
   "limitations": [
-    "575/575 full-suite result is executor-reported; GPT did not independently rerun tests",
-    "clean-clone passed at 1f6c324af86c2d517358df823d757d426956150e, not at the current docs/status-only HEAD 8286d38d38d6c1812e26225031a85690852f0068",
-    "route classification is scoped to the observed direct-opener path and diagnostic interval; raw rotated log is not committed; Sangfor aTrust underlay not fully excluded",
-    "R1.7 adapter integration uses fake provider and does not establish real-model efficacy",
-    "CEA-v1 runtime is frozen selection; no runtime evolutionary update loop; L4 RSI not implemented",
-    "historical 312-row experiment uses proxy/static B4/B5 implementations and remains immutable"
+    "GPT did not independently rerun local pytest; 623 passed / 0 failed / 0 skipped is Executor-reported",
+    "Clean-clone passed at code/data SHA 5d5777c80713356e2c0e2049e94e8499f8dc16dd; current docs-only HEAD 2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e was not clean-clone tested",
+    "R1.9 is exploratory only; CEA-v2 has no evidence of superiority over random/static baselines",
+    "L4 recursive self-improvement is not implemented",
+    "The proxy ledger lacks per-request token buckets/pricing-tier details; only settled cost/reservation arithmetic and row-level aggregate tokens can be audited",
+    "Post-hoc cluster sensitivity is numerically independently checked but its generating script is missing until R1.11"
   ],
   "evidence": [
     "scripts/clean_clone_check.py",
@@ -133,8 +138,8 @@
     "tests/test_causal_policy_adapter.py",
     "tests/test_phase4_v2_offline.py"
   ],
-  "notes": "R1.9 reported final success rates: B0 0.8269 / B1-random 0.9038 / B5-v1 0.9038 / CEA-v2-online 0.8654; no evidence of benefit. Reported round cost CNY 1.463380 incl unknown bound under CNY 2.00, but request/cost totals are not independently verifiable until sanitized source projections are committed. Do not claim live NSGA-III selection or incremental-cost optimization from R1.9.",
-  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.10",
+  "notes": "Current R1.10 facts: audit projections are committed; request/cost arithmetic is reproducible from the projected state/cost ledger; historical R1.9 CEA-v2 success rate 0.8654 does not beat B1/B5 0.9038; live R1.9 evolve event invoked NSGA-III zero times (reconstructed from historical source/state; counters were added after the run); CEA-v2.1 incremental fitness is a future-code contract, not a new performance result. Per-request token-level repricing is unavailable because the proxy ledger schema does not persist token buckets.",
+  "next_goal": "R1.11: commit deterministic exact cluster sign-flip analysis, correct audit usage limitations and historical NSGA telemetry wording, normalize status metadata, and verify exact final SHA with zero API spend",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -680,5 +685,65 @@
       "zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
     },
     "clean_clone_final": "PASS at 5d5777c80713356e2c0e2049e94e8499f8dc16dd: 'CLEAN CLONE OK: HEAD 5d5777c80713 == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 200 key-suite tests passed (exit 0; includes online_evolution NSGA-III invocation counting and incremental_fitness). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)"
+  },
+  "historical_limitations": [
+    "575/575 full-suite result is executor-reported; GPT did not independently rerun tests",
+    "clean-clone passed at 1f6c324af86c2d517358df823d757d426956150e, not at the current docs/status-only HEAD 8286d38d38d6c1812e26225031a85690852f0068",
+    "route classification is scoped to the observed direct-opener path and diagnostic interval; raw rotated log is not committed; Sangfor aTrust underlay not fully excluded",
+    "R1.7 adapter integration uses fake provider and does not establish real-model efficacy",
+    "CEA-v1 runtime is frozen selection; no runtime evolutionary update loop; L4 RSI not implemented",
+    "historical 312-row experiment uses proxy/static B4/B5 implementations and remains immutable"
+  ],
+  "phase4_r1_10_planner_review": {
+    "decision": "CORE_ACCEPTED_WITH_REMEDIATION",
+    "reviewed_head": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
+    "code_data_sha": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
+    "method": "GitHub source/artifact review; independent arithmetic from committed projections; exact sign-flip enumeration over 2^26 assignments; no local pytest rerun",
+    "verified_task_rows": 208,
+    "unique_task_seed_arm_keys": 208,
+    "per_arm_successes": {
+      "B0-original": "43/52",
+      "B1-random": "47/52",
+      "B5-v1-frozen-pareto": "47/52",
+      "CEA-v2-online": "45/52"
+    },
+    "ledger_transition_rows": 2755,
+    "unique_request_ids": 913,
+    "final_state_counts": {
+      "SETTLED": 912,
+      "UNKNOWN": 1
+    },
+    "settled_cost_cny": 1.3063390536,
+    "unknown_bound_cny": 0.15704064,
+    "total_conservative_cost_cny": 1.4633796936,
+    "budget_cap_cny": 2,
+    "row_level_provider_calls": 699,
+    "controller_events": {
+      "behavioral": 4,
+      "evolve": 1,
+      "all_matched_to_rows": true
+    },
+    "live_nsga3_selection_calls": 0,
+    "historical_nsga3_counter_telemetry": "not present in original R1.9 event; zero reconstructed from source and archived state; counters instrumented post-run",
+    "exact_cluster_sign_flip_p": {
+      "cea_vs_b1": 0.75,
+      "cea_vs_b5": 0.625,
+      "cea_vs_b0": 0.7265625
+    },
+    "reported_monte_carlo_p": {
+      "cea_vs_b1": 0.7462,
+      "cea_vs_b5": 0.62095,
+      "cea_vs_b0": 0.7268
+    },
+    "remaining_findings": [
+      "No committed generating script for results/phase4/r19-audit/sensitivity.json",
+      "status.json top-level metadata stale versus nested R1.10 summary",
+      "per-request token buckets/pricing tier absent from proxy ledger; state/cost arithmetic is reproducible, per-request repricing is not"
+    ],
+    "executor_reported_tests": "623 passed / 0 failed / 0 skipped",
+    "executor_reported_clean_clone_sha": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
+    "final_docs_only_head_clean_clone": "not run",
+    "new_live_api_calls_authorized": 0,
+    "next_plan": "CE-DSH-P4-R1.11"
   }
 }
