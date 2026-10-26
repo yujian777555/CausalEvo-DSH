@@ -12,7 +12,7 @@
   "planner_review_date": "2026-10-26",
   "executor_fix_date": "2026-10-26",
   "baseline_main_sha": "62d9738281b9f4c3186ef09ea711c61cb8ad361a",
-  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
+  "reviewed_executor_head": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
   "live_readiness": "NO_NEW_LIVE_CALLS_AUTHORIZED (R1.10 offline remediation complete; any future live run needs a new explicit user budget authorization)",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_7-independent-review.md",
@@ -20,7 +20,7 @@
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "d2a42357ecd353d9502ce04b92feffcee1379265",
+    "latest_executor_commit": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
     "github_commit_verified": true,
     "executor_reports_local_clean": true,
     "note": "R1.9 code/data report commit d2a42357ecd353d9502ce04b92feffcee1379265 was clean-clone tested per Executor report; final docs/status-only commit 62d9738281b9f4c3186ef09ea711c61cb8ad361a was not independently rerun through clean-clone.",
@@ -29,13 +29,13 @@
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 616,
+    "passed": 623,
     "failed": 0,
     "skipped": 0,
     "planner_reran": false,
-    "count_note": "Executor reports 616 passed / 0 failed / 0 skipped and clean-clone at d2a4235; GPT has not independently rerun tests. Current HEAD 62d9738 is docs/status-only.",
+    "count_note": "R1.10 final suite: 623 passed / 0 failed / 0 skipped (actual terminal output; includes NSGA-III invocation counting and incremental fitness)",
     "categories": {
-      "unit_integration_full_suite": "616/616 (docker live)",
+      "unit_integration_full_suite": "623/623 (docker live)",
       "online_evolution_controller": "tests/test_online_evolution.py 16/16",
       "cea_v2_agent_smoke": "tests/test_cea_v2_integration.py 6/6",
       "cea_v2_synthetic_driver": "tests/test_cea_v2_offline.py 14/14",
@@ -679,6 +679,6 @@
       "metadata_normalized": "PASS",
       "zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
     },
-    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
+    "clean_clone_final": "PASS at 5d5777c80713356e2c0e2049e94e8499f8dc16dd: 'CLEAN CLONE OK: HEAD 5d5777c80713 == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 200 key-suite tests passed (exit 0; includes online_evolution NSGA-III invocation counting and incremental_fitness). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)"
   }
 }

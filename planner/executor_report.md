@@ -86,7 +86,20 @@
 
 ## K. Git 交付（最终 SHA / clean-clone / 同步）
 
-（push 后实测填写。）
+- **R1.10 主提交：`5d5777c80713356e2c0e2049e94e8499f8dc16dd`**（push 后 `git ls-remote origin main` 与本地 HEAD 一致）。
+- **最终 SHA Gate（逐字输出）**：
+  ```
+  verified: 312 auditable rows recompute to the committed analysis (incl. cluster bootstrap)
+  34 passed in 4.55s (phase4 subset)
+  200 passed in 338.07s (key suites incl. online_evolution NSGA-III invocation counting
+      and incremental_fitness)
+  CLEAN CLONE OK: HEAD 5d5777c80713 == origin/main; 312 auditable rows recompute in a fresh clone
+  exit=0
+  ```
+- **clean-clone 验证 SHA（完整）**：`5d5777c80713356e2c0e2049e94e8499f8dc16dd`（脚本强制 clone HEAD == ls-remote，失配 exit 2）。
+- 本记录提交（housekeeping）仅改 status.json 与 executor_report.md，不含代码/测试变更；按惯例如实声明：Gate 在 `5d5777c…` 通过，记录提交本身未再触发 Gate（如需可用 `python scripts/clean_clone_check.py` 随时对当前 HEAD 重验）。
+- 同步状态：本地 HEAD == `git ls-remote origin main`；`git status --porcelain` = 0（clean）。
+- 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 零改动；密钥扫描 0 命中。
 
 ## 停止
 
