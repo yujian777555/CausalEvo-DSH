@@ -70,3 +70,25 @@ round_total = 1.306339（SETTLED，peak） + 0.157041（UNKNOWN 上界）
 ## 5. 不能恢复的部分
 
 无。原始 `tasks.jsonl`、`events.jsonl`、`proxy-ledger/ledger.jsonl` 均在本机存在并已投影（含哈希）。无需标记 NOT_REPRODUCIBLE。
+
+## 6. 账本数据边界（不伪造字段）
+
+- **可独立复算**：SETTLED 状态迁移的 `cost_cny` 求和 + UNKNOWN 预留上界（本轮 = 1.3063390536 + 0.15704064 = 1.4633796936 CNY）。
+- **行级聚合 token 桶**：`auditable_tasks.jsonl` 每行含 `input_tokens`、`cache_read_tokens`、`output_tokens` 聚合值，可用于行级成本/缓存分析。
+- **不可独立复算**：源 proxy 账本**不持久化逐请求 token 桶与定价档位**，因此**逐请求 token 级重计价不可独立复现**。上述行级聚合 token 无法一一映射回每个 proxy 请求。不得伪造这些字段。
+- `auditable_ledger.jsonl` 的 `seq` 字段仅保留各 run 内源文件顺序，**不表示 token 信息**。
+- `intervention_text` 为**有意保留**（动作级审计）；准确口径为：排除原始请求/响应体、完整 provider payload、凭据与原始会话日志，而非"不含任何 prompt"。
+
+## 7. 敏感性分析（事后，非预注册主检验）
+
+`results/phase4/r19-audit/sensitivity.json` 由 `scripts/analyze_r19_cluster_sensitivity.py` 以**精确动态规划**生成（26 簇、两种子同簇、2^26 符号分配全枚举），精确双侧 p：
+
+| 比较 | 精确 p |
+|---|---|
+| CEA-v2 vs B1-random | **0.750000** |
+| CEA-v2 vs B5-v1-frozen-pareto | **0.625000** |
+| CEA-v2 vs B0-original | **0.7265625** |
+| B5-v1-frozen-pareto vs B1-random | 1.000000 |
+
+此前的 20000 次置换估计（0.7462 / 0.62095 / 0.7268）保留在 `previous_monte_carlo_estimates` 字段，未被覆盖。脚本与结果 SHA-256 已写入 `manifest_reconciled.json` 的 `sensitivity_artifacts`。
+

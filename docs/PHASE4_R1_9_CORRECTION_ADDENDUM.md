@@ -32,6 +32,8 @@
 
 **结论**：live pilot 实际执行的是**交叉、变异与种群版本更新**，其唯一演化事件**没有调用 NSGA-III 选择（0 次）**。不得称该 pilot 验证了 NSGA-III 或其贡献。离线 `tests/test_nsga3.py`、`test_evolution_e2e.py` 等独立测试仍验证 NSGA-III 实现本身，不与此矛盾。
 
+**计数口径澄清（R1.11 补充）**：R1.9 的历史 evolve 事件**不含** `nsga3_parent_selection_calls` / `nsga3_survivor_selection_calls` 字段——这些计数器是在实验之后才加入代码的。因此"0 次调用"是**依据归档源码的分支条件（4 已测量候选 → 4 父母、无溢出）与归档控制器状态重建的事实**，不是该运行当时发出的遥测计数。新增计数器仅用于未来事件；历史事件投影未添加任何合成计数字段。
+
 **配套修正**：`online_evolution.py` 的 evolve 事件现在显式记录 `nsga3_parent_selection_calls` 与 `nsga3_survivor_selection_calls`（新增 3 项回归测试：恰好 4 已测量无溢出=0 调用、>4 已测量=1 调用、溢出=幸存者调用）。
 
 ## 5. 控制器使用整 episode 成本而非干预增量成本

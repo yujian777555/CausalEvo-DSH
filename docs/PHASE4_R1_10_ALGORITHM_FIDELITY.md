@@ -11,6 +11,8 @@
 
 因此 R1.9 的 live 演化只做了**交叉、变异与种群版本更新**，不能称为验证了 NSGA-III。`docs/PHASE4_FORMAL_EXPERIMENT_REPORT.md` 的相关表述由 `docs/PHASE4_R1_9_CORRECTION_ADDENDUM.md` 正式更正。
 
+**遥测口径**：历史 evolve 事件本身**不含**新加入的调用计数字段（计数器在实验后加入）；零调用是**依据归档源码分支条件与归档控制器状态重建的**，不是运行当时输出的计数。新计数器只影响未来事件；历史投影未添加合成计数。
+
 **现在的可核查证据**：evolve 事件包含 `nsga3_parent_selection_calls` 与 `nsga3_survivor_selection_calls` 两个字段（`online_evolution.py`），并有回归测试：
 
 - `test_nsga3_parent_selection_not_called_with_exactly_four_measured`（4 已测量无溢出 → 0 调用，正是 R1.9 情形）

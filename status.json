@@ -6,13 +6,13 @@
   "plan_id": "CE-DSH-P4-R1.11",
   "previous_plan_id": "CE-DSH-P4-R1.10",
   "phase": "Phase 4 R1.11",
-  "phase_status": "READY_FOR_EXECUTION",
+  "phase_status": "READY_FOR_REVIEW",
   "planner_review": "R1.10_CORE_ACCEPTED_WITH_REMEDIATION; SENSITIVITY_GENERATOR_AND_STATUS_METADATA_CLOSURE_REMAIN",
-  "next_actor": "Kimi-Executor",
+  "next_actor": "GPT-Planner",
   "planner_review_date": "2026-10-26",
   "executor_fix_date": "2026-10-26",
   "baseline_main_sha": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
-  "reviewed_executor_head": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
+  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
   "live_readiness": "NO_NEW_LIVE_CALLS_AUTHORIZED; R1.9 reported spend CNY 1.4633796936 including UNKNOWN bound under CNY 2.00; no Phase 5 or paid pilot authorized",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_10-independent-review.md",
@@ -29,13 +29,13 @@
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 623,
+    "passed": 631,
     "failed": 0,
     "skipped": 0,
     "planner_reran": false,
-    "count_note": "R1.10 final suite: 623 passed / 0 failed / 0 skipped (actual terminal output; includes NSGA-III invocation counting and incremental fitness)",
+    "count_note": "R1.11 final suite: 631 passed / 0 failed / 0 skipped (actual terminal output; adds exact cluster sensitivity tests)",
     "categories": {
-      "unit_integration_full_suite": "623/623 (docker live)",
+      "unit_integration_full_suite": "631/631 (docker live)",
       "online_evolution_controller": "tests/test_online_evolution.py 19/19 (Executor-reported)",
       "cea_v2_agent_smoke": "tests/test_cea_v2_integration.py 6/6",
       "cea_v2_synthetic_driver": "tests/test_cea_v2_offline.py 14/14",
@@ -99,19 +99,15 @@
     "budget_cap_runtime_cny": 4.83,
     "new_live_calls_this_round": 0
   },
-  "blockers": [
-    "Post-hoc cluster sign-flip sensitivity.json has no committed generating script; add deterministic exact analysis and tests, and hash script/output in reconciled manifest",
-    "Top-level status.json fields remain stale/contradictory (review label, notes, review path, test counts and SHAs) despite nested R1.10 summary",
-    "Audit proxy ledger does not persist per-request token buckets/pricing tier; document this limitation explicitly and do not claim per-request token-level repricing"
-  ],
-  "blockers_note": "R1.10 core reconciliation and algorithm-fidelity work accepted with remediation. The 208 task rows, success rates, 912 SETTLED + 1 UNKNOWN, settled cost CNY 1.3063390536, UNKNOWN bound CNY 0.15704064 and total CNY 1.4633796936 were independently recomputed from committed projections. Exact cluster sensitivity values also independently confirm a non-significant conclusion, but its generating source is missing. No new live calls authorized.",
+  "blockers": [],
+  "blockers_note": "R1.10/R1.11-review issues are closed: exact DP cluster sensitivity script committed with tests and regenerated sensitivity.json (exact p = 0.75 / 0.625 / 0.7265625); sensitivity script and output SHA-256 are in manifest_reconciled.json; status.json metadata normalized to current HEAD; ledger per-request token-bucket/pricing-tier limitation is explicit in manifest_reconciled.json and docs/PHASE4_R1_9_RECONCILIATION.md (no invented fields); historical NSGA-III zero-call wording distinguishes reconstruction from post-hoc instrumentation.",
   "limitations": [
     "GPT did not independently rerun local pytest; 623 passed / 0 failed / 0 skipped is Executor-reported",
     "Clean-clone passed at code/data SHA 5d5777c80713356e2c0e2049e94e8499f8dc16dd; current docs-only HEAD 2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e was not clean-clone tested",
     "R1.9 is exploratory only; CEA-v2 has no evidence of superiority over random/static baselines",
     "L4 recursive self-improvement is not implemented",
     "The proxy ledger lacks per-request token buckets/pricing-tier details; only settled cost/reservation arithmetic and row-level aggregate tokens can be audited",
-    "Post-hoc cluster sensitivity is numerically independently checked but its generating script is missing until R1.11"
+    "Post-hoc cluster sensitivity is now script-reproducible: scripts/analyze_r19_cluster_sensitivity.py (exact DP) + tests/test_cluster_sensitivity.py regenerate sensitivity.json deterministically; earlier 20000-permutation estimates are preserved as previous_monte_carlo_estimates"
   ],
   "evidence": [
     "scripts/clean_clone_check.py",
@@ -139,7 +135,7 @@
     "tests/test_phase4_v2_offline.py"
   ],
   "notes": "Current R1.10 facts: audit projections are committed; request/cost arithmetic is reproducible from the projected state/cost ledger; historical R1.9 CEA-v2 success rate 0.8654 does not beat B1/B5 0.9038; live R1.9 evolve event invoked NSGA-III zero times (reconstructed from historical source/state; counters were added after the run); CEA-v2.1 incremental fitness is a future-code contract, not a new performance result. Per-request token-level repricing is unavailable because the proxy ledger schema does not persist token buckets.",
-  "next_goal": "R1.11: commit deterministic exact cluster sign-flip analysis, correct audit usage limitations and historical NSGA telemetry wording, normalize status metadata, and verify exact final SHA with zero API spend",
+  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.11",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -745,5 +741,21 @@
     "final_docs_only_head_clean_clone": "not run",
     "new_live_api_calls_authorized": 0,
     "next_plan": "CE-DSH-P4-R1.11"
+  },
+  "phase4_r1_11": {
+    "new_live_calls": 0,
+    "new_spend_cny": 0,
+    "sensitivity_reproducibility": "scripts/analyze_r19_cluster_sensitivity.py (exact DP sign-flip over 2^26 assignments) + tests/test_cluster_sensitivity.py 8/8; exact two-sided p: CEA-v2 vs B1-random 0.75, vs B5-v1 0.625, vs B0 0.7265625; B5-v1 vs B1 1.0; deterministic byte-identical regeneration verified twice; previous 20000-permutation estimates preserved in previous_monte_carlo_estimates",
+    "ledger_limitations": "source proxy ledger has NO per-request token buckets/pricing tier; settled cost sum + UNKNOWN bound independently recomputable (1.3063390536 + 0.15704064 = 1.4633796936); per-request token-level repricing NOT reproducible (no invented fields); auditable_ledger.jsonl gains seq preserving per-run source order; intervention_text intentionally retained while raw bodies/payloads/credentials/session logs excluded",
+    "sensitivity_artifacts_hashes": "script_sha256 and output_sha256 recorded in results/phase4/r19-audit/manifest_reconciled.json (sensitivity_artifacts)",
+    "nsga3_telemetry": "historical evolve event has no invocation counters (added after the run); zero-call fact is reconstructed from archived source branch conditions and archived controller state; new counters apply to future events only; no synthetic counters were added to the historical projection",
+    "gates": {
+      "exact_p_values": "PASS (0.75 / 0.625 / 0.7265625 / 1.0)",
+      "deterministic_regeneration": "PASS (byte-identical twice)",
+      "ledger_limitation_explicit": "PASS",
+      "status_metadata_consistent": "PASS",
+      "zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
+    },
+    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
   }
 }
