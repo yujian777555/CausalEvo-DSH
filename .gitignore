@@ -30,6 +30,9 @@ logs/
 !results/phase4/**/auditable_tasks.jsonl
 !results/phase4/dry-run-evidence/*.jsonl
 !results/phase4/v2-offline/**/records.jsonl
+!results/phase4/r19-audit/auditable_tasks.jsonl
+!results/phase4/r19-audit/auditable_events.jsonl
+!results/phase4/r19-audit/auditable_ledger.jsonl
 
 # --- benchmark scratch ---
 results/phase0/tmp/

@@ -1,0 +1,142 @@
+{
+  "rows_total": 208,
+  "coverage": {
+    "tasks": 26,
+    "seeds": [
+      20261014,
+      20261015
+    ],
+    "arms": [
+      "B0-original",
+      "B1-random",
+      "B5-v1-frozen-pareto",
+      "CEA-v2-online"
+    ],
+    "unique_keys": 208,
+    "duplicates": []
+  },
+  "per_arm": {
+    "B0-original": {
+      "rows": 52,
+      "final_success_rate": 0.8269230769230769,
+      "attempt1_success_rate": 0.8269230769230769,
+      "retried_rows": 0,
+      "recovery_rate": null,
+      "recovery_denominator": 0,
+      "provider_calls": 163,
+      "input_tokens": 37533,
+      "cache_read_tokens": 258558,
+      "output_tokens": 17382,
+      "cost_cny": 0.11952725,
+      "latency_ms_mean": 11970.48076923077
+    },
+    "B1-random": {
+      "rows": 52,
+      "final_success_rate": 0.9038461538461539,
+      "attempt1_success_rate": 0.8653846153846154,
+      "retried_rows": 6,
+      "recovery_rate": 0.3333333333333333,
+      "recovery_denominator": 6,
+      "provider_calls": 180,
+      "input_tokens": 36998,
+      "cache_read_tokens": 278014,
+      "output_tokens": 18028,
+      "cost_cny": 0.12212385,
+      "latency_ms_mean": 12903.384615384615
+    },
+    "B5-v1-frozen-pareto": {
+      "rows": 52,
+      "final_success_rate": 0.9038461538461539,
+      "attempt1_success_rate": 0.8269230769230769,
+      "retried_rows": 9,
+      "recovery_rate": 0.4444444444444444,
+      "recovery_denominator": 9,
+      "provider_calls": 185,
+      "input_tokens": 40076,
+      "cache_read_tokens": 295550,
+      "output_tokens": 19847,
+      "cost_cny": 0.13352438,
+      "latency_ms_mean": 13764.538461538461
+    },
+    "CEA-v2-online": {
+      "rows": 52,
+      "final_success_rate": 0.8653846153846154,
+      "attempt1_success_rate": 0.8461538461538461,
+      "retried_rows": 4,
+      "recovery_rate": 0.25,
+      "recovery_denominator": 4,
+      "provider_calls": 171,
+      "input_tokens": 36915,
+      "cache_read_tokens": 272380,
+      "output_tokens": 18110,
+      "cost_cny": 0.12226477,
+      "latency_ms_mean": 12472.442307692309
+    }
+  },
+  "comparisons": {
+    "CEA-v2-online vs B1-random": {
+      "paired_diff": -0.038461538461538464,
+      "discordant_pos": 2,
+      "discordant_neg": 4,
+      "cluster_bootstrap_ci95": [
+        -0.15384615384615385,
+        0.057692307692307696
+      ],
+      "mcnemar_exact_p": 0.6875,
+      "cluster_permutation_sensitivity": {
+        "p": 0.7462,
+        "stat": -0.038461538461538464,
+        "n_clusters": 26,
+        "n_permutations": 20000,
+        "seed": 20261026
+      }
+    },
+    "CEA-v2-online vs B5-v1-frozen-pareto": {
+      "paired_diff": -0.038461538461538464,
+      "discordant_pos": 2,
+      "discordant_neg": 4,
+      "cluster_bootstrap_ci95": [
+        -0.11538461538461539,
+        0.038461538461538464
+      ],
+      "mcnemar_exact_p": 0.6875,
+      "cluster_permutation_sensitivity": {
+        "p": 0.62095,
+        "stat": -0.038461538461538464,
+        "n_clusters": 26,
+        "n_permutations": 20000,
+        "seed": 20261026
+      }
+    },
+    "CEA-v2-online vs B0-original": {
+      "paired_diff": 0.038461538461538464,
+      "discordant_pos": 5,
+      "discordant_neg": 3,
+      "cluster_bootstrap_ci95": [
+        -0.057692307692307696,
+        0.1346153846153846
+      ],
+      "mcnemar_exact_p": 0.7265625,
+      "cluster_permutation_sensitivity": {
+        "p": 0.7268,
+        "stat": 0.038461538461538464,
+        "n_clusters": 26,
+        "n_permutations": 20000,
+        "seed": 20261026
+      }
+    },
+    "B5-v1-frozen-pareto vs B1-random": {
+      "paired_diff": 0.0,
+      "discordant_pos": 3,
+      "discordant_neg": 3,
+      "cluster_bootstrap_ci95": [
+        -0.09615384615384616,
+        0.09615384615384616
+      ],
+      "mcnemar_exact_p": 1.0
+    }
+  },
+  "preregistered_primary": "paired McNemar exact + task-cluster bootstrap CI (preserved from R1.9)",
+  "sensitivity_label": "POST-HOC cluster-aware paired sign-flip permutation on task means (both seeds of a task stay together); NOT the preregistered primary test",
+  "note_on_clustering": "the two seed rows of each task are clustered; the exact McNemar p treats discordant pairs as independent and is therefore NOT cluster-adjusted confirmatory evidence; any future confirmatory protocol must use a cluster-aware primary method"
+}

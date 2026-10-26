@@ -55,7 +55,7 @@ def test_manifest_mismatch_fails_closed(tmp_path):
 def test_select_returns_versions_and_genome():
     ctl = _ctl()
     sel = ctl.select(CTX, "ep-1")
-    assert sel["genome_id"] and sel["policy_version"] == "cea-v2-r1.8"
+    assert sel["genome_id"] and sel["policy_version"] == "cea-v2.1-r1.10"
     assert sel["population_version"] == 0
     assert "unmeasured" in sel["reason"]
 
@@ -209,6 +209,45 @@ def test_bounded_population_terminates_with_eviction():
         ctl.observe(f"ep-{i}", CTX, sel["genome_id"],
                     _behavioral(success=i % 2 == 0))
     assert time.monotonic() - t0 < 30
+    assert len(ctl.population) <= 4
+
+
+def test_nsga3_parent_selection_not_called_with_exactly_four_measured():
+    """R1.9 live-fidelity: with exactly n_parents=4 measured candidates and no
+    overflow, ALL measured candidates become parents directly — NSGA-III is
+    NOT invoked (this is exactly what happened in the R1.9 live pilot)."""
+    ctl = _ctl()
+    for i in range(4):
+        sel = ctl.select(CTX, f"ep-{i}")
+        ctl.observe(f"ep-{i}", CTX, sel["genome_id"], _behavioral())
+    ev = [e for e in ctl.events if e.get("kind") == "evolve"]
+    assert len(ev) == 1
+    assert ev[0]["nsga3_parent_selection_calls"] == 0
+    assert ev[0]["nsga3_survivor_selection_calls"] == 0
+
+
+def test_nsga3_parent_selection_called_with_more_than_four_measured():
+    ctl = _ctl()
+    for i in range(8):  # two evolve steps; offspring join the measured set
+        sel = ctl.select(CTX, f"ep-{i}")
+        ctl.observe(f"ep-{i}", CTX, sel["genome_id"],
+                    _behavioral(success=i % 2 == 0))
+    ev = [e for e in ctl.events if e.get("kind") == "evolve"]
+    assert len(ev) == 2
+    assert ev[1]["nsga3_parent_selection_calls"] == 1, \
+        ">4 measured candidates must trigger NSGA-III parent selection"
+
+
+def test_nsga3_survivor_selection_called_on_overflow():
+    ctl = _ctl()
+    ctl.config["max_population"] = 4  # force archive overflow at first evolve
+    for i in range(4):
+        sel = ctl.select(CTX, f"ep-{i}")
+        ctl.observe(f"ep-{i}", CTX, sel["genome_id"], _behavioral())
+    ev = [e for e in ctl.events if e.get("kind") == "evolve"]
+    assert len(ev) == 1
+    assert ev[0]["nsga3_survivor_selection_calls"] >= 1, \
+        "archive overflow must invoke NSGA-III survivor selection"
     assert len(ctl.population) <= 4
 
 

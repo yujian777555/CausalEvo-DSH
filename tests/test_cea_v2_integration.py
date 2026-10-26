@@ -48,7 +48,7 @@ def test_selected_genome_changes_retry_intervention_text(smoke):
     for r in cea:
         assert r["selected_genome_id"], "genome recorded per row"
         assert r["intervention_text"], "intervention text derived and injected"
-        assert r["policy_version"] == "cea-v2-r1.8"
+        assert r["policy_version"] == "cea-v2.1-r1.10"
         assert r["selection_reason"]
 
 

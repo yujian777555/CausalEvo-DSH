@@ -124,6 +124,8 @@ def run_row(spec, arm, seed, judge, make_runner, *, rng, controller=None,
         runner1 = make_runner(0)
         outcome1 = runner1.run_task(spec, ws.root, arm, budget,
                                     api_key="sk-fake-offline-no-cost")
+        calls_after_1 = budget.ledger.provider_attempts
+        cost_after_1 = budget.ledger.known_cost_cny
         report1 = judge.grade(spec, ws.root)
         success1 = _success(report1)
         edited = ws.digest() != ws.digest_at_open
@@ -138,6 +140,10 @@ def run_row(spec, arm, seed, judge, make_runner, *, rng, controller=None,
             "selected_genome_id": None, "policy_version": None,
             "population_version": None, "selection_reason": None,
             "controller_update": None, "final_status": outcome1.failure_kind,
+            "attempt_1_provider_requests": calls_after_1,
+            "attempt_2_provider_requests": 0,
+            "attempt_1_cost_cny": round(cost_after_1, 10),
+            "attempt_2_cost_cny": 0.0,
         }
         if outcome1.failure_kind in INFRA_KINDS:
             # infrastructure: no retry, no behavioral learning
@@ -186,6 +192,17 @@ def run_row(spec, arm, seed, judge, make_runner, *, rng, controller=None,
             raise ValueError(arm)
         record["intervention_text"] = text
         if text is None:
+            # R1.10 Task D: explicit no-op semantics. A selected genome with no
+            # executable intervention text gets NO retry, but its outcome IS
+            # observed exactly once with zero incremental cost/calls (settled
+            # accounting; no extra model request). Never silently skip observe.
+            if controller is not None:
+                upd = controller.observe(
+                    episode_id, context, record["selected_genome_id"],
+                    {"success": record["final_success"], "cost_cny": 0.0,
+                     "calls": 0, "failure_kind": outcome1.failure_kind})
+                record["controller_update"] = upd
+                record["population_version_after"] = controller.population_version
             return _finalize(record, budget, t0)
 
         record["retried"] = True
@@ -199,14 +216,21 @@ def run_row(spec, arm, seed, judge, make_runner, *, rng, controller=None,
         record["final_status"] = outcome2.failure_kind
         record["abort_reason"] = (outcome2.failure_kind
                                   if outcome2.failure_kind in INFRA_KINDS else None)
+        record["attempt_2_provider_requests"] = (
+            budget.ledger.provider_attempts - calls_after_1)
+        record["attempt_2_cost_cny"] = round(
+            budget.ledger.known_cost_cny - cost_after_1, 10)
         if controller is not None:
             final_kind = outcome2.failure_kind
-            cost = (budget.ledger.known_cost_cny
+            # R1.10 Task D: only the intervention-INCREMENTAL cost/calls feed
+            # candidate fitness (attempt-1 costs never enter them).
+            cost = (record["attempt_2_cost_cny"]
                     if final_kind not in INFRA_KINDS else None)
+            calls_incremental = record["attempt_2_provider_requests"]
             upd = controller.observe(
                 episode_id, context, record["selected_genome_id"],
                 {"success": record["final_success"], "cost_cny": cost,
-                 "calls": budget.ledger.provider_attempts,
+                 "calls": calls_incremental,
                  "failure_kind": final_kind})
             record["controller_update"] = upd
             record["population_version_after"] = controller.population_version

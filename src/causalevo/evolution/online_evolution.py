@@ -24,7 +24,7 @@ import numpy as np
 from .genome import InterventionGenome
 from .nsga3 import nsga3_select
 
-CONTROLLER_VERSION = "cea-v2-r1.8"
+CONTROLLER_VERSION = "cea-v2.1-r1.10"
 INFRA_KINDS = ("unknown_cost", "budget_stop", "transport", "protocol")
 
 DEFAULT_CONFIG: dict[str, Any] = {
@@ -234,8 +234,10 @@ class OnlineEvolutionController:
             return
         fit = np.array([c.fitness_vector() for c in measured])
         n_parents = min(4, len(measured))
+        nsga3_parent_calls = 0
         if len(measured) > n_parents:
             sel = nsga3_select(fit, n_parents, self.rng)
+            nsga3_parent_calls += 1
             parents = [measured[i] for i in sel]
         else:
             parents = measured
@@ -264,6 +266,7 @@ class OnlineEvolutionController:
         # permanent immunity: over-capacity archives evict by NSGA-III over
         # measured candidates and by age/fitness for the rest, so the
         # phenotype space can never deadlock the controller.
+        nsga3_survivor_calls = 0
         over = len(self.population) - cfg["max_population"]
         if over > 0:
             measured_now = [c for c in self.population if c.measured]
@@ -273,6 +276,7 @@ class OnlineEvolutionController:
             if len(measured_now) > keep_n:
                 fit_now = np.array([c.fitness_vector() for c in measured_now])
                 keep_idx = nsga3_select(fit_now, keep_n, self.rng)
+                nsga3_survivor_calls += 1
                 measured_now = [measured_now[i] for i in keep_idx]
             self.population = measured_now + keep_unmeasured
         if len(self.population) > cfg["max_population"]:
@@ -288,6 +292,8 @@ class OnlineEvolutionController:
                             "offspring": [c.genome_id for c in offspring],
                             "offspring_attempts": attempts,
                             "phenotype_space_exhausted": attempts >= max_attempts,
+                            "nsga3_parent_selection_calls": nsga3_parent_calls,
+                            "nsga3_survivor_selection_calls": nsga3_survivor_calls,
                             "parents": [p.genome_id for p in parents]})
 
     # ---------- serialization / replay ----------

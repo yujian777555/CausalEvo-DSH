@@ -6,14 +6,14 @@
   "plan_id": "CE-DSH-P4-R1.10",
   "previous_plan_id": "CE-DSH-P4-R1.9",
   "phase": "Phase 4 R1.10",
-  "phase_status": "READY_FOR_EXECUTION",
+  "phase_status": "READY_FOR_REVIEW",
   "planner_review": "R1.9_REPORTED_EXPLORATORY_PILOT_ACCEPTED_WITH_REMEDIATION; NOT_INDEPENDENTLY_REPRODUCIBLE; NSGA3_SELECTION_NOT_EXERCISED_IN_LIVE_RUN",
-  "next_actor": "Kimi-Executor",
+  "next_actor": "GPT-Planner",
   "planner_review_date": "2026-10-26",
-  "executor_fix_date": "2026-10-25",
+  "executor_fix_date": "2026-10-26",
   "baseline_main_sha": "62d9738281b9f4c3186ef09ea711c61cb8ad361a",
-  "reviewed_executor_head": "62d9738281b9f4c3186ef09ea711c61cb8ad361a",
-  "live_readiness": "NO_NEW_LIVE_CALLS_AUTHORIZED; R1.9 user-authorized round reported CNY 1.463380 including unknown bound, under CNY 2.00 cap; request/ledger totals await independent reconciliation",
+  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
+  "live_readiness": "NO_NEW_LIVE_CALLS_AUTHORIZED (R1.10 offline remediation complete; any future live run needs a new explicit user budget authorization)",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_7-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
@@ -98,15 +98,8 @@
     "budget_cap_runtime_cny": 4.83,
     "new_live_calls_this_round": 0
   },
-  "blockers": [
-    "R1.9 task rows, controller events and proxy ledger JSONL are not present in the committed Git tree; sanitized projections must be recovered from original local files or marked unreproducible",
-    "R1.9 manifest rows=58 conflicts with analysis rows_total=208; row-level provider_calls sum to 699 while report decomposition says 693 formal-pilot requests",
-    "The sole live evolution event did not invoke NSGA-III selection: four measured candidates are all selected as parents and population size 8 does not exceed max_population 16",
-    "Controller fitness receives whole-episode cost/calls, including attempt 1, instead of incremental intervention cost/calls; no-op selections return without observe()",
-    "McNemar p-values operate on 52 task-seed pairs despite two seeds nested within 26 task clusters; add cluster-aware sensitivity analysis and use cluster-aware primary inference in future confirmatory work",
-    "status.json contains duplicate top-level blockers keys and stale R1.7 planner metadata"
-  ],
-  "blockers_note": "R1.9 live pilot is accepted only as a reported exploratory result with no demonstrated benefit. Independent source review found missing committed row/event/ledger evidence, unresolved count reconciliation, no live NSGA-III selection in the only evolve event, and whole-episode cost/call feedback. R1.10 is zero-API evidence reconciliation and algorithm-fidelity repair; no further live authorization.",
+  "blockers": [],
+  "blockers_note": "R1.9 independent-review issues are addressed in R1.10: sanitized 208-row/event/ledger projections committed with hashes (no missing originals); request and cost reconciliation completed with exact formulas (912 settled = 24+2+13+180+693; 699 = 693 SETTLED + 1 UNKNOWN + 5 REJECTED); the sole live evolve event invoked NSGA-III 0 times (instrumented now); incremental intervention cost/calls + no-op feedback implemented (CEA-v2.1) with tests; cluster-aware sensitivity analysis added (preregistered result preserved); status.json key uniqueness and metadata normalized. No currently open P0/P1 items at handback.",
   "limitations": [
     "575/575 full-suite result is executor-reported; GPT did not independently rerun tests",
     "clean-clone passed at 1f6c324af86c2d517358df823d757d426956150e, not at the current docs/status-only HEAD 8286d38d38d6c1812e26225031a85690852f0068",
@@ -141,7 +134,7 @@
     "tests/test_phase4_v2_offline.py"
   ],
   "notes": "R1.9 reported final success rates: B0 0.8269 / B1-random 0.9038 / B5-v1 0.9038 / CEA-v2-online 0.8654; no evidence of benefit. Reported round cost CNY 1.463380 incl unknown bound under CNY 2.00, but request/cost totals are not independently verifiable until sanitized source projections are committed. Do not claim live NSGA-III selection or incremental-cost optimization from R1.9.",
-  "next_goal": "R1.10: reconcile sanitized R1.9 task/event/ledger evidence and counts; correct algorithm-fidelity claims and future controller cost/no-op feedback; zero new API calls",
+  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.10",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -668,5 +661,24 @@
     "current_head_clean_clone_status": "NOT_INDEPENDENTLY_RERUN",
     "new_live_api_calls_authorized_for_next_phase": 0,
     "next_plan": "CE-DSH-P4-R1.10"
+  },
+  "phase4_r1_10": {
+    "new_live_calls": 0,
+    "new_spend_cny": 0,
+    "evidence_recovery": "results/phase4/r19-audit/: auditable_tasks.jsonl (208 rows), auditable_events.jsonl, auditable_ledger.jsonl (all R1.9 runs), manifest_reconciled.json (source+projection hashes); originals existed locally, no NOT_REPRODUCIBLE marking needed; narrow .gitignore exceptions only",
+    "reconciliation": "912 SETTLED = 24+2+13+180+693 (unique request_id final state); row-level provider_calls 699 = 693 proxy-SETTLED + 1 UNKNOWN (IncompleteRead fe088dd) + 5 REJECTED (gate-stopped); round cost 1.306339 settled + 0.157041 unknown bound = 1.463380 < 2.00; manifest rows corrected to rows_total=208 / rows_written_last_process=58",
+    "algorithm_fidelity": "sole live evolve event invoked NSGA-III 0 times (4 measured all became parents directly, no overflow); evolve events now record nsga3_parent/survivor_selection_calls with 3 regression tests; live pilot did crossover/mutation/population update only",
+    "controller_v2_1": "incremental intervention cost/calls after attempt-1 snapshot; no-op selection observed exactly once with zero incremental cost/calls; infra never behavioral reward; CONTROLLER_VERSION=cea-v2.1-r1.10; tests/test_incremental_fitness.py 4/4",
+    "sensitivity": "preregistered McNemar preserved; post-hoc cluster-aware sign-flip permutation on task means (26 clusters, both seeds together, 20000 permutations, seed 20261026): CEA-v2 vs B1 p=0.7462, vs B5-v1 p=0.62095, vs B0 p=0.7268; exploratory conclusion unchanged",
+    "gates": {
+      "evidence_recovered": "PASS",
+      "counts_reconciled": "PASS",
+      "nsga3_claim_corrected": "PASS (0 live invocations)",
+      "incremental_fitness_and_noop": "PASS",
+      "sensitivity_cluster_aware": "PASS",
+      "metadata_normalized": "PASS",
+      "zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
+    },
+    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
   }
 }

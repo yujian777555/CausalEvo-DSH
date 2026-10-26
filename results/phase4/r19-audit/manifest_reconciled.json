@@ -1,0 +1,84 @@
+{
+  "reconciled_by": "scripts/build_r19_audit.py",
+  "source_originals_sha256": {
+    "tasks.jsonl": "ae051b2195d6655eacdd4ab3b1e11636a072dac1dd4bb2d8a72a74f9e87dcb29",
+    "events.jsonl": "9fab748b58e193a759f4d47a9dbdada3bd4121108b9e1388fe0a8080bd5104c3",
+    "manifest.json": "c941c40b63c6611295f1bd51c2d7956611dff2fa2adc807862fd0fcfef65953f",
+    "ledger.canary_ok": "89ef21f3296cfe127517a988337946453591d604df46d905a002cbe4ade148e5",
+    "ledger.canary_unknown": "b95e08d9371162fde7b56968a9b0989746613cdef7e3277309c6f7ef340f2acb",
+    "ledger.run1_permission": "9581c9911fcf70c2d4fd323207fd3e79381b68607fa71700d0ce7c8c44ebe3c0",
+    "ledger.run2_livelock_stop": "307429a193c5c496f90d479ecdb17965091f29f2a4f30b9b71360fd24b913695",
+    "ledger.final_resumed": "0de752b789fea31af52f12c0d542809f7e0a7b37e5ec17275f4a97fe96f30a34"
+  },
+  "projections": {
+    "auditable_tasks.jsonl": {
+      "rows": 208,
+      "sha256": "14b1729801c15b46348a6c0b1f720a3e74971b1f4c637c0b769df48008aa27c3"
+    },
+    "auditable_events.jsonl": {
+      "rows": 5,
+      "sha256": "06a98681c8d2628e43328e069af9067f2d3f679d122670e5bf7bfaa923937f1f"
+    },
+    "auditable_ledger.jsonl": {
+      "rows": 2755,
+      "sha256": "467e005e8f26f0ace8520fd9e34cc38ab119313090ff29e35e848f16ad3aaac3"
+    }
+  },
+  "original_manifest_sha256": "c941c40b63c6611295f1bd51c2d7956611dff2fa2adc807862fd0fcfef65953f",
+  "rows_total": 208,
+  "rows_written_last_process": 58,
+  "per_run": {
+    "canary_ok": {
+      "run_id": "phase4-r19-canary-20261024T144121Z",
+      "settled_requests": 24,
+      "settled_cost_cny": 0.0291636192,
+      "unknown_bound_cny": 0.0
+    },
+    "canary_unknown": {
+      "run_id": "phase4-r19-canary-20261024T143120Z",
+      "settled_requests": 2,
+      "settled_cost_cny": 0.0055778736,
+      "unknown_bound_cny": 0.0
+    },
+    "run1_permission": {
+      "run_id": "phase4-r19-pilot-20261024T144512Z",
+      "settled_requests": 13,
+      "settled_cost_cny": 0.0153348924,
+      "unknown_bound_cny": 0.0
+    },
+    "run2_livelock_stop": {
+      "run_id": "phase4-r19-pilot-20261024T144813Z",
+      "settled_requests": 180,
+      "settled_cost_cny": 0.2613821832,
+      "unknown_bound_cny": 0.0
+    },
+    "final_resumed": {
+      "run_id": "phase4-r19-pilot-20261024T151323Z",
+      "settled_requests": 693,
+      "settled_cost_cny": 0.9948804852,
+      "unknown_bound_cny": 0.15704064
+    }
+  },
+  "total_settled_requests": 912,
+  "total_settled_cost_cny_peak": 1.3063390536,
+  "total_unknown_bound_cny": 0.15704064,
+  "round_total_with_unknown_bound": 1.4633796936,
+  "budget_cap_cny": 2.0,
+  "final_state_counts_by_unique_request_id": {
+    "SETTLED": 912,
+    "UNKNOWN": 1
+  },
+  "row_level_provider_calls_total": 699,
+  "formulas": {
+    "total_settled_requests": "24 (canary_ok) + 2 (canary_unknown) + 13 (run1) + 180 (run2) + 693 (final_resumed) = 912",
+    "row_level_provider_calls": "699 = 693 (proxy SETTLED) + 1 UNKNOWN (IncompleteRead fe088dd) + 5 REJECTED (gate-stopped) = 699",
+    "round_cost": "1.3063390536 (settled) + 0.15704064 (unknown upper bound) = 1.4633796936",
+    "aborted_scope_attempts": "6 attempts on the IncompleteRead-aborted row (1 UNKNOWN + 5 REJECTED, zero SETTLED) explain the entire 699-693=6 gap"
+  },
+  "field_definitions": {
+    "provider_calls(row)": "provider attempts extracted from the agent runtime events for that row (settled + unmetered)",
+    "settled_requests": "unique request_ids whose final state is SETTLED in the proxy ledger",
+    "unknown_bound_cny": "worst-case reservation for RESERVED/SENT requests without SETTLED/REJECTED (cost unknown)",
+    "no_secret_fields": "no request/response bodies, prompts, keys, Authorization or raw session logs are emitted"
+  }
+}
