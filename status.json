@@ -3,17 +3,17 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4-R1.11-FIX1",
-  "previous_plan_id": "CE-DSH-P4-R1.11",
-  "phase": "Phase 4 R1.11-FIX1",
+  "plan_id": "CE-DSH-P4-R1.11-FIX1-R1.12",
+  "previous_plan_id": "CE-DSH-P4-R1.11-FIX1",
+  "phase": "Phase 4 R1.11-FIX1 → R1.12 fresh-seed replication",
   "phase_status": "READY_FOR_EXECUTION",
-  "planner_review": "R1.11_REQUEST_CHANGES_HISTORICAL_ESTIMATES_STATUS_AND_EXACT_SHA_GATE",
+  "planner_review": "R1.11-FIX1_REQUIRED_BEFORE_R1.12_LIVE; USER_REQUESTED_NEW_REPLICATION_WITH_CNY_2.00_CUMULATIVE_CAP",
   "next_actor": "Kimi-Executor",
   "planner_review_date": "2026-10-26",
   "executor_fix_date": "2026-10-26",
-  "baseline_main_sha": "d92165c321a670c723f01f616be8b5703386bc7a",
-  "reviewed_executor_head": "d92165c321a670c723f01f616be8b5703386bc7a",
-  "live_readiness": "NO_NEW_LIVE_CALLS_AUTHORIZED; offline-only R1.11-FIX1; no Phase 5 or paid pilot",
+  "baseline_main_sha": "4f60c4e400fe0f47bf822e9ded0d652be38e88e0",
+  "reviewed_executor_head": "4f60c4e400fe0f47bf822e9ded0d652be38e88e0",
+  "live_readiness": "USER_REQUESTED_R1.12_REPLICATION; LIVE_NOT_YET_READY; FIX1, pre-registration, security and cumulative budget gates must pass before first request",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_11-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
@@ -33,9 +33,9 @@
     "failed": 0,
     "skipped": 0,
     "planner_reran": false,
-    "count_note": "R1.11 full suite: 631 passed / 0 failed / 0 skipped (Executor-reported; GPT did not independently rerun)",
+    "count_note": "R1.11 executor-reported full suite: 631 passed / 0 failed / 0 skipped; not independently rerun by GPT. R1.12 test counts pending execution.",
     "categories": {
-      "unit_integration_full_suite": "631/631 (Executor-reported; not independently rerun by GPT)",
+      "unit_integration_full_suite": "R1.11: 631/631 Executor-reported; R1.12 full-suite pending",
       "online_evolution_controller": "tests/test_online_evolution.py 19/19 (Executor-reported)",
       "cea_v2_agent_smoke": "tests/test_cea_v2_integration.py 6/6",
       "cea_v2_synthetic_driver": "tests/test_cea_v2_offline.py 14/14",
@@ -49,14 +49,15 @@
       "docker_e2e_proxy_chain": "tests/test_proxy_integration_e2e.py 8/8 (incl. stale-control resume regression)",
       "algorithm_adapter": "tests/test_causal_policy_adapter.py 19/19",
       "v2_offline_driver": "tests/test_phase4_v2_offline.py 7/7",
-      "clean_clone": "Executor-reported PASS at 3ecd7691e8d93d8357b60531e1722b1d5ba4e044; current docs-only HEAD d92165c321a670c723f01f616be8b5703386bc7a not tested",
+      "clean_clone": "Historical Executor-reported PASS at 3ecd7691e8d93d8357b60531e1722b1d5ba4e044; current HEAD 4f60c4e400fe0f47bf822e9ded0d652be38e88e0 untested",
       "frozen_integrity": "test_live_csv_consistency/test_phase4_integrity etc. pass",
-      "incremental_fitness": "tests/test_incremental_fitness.py 4/4 (Executor-reported)"
+      "incremental_fitness": "tests/test_incremental_fitness.py 4/4 (Executor-reported)",
+      "r12_replication": "NOT_RUN"
     },
-    "planner_reviewed_head": "d92165c321a670c723f01f616be8b5703386bc7a",
+    "planner_reviewed_head": "4f60c4e400fe0f47bf822e9ded0d652be38e88e0",
     "clean_clone_tested_sha": "3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
-    "current_remote_head": "d92165c321a670c723f01f616be8b5703386bc7a",
-    "final_head_clean_clone_status": "Executor reports exact-SHA clean-clone PASS at code/data commit 3ecd7691e8d93d8357b60531e1722b1d5ba4e044. Current docs-only HEAD d92165c321a670c723f01f616be8b5703386bc7a has not been tested; R1.11-FIX1 must run the gate on its exact final origin/main SHA and then stop without further commits."
+    "current_remote_head": "4f60c4e400fe0f47bf822e9ded0d652be38e88e0",
+    "final_head_clean_clone_status": "Current HEAD 4f60c4e400fe0f47bf822e9ded0d652be38e88e0 has not been clean-clone tested. R1.11-FIX1 must test its exact SHA; R1.12 must also run the final gate on the exact final origin/main SHA after all experiment artifacts are committed."
   },
   "live_api": {
     "run": true,
@@ -100,18 +101,18 @@
     "new_live_calls_this_round": 0
   },
   "blockers": [
-    "Current sensitivity.json has previous_monte_carlo_estimates={} despite the prior R1.10 artifact containing three estimates; generator reads its own output and loses these records after regeneration",
-    "status.json remains stale: current_remote_head is 3ecd769 but remote HEAD is d92165c; clean_clone_tested_sha and final_head_clean_clone_status are also stale; limitations still say 623 tests",
-    "Exact-current-HEAD clean-clone gate was required but reported only at code/data SHA 3ecd769; current docs-only HEAD d92165c was not tested"
+    "R1.11-FIX1: restore the three historical Monte Carlo estimates from immutable R1.10 source and strengthen repeated-regeneration tests",
+    "R1.11-FIX1: normalize status metadata and run clean-clone against the exact FIX1 SHA before proceeding",
+    "R1.12: pre-register and test fresh-seed runner/analysis, verify cumulative budget enforcement across canary and any resume before the first live request"
   ],
-  "blockers_note": "Independent review confirmed exact cluster p-values and ledger arithmetic. R1.11 needs a small correction: preserve historical Monte Carlo estimates through repeated regeneration, normalize metadata, and run the clean-clone gate against the exact final current origin/main SHA. No API calls or spend authorized.",
+  "blockers_note": "The user explicitly requested a new experiment. This plan authorizes one new live same-suite replication with a cumulative hard cap of CNY 2.00, but R1.11-FIX1 and all pre-live gates are mandatory first. If any gate fails, do not send a real request.",
   "limitations": [
-    "GPT did not independently rerun local pytest; 631 passed / 0 failed / 0 skipped is Executor-reported",
-    "Clean-clone was reported passing at code/data SHA 3ecd7691e8d93d8357b60531e1722b1d5ba4e044; current docs-only HEAD d92165c321a670c723f01f616be8b5703386bc7a was not clean-clone tested",
-    "R1.9 is exploratory only; CEA-v2 has no evidence of superiority over random/static baselines",
+    "GPT has not independently run local pytest; 631 passed / 0 failed / 0 skipped remains Executor-reported for R1.11",
+    "Current main SHA 4f60c4e400fe0f47bf822e9ded0d652be38e88e0 has not passed clean-clone; historical reported pass was at 3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
+    "R1.9 CEA-v2 did not show improvement over random/static baselines; R1.12 is a fresh-seed replication, not unseen-task generalization",
     "L4 recursive self-improvement is not implemented",
-    "The proxy ledger lacks per-request token buckets/pricing-tier details; settled-cost and UNKNOWN-bound arithmetic is reproducible, but per-request token-level repricing is not",
-    "Exact cluster sensitivity is reproducible, but the historical 20,000-permutation estimates are currently missing from previous_monte_carlo_estimates and must be restored"
+    "The proxy ledger lacks per-request token buckets/pricing-tier details; per-request token-level repricing is not reproducible",
+    "Historical NSGA-III selection calls in R1.9 were zero, reconstructed from source/state; R1.12 must use live event counters and must not claim selection unless counters are positive"
   ],
   "evidence": [
     "scripts/clean_clone_check.py",
@@ -139,7 +140,7 @@
     "tests/test_phase4_v2_offline.py"
   ],
   "notes": "R1.11 source review: exact cluster p-values independently recomputed from 208 task rows and all 2^26 sign assignments; 26 clusters each retain both seeds. Ledger independently reconciles to CNY 1.4633796936 including UNKNOWN bound. Current output does not preserve historical Monte Carlo estimates (empty object), and current status metadata still refers to prior SHAs/counts. No performance improvement evidence; no live API calls authorized.",
-  "next_goal": "R1.11-FIX1: restore immutable prior Monte Carlo estimates, make the sensitivity generator idempotent without losing them, normalize status metadata, and run the exact-current-HEAD clean-clone gate",
+  "next_goal": "First close R1.11-FIX1 offline blockers; then, only after protocol/security/budget gates pass, run the pre-registered R1.12 fresh-seed same-suite replication within a new cumulative CNY 2.00 cap.",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -825,6 +826,36 @@
     "executor_reported_clean_clone_sha": "3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
     "current_head_clean_clone": "NOT_RUN_AT d92165c321a670c723f01f616be8b5703386bc7a",
     "new_live_api_calls_authorized": 0,
-    "next_plan": "CE-DSH-P4-R1.11-FIX1"
+    "next_plan": "CE-DSH-P4-R1.11-FIX1-R1.12",
+    "notes": "Historical R1.11 review remains immutable; user has now requested a separate R1.12 replication subject to the new plan's gates and CNY 2.00 cap."
+  },
+  "r1_12_authorization": {
+    "user_message": "快点进行实验吧",
+    "authorization_interpreted": "One new live DeepSeek same-suite replication after all gates pass",
+    "new_run_cumulative_hard_cap_cny": 2,
+    "warning_cny": 1.8,
+    "prior_r19_spend_cny": 1.4633796936,
+    "prior_spend_is_historical_not_resettable": true,
+    "balance_query_authorized": false,
+    "phase5_authorized": false,
+    "notes": "No spend beyond CNY 2.00 for the new run; no cap reset via run IDs/restarts; if budget enforcement cannot be demonstrated, stop before any live call."
+  },
+  "r1_12_protocol": {
+    "path": "docs/PHASE4_R1_12_REPLICATION_PROTOCOL.md",
+    "planned_rows": 208,
+    "tasks": 26,
+    "seeds": [
+      20261027,
+      20261028
+    ],
+    "arms": [
+      "B0-original",
+      "B1-random",
+      "B5-v1-frozen-pareto",
+      "CEA-v2-online (CEA-v2.1 semantics)"
+    ],
+    "primary": "CEA-v2.1 online vs B1-random; exact cluster sign-flip + 10,000-resample task-cluster bootstrap",
+    "status": "protocol must be committed before any R1.12 live calls; experiment NOT YET RUN",
+    "scope_limit": "same-suite fresh-seed replication, not unseen-task generalization"
   }
 }

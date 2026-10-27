@@ -1,70 +1,90 @@
-# CE-DSH-P4-R1.11-FIX1 — Preserve Historical Estimates and Close Final-SHA Gate
+# CE-DSH-P4-R1.11-FIX1 + R1.12 — Fix Audit Blockers, Then Run a Bounded Live Replication
 
-Baseline: \`d92165c321a670c723f01f616be8b5703386bc7a\`
-Independent review: \`planner/reviews/CE-DSH-P4-R1_11-independent-review.md\`
+Baseline: `4f60c4e400fe0f47bf822e9ded0d652be38e88e0`
+Independent review: `planner/reviews/CE-DSH-P4-R1_11-independent-review.md`
 
-## Hard boundary
+## Authorization and hard budget boundary
 
-**Offline-only. Zero real DeepSeek API calls, zero new spend, no balance queries.** Do not run \`--live\`, \`--canary\`, or any model request. Do not enter Phase 5 or a paid pilot.
+The user explicitly requested on 2026-10-27: “快点进行实验吧”. Proceed with one new real DeepSeek replication after all gates pass. Because no new amount was specified, use the previous conservative ceiling as the new-run limit: **CNY 2.00 cumulative for this new run only**. Historical R1.9 spend (CNY 1.4633796936 including UNKNOWN bound) is historical and must not be altered or mixed into the new run.
 
-## Task A — Restore and preserve R1.10 Monte Carlo estimates
+- New-run warning line: CNY 1.80; cumulative hard stop: CNY 2.00.
+- Count canary, all attempts, interruptions, resumes, settled charges and UNKNOWN reservation upper bounds. Never reset the cap by changing run IDs or restarting the proxy. If multiple ledgers are unavoidable, use a parent authorization ledger and reduce each new run's cap to the remaining amount.
+- Unknown cost, corrupted ledger, ambiguous in-flight request, provider 5xx, SSE/transport failure or protocol error: stop all live activity; never retry the uncertain request.
+- Do not query account balance. If a mandatory path cannot run without a balance query, stop before the first live request and report the blocker.
+- No key in the agent container, argv, Git, logs or artifacts. No spending above CNY 2.00; no automatic top-up; no Phase 5.
+- **R1.11-FIX1 and all pre-live gates must pass before the first new API request.** If any fail, no live call.
 
-The current \`sensitivity.json\` has an empty \`previous_monte_carlo_estimates\` object. Restore the three historical records from \`sensitivity.json\` at commit \`2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e\`:
+## Stage 1 — Mandatory R1.11-FIX1 (offline only)
 
-- CEA-v2 vs B1-random: p=0.7462, stat=-0.038461538461538464, n_clusters=26, n_permutations=20000, seed=20261026.
-- CEA-v2 vs B5-v1-frozen-pareto: p=0.62095, stat=-0.038461538461538464, n_clusters=26, n_permutations=20000, seed=20261026.
-- CEA-v2 vs B0-original: p=0.7268, stat=0.038461538461538464, n_clusters=26, n_permutations=20000, seed=20261026.
+1. Restore the three historical estimates from the immutable R1.10 artifact at commit `2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e`:
+   - CEA-v2 vs B1: p=0.7462, stat=-0.038461538461538464, n_clusters=26, n_permutations=20000, seed=20261026.
+   - CEA-v2 vs B5: p=0.62095, stat=-0.038461538461538464, n_clusters=26, n_permutations=20000, seed=20261026.
+   - CEA-v2 vs B0: p=0.7268, stat=0.038461538461538464, n_clusters=26, n_permutations=20000, seed=20261026.
+2. Put them in a stable immutable source with provenance. Never rely on reading the generated `sensitivity.json` as their sole source.
+3. Strengthen tests to assert exact historical records and metadata; run the generator twice; prove byte-identical output and preservation after both runs.
+4. Keep exact DP p-values unchanged: 0.75, 0.625, 0.7265625, 1.0. Update all manifest hashes.
+5. Normalize `status.json`, preserving historical R1.10/R1.11 records. Distinguish code/data SHA from docs-only SHA and actual clean-clone-tested SHA. 631 prior test passes remain Executor-reported; GPT has not rerun local pytest.
+6. Run focused and full tests. Run clean-clone on the exact FIX1 SHA. If any gate fails, stop without live calls.
 
-Use a stable source of truth: either add a small immutable historical-estimates artifact with provenance and a manifest hash, or define a clearly documented frozen constant copied from the historical artifact. Do **not** read the generated \`sensitivity.json\` as the sole source of the previous estimates; that design loses the records after a second run.
+## Stage 2 — Pre-register R1.12 before any API request
 
-Update \`scripts/analyze_r19_cluster_sensitivity.py\` so every run emits the same exact results **and** all three historical estimates. Update \`results/phase4/r19-audit/sensitivity.json\` and \`manifest_reconciled.json\` hashes accordingly.
+Commit `docs/PHASE4_R1_12_REPLICATION_PROTOCOL.md`, runner changes and tests **before the canary**.
 
-Strengthen \`tests/test_cluster_sensitivity.py\`:
-- assert all three exact historical records and metadata are present, not merely that the key exists;
-- run generation twice and assert byte-identical output;
-- after both runs, assert the historical estimates remain unchanged;
-- retain the current exact p-value, cluster/seed, validation, tie-handling and post-hoc-label tests.
+### Scope and rows
 
-## Task B — Normalize status metadata
+- This is a **fresh-seed replication on the same 26-task microbenchmark suite**, not unseen-task generalization. R1.9 task IDs are reused; only seeds/run IDs change.
+- Tasks: all 26 frozen tasks under `benchmarks/tasks/`; canonical manifest SHA-256 must remain `fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483`.
+- New seeds: `20261027`, `20261028`. Add an explicit CLI/config argument if needed; preserve the historical default seeds and all historical artifacts.
+- Arms: B0-original, B1-random, B5-v1-frozen-pareto, and the online controller using R1.10 CEA-v2.1 incremental-fitness/no-op-feedback semantics. Preserve code-compatible arm identifiers if needed, but record algorithm/policy version unambiguously.
+- Planned main data: 26 tasks × 2 seeds × 4 arms = 208 rows. Canary is excluded from efficacy analysis but counts against the same cumulative cap.
+- New outputs go under a unique R1.12 run directory. Never overwrite or merge historical R1.9/R1.10/R1.11 data or ledgers.
 
-Update \`status.json\` against the current baseline \`d92165c321a670c723f01f616be8b5703386bc7a\`:
+### Frozen analysis
 
-- Set the current planner-review state to \`R1.11_REQUEST_CHANGES_HISTORICAL_ESTIMATES_STATUS_AND_EXACT_SHA_GATE\` (or equivalent explicit wording).
-- Set \`phase_status=READY_FOR_EXECUTION\`, \`next_actor=Kimi-Executor\`, \`baseline_main_sha\` to this fix-round baseline, and \`review_path=planner/reviews/CE-DSH-P4-R1_11-independent-review.md\`.
-- Distinguish the R1.11 code/data commit \`3ecd7691e8d93d8357b60531e1722b1d5ba4e044\` from the current docs-only HEAD \`d92165c321a670c723f01f616be8b5703386bc7a\`.
-- Update \`tests.current_remote_head\`, \`tests.planner_reviewed_head\`, \`tests.clean_clone_tested_sha\`, and \`tests.final_head_clean_clone_status\` without claiming that d92165c has already been tested.
-- Correct all stale 623-pass limitations to 631 Executor-reported passes / 0 failures / 0 skips. State explicitly that GPT has not independently rerun pytest.
-- Preserve R1.10 and R1.11 historical metadata in explicit history fields; do not erase old audit trail.
-- Update \`blockers\`, \`limitations\`, \`notes\`, \`next_goal\`, \`reviewed_executor_head\`, and test categories so the status has one coherent interpretation.
+- Primary endpoint: binary `final_success`, fixed planned denominator; classify infrastructure/UNKNOWN outcomes explicitly and never silently drop them or reward infrastructure failures.
+- Primary comparison: CEA-v2.1 online vs B1-random.
+- Primary statistic: task-cluster paired mean difference, both seeds kept together; exact two-sided sign-flip test over 26 clusters plus 10,000-resample task-cluster bootstrap 95% CI.
+- Secondary comparisons: CEA-v2.1 vs B5, CEA-v2.1 vs B0, B5 vs B1; Holm-correct secondary p-values.
+- Practical improvement claim only if primary difference ≥ +0.10, exact cluster-aware p < 0.05, and 95% CI lower bound > 0. Otherwise say “no evidence of improvement.”
+- Report success rates, paired differences, p-values/CIs, discordant task clusters, calls/tokens/cost/latency, online update counts and NSGA-III selection counters.
+- 26 clusters may be underpowered. No unseen-task generalization or L4 RSI claim.
 
-## Task C — Verification and final-SHA gate
+### Algorithm fidelity
 
-- Run the sensitivity generator twice; verify identical output bytes and verify all historical estimates remain populated.
-- Run \`pytest tests/test_cluster_sensitivity.py -q\`, \`tests/test_analyze_r19.py\`, \`tests/test_online_evolution.py\`, and \`tests/test_incremental_fitness.py\`.
-- Run full \`pytest tests/ -q\`; report exact current counts rather than assuming 631.
-- Recheck 208 unique task rows, 26 clusters with both seeds, 2,755 ledger transitions, contiguous \`seq\` within each run, 912 SETTLED, one UNKNOWN, CNY 1.3063390536 settled + CNY 0.15704064 UNKNOWN bound = CNY 1.4633796936.
-- Recompute the sensitivity script/output SHA-256 and update \`manifest_reconciled.json\`.
-- Verify frozen hashes, Phase 0–3 and historical task projection unchanged; run secret scan and inspect final diff.
-- Push all code, tests, manifest, output, docs and status changes.
-- Run \`python scripts/clean_clone_check.py <EXACT_CURRENT_ORIGIN_MAIN_SHA>\` **after the last commit has been pushed**. The exact current \`origin/main\` SHA must match the tested SHA.
-- Do not create another commit after the exact-current-HEAD gate. Report the exact tested SHA and output in the final response. If any commit is made after the gate, rerun it against the new HEAD.
+- Run fake-provider end-to-end tests before live.
+- Verify incremental attempt-2 cost/calls, no-op observation exactly once, and no learning from infrastructure/UNKNOWN outcomes.
+- Record `nsga3_parent_selection_calls` and `nsga3_survivor_selection_calls` from live event logs. Claim NSGA-III selection only if the actual counters are positive. If both remain zero, report that; do not change parameters or rerun after seeing outcomes to force a call.
+- Do not tune weights, mutation, intervention mapping, task selection or analysis based on new outcomes.
 
-If the estimates are still empty, any historical outcome/hash changes unexpectedly, status fields conflict, or the exact-SHA gate fails, stop and report BLOCKED.
+## Stage 3 — Live gates and run
 
-## Deliverables
+1. After all code/tests/protocol are committed, verify remote HEAD and frozen hashes; run focused/full tests and clean-clone against the exact pre-live SHA.
+2. Verify live authorization, secret isolation, provider allowlist/HTTPS, proxy auth, request validation, atomic reservation, resume/reconciliation and fail-closed behavior. No real key in agent space or argv.
+3. Run one minimal canary first. Count all canary spend/UNKNOWN bound against the new CNY 2.00 cumulative cap. Continue only after authentication, usage accounting and ledger reconciliation pass.
+4. Run the 208-row replication with the new seeds. Do not exceed CNY 1.80 warning / CNY 2.00 hard cap. If cumulative accounting cannot be enforced across canary/interruption/resume, do not start live.
+5. No retry after unknown cost, no ledger resets, and no reconciliation that erases settled spend. If truncated, report actual coverage and stop; no top-up.
 
-- Corrected sensitivity generator/output with all historical Monte Carlo records preserved.
-- Strong regression tests proving preservation and byte-identical regeneration.
-- Updated manifest with accurate script/output/historical-artifact hashes and token limitation.
-- Consistent status metadata and executor report.
-- Exact final-SHA clean-clone evidence and final test counts.
+## Stage 4 — Analysis and final gate
 
-## Required final answers
+- Add a separate R1.12 analysis script; do not alter historical R1.9 analysis semantics. Reject missing/duplicate task-seed-arm keys before analysis.
+- Recompute outcomes and cluster-aware statistics deterministically from committed R1.12 rows.
+- Reconcile every new ledger, including canary/interrupted/resumed runs; settled + UNKNOWN bound must remain ≤ CNY 2.00.
+- Preserve Phase 0–3, historical 312 rows and R1.9's 208 rows byte-for-byte. Verify hashes, secret scan, status consistency and diff.
+- Run full `pytest tests/ -q` and clean-clone against the **exact final origin/main SHA after the last commit**. No commits after the final gate; if any commit is made, rerun it.
+- Report exact final SHA, actual API calls, settled spend, UNKNOWN bound, cumulative spend, row coverage, NSGA-III counts, statistics, test count and clean-clone output.
 
-1. Are the three historical Monte Carlo records present after two generator runs?
-2. Are the output bytes identical and do exact p-values remain 0.75, 0.625, 0.7265625 and 1.0?
-3. Are status fields consistent with the current HEAD and the actual clean-clone-tested SHA?
-4. What are the exact final SHA, clean-clone result and test counts?
-5. Are frozen data and spend unchanged, with zero API calls?
+## Stop conditions
 
-Next actor: GPT-Planner.
+If Stage 1 fails, the protocol is not committed, the budget cannot be enforced, the secret/proxy gate fails, or canary accounting is uncertain, stop without any further live calls. No Phase 5.
+
+## Required final response
+
+1. Are all three historical estimates retained after two byte-identical regenerations?
+2. Did exact-SHA clean-clone pass before live?
+3. Actual new API calls and settled + UNKNOWN-bound spend?
+4. Completed rows out of 208; are task/seed/arm keys complete and unique?
+5. Exact live NSGA-III parent/survivor call counts?
+6. Primary cluster-aware difference, exact p, 95% CI and Holm-adjusted secondary results?
+7. Frozen historical data, full tests and final-SHA clean-clone status?
+
+Next actor: Kimi-Executor.
