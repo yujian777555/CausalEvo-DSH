@@ -12,7 +12,7 @@
   "planner_review_date": "2026-10-26",
   "executor_fix_date": "2026-10-26",
   "baseline_main_sha": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
-  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
+  "reviewed_executor_head": "3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
   "live_readiness": "NO_NEW_LIVE_CALLS_AUTHORIZED; R1.9 reported spend CNY 1.4633796936 including UNKNOWN bound under CNY 2.00; no Phase 5 or paid pilot authorized",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_10-independent-review.md",
@@ -20,7 +20,7 @@
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
+    "latest_executor_commit": "3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
     "github_commit_verified": true,
     "executor_reports_local_clean": true,
     "note": "R1.10 code/data commit 5d5777c passed clean-clone per Executor report; docs/status-only follow-up 2bb9e5c was not clean-clone tested. GPT did not rerun local tests.",
@@ -55,7 +55,7 @@
     },
     "planner_reviewed_head": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
     "clean_clone_tested_sha": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
-    "current_remote_head": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
+    "current_remote_head": "3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
     "final_head_clean_clone_status": "Code/data SHA 5d5777c80713356e2c0e2049e94e8499f8dc16dd passed clean-clone per Executor report; current docs-only HEAD 2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e was not clean-clone tested; R1.11 must test exact final SHA."
   },
   "live_api": {
@@ -756,6 +756,6 @@
       "status_metadata_consistent": "PASS",
       "zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
     },
-    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
+    "clean_clone_final": "PASS at 3ecd7691e8d93d8357b60531e1722b1d5ba4e044: 'CLEAN CLONE OK: HEAD 3ecd7691e8d9 == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 208 key-suite tests passed (exit 0; includes test_cluster_sensitivity exact DP). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)"
   }
 }
