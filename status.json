@@ -12,7 +12,7 @@
   "planner_review_date": "2026-10-26",
   "executor_fix_date": "2026-10-26",
   "baseline_main_sha": "4f60c4e400fe0f47bf822e9ded0d652be38e88e0",
-  "reviewed_executor_head": "4f60c4e400fe0f47bf822e9ded0d652be38e88e0",
+  "reviewed_executor_head": "e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7",
   "live_readiness": "USER_REQUESTED_R1.12_REPLICATION; LIVE_NOT_YET_READY; FIX1, pre-registration, security and cumulative budget gates must pass before first request",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_11-independent-review.md",
@@ -20,7 +20,7 @@
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
+    "latest_executor_commit": "e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7",
     "github_commit_verified": true,
     "executor_reports_local_clean": true,
     "note": "R1.10 code/data commit 5d5777c passed clean-clone per Executor report; docs/status-only follow-up 2bb9e5c was not clean-clone tested. GPT did not rerun local tests.",
@@ -56,7 +56,7 @@
     },
     "planner_reviewed_head": "4f60c4e400fe0f47bf822e9ded0d652be38e88e0",
     "clean_clone_tested_sha": "3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
-    "current_remote_head": "4f60c4e400fe0f47bf822e9ded0d652be38e88e0",
+    "current_remote_head": "e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7",
     "final_head_clean_clone_status": "Current HEAD 4f60c4e400fe0f47bf822e9ded0d652be38e88e0 has not been clean-clone tested. R1.11-FIX1 must test its exact SHA; R1.12 must also run the final gate on the exact final origin/main SHA after all experiment artifacts are committed."
   },
   "live_api": {
@@ -889,6 +889,6 @@
     "online_updates": {"behavioral_observations": 5, "distinct_selected_genomes": 5,
                        "distinct_population_versions": [0, 1]},
     "evidence_class": "fresh-seed same-suite replication; exploratory; NOT unseen-task generalization; L4 RSI not implemented",
-    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
+    "clean_clone_final": "PASS at e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7: 'CLEAN CLONE OK: HEAD e1df3bdee14f == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 214 key-suite tests passed (exit 0; includes analyze_r12 and round_spend). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)"
   }
 }
