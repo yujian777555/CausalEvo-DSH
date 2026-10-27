@@ -1,90 +1,68 @@
-# CE-DSH-P4-R1.11-FIX1 + R1.12 — Fix Audit Blockers, Then Run a Bounded Live Replication
+# CE-DSH-P4-R1.12-REVIEW-FIX1 — Offline Audit Closure
 
-Baseline: `4f60c4e400fe0f47bf822e9ded0d652be38e88e0`
-Independent review: `planner/reviews/CE-DSH-P4-R1_11-independent-review.md`
+Reviewed baseline: `6b9a0a7070d98ce706d37aa1dc0a8b97051c7983`
+Review: `planner/reviews/CE-DSH-P4-R1_12-independent-review.md`
+Decision: **REQUEST CHANGES**.
+Next actor: Kimi-Executor.
 
-## Authorization and hard budget boundary
+## Absolute boundary
 
-The user explicitly requested on 2026-10-27: “快点进行实验吧”. Proceed with one new real DeepSeek replication after all gates pass. Because no new amount was specified, use the previous conservative ceiling as the new-run limit: **CNY 2.00 cumulative for this new run only**. Historical R1.9 spend (CNY 1.4633796936 including UNKNOWN bound) is historical and must not be altered or mixed into the new run.
+**Offline-only. Zero new real API calls and zero new spend. Do not rerun the live experiment, do not query account balance, and do not enter Phase 5.** The R1.12 experiment is complete; this plan fixes reproducibility, analysis correctness and final-SHA evidence only.
 
-- New-run warning line: CNY 1.80; cumulative hard stop: CNY 2.00.
-- Count canary, all attempts, interruptions, resumes, settled charges and UNKNOWN reservation upper bounds. Never reset the cap by changing run IDs or restarting the proxy. If multiple ledgers are unavoidable, use a parent authorization ledger and reduce each new run's cap to the remaining amount.
-- Unknown cost, corrupted ledger, ambiguous in-flight request, provider 5xx, SSE/transport failure or protocol error: stop all live activity; never retry the uncertain request.
-- Do not query account balance. If a mandatory path cannot run without a balance query, stop before the first live request and report the blocker.
-- No key in the agent container, argv, Git, logs or artifacts. No spending above CNY 2.00; no automatic top-up; no Phase 5.
-- **R1.11-FIX1 and all pre-live gates must pass before the first new API request.** If any fail, no live call.
+## Task A — Add verifiable hashes to the run manifests
 
-## Stage 1 — Mandatory R1.11-FIX1 (offline only)
+The frozen protocol requires the analysis script and output hashes in the R1.12 manifest. The current manifest contains only the controller config hash.
 
-1. Restore the three historical estimates from the immutable R1.10 artifact at commit `2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e`:
-   - CEA-v2 vs B1: p=0.7462, stat=-0.038461538461538464, n_clusters=26, n_permutations=20000, seed=20261026.
-   - CEA-v2 vs B5: p=0.62095, stat=-0.038461538461538464, n_clusters=26, n_permutations=20000, seed=20261026.
-   - CEA-v2 vs B0: p=0.7268, stat=0.038461538461538464, n_clusters=26, n_permutations=20000, seed=20261026.
-2. Put them in a stable immutable source with provenance. Never rely on reading the generated `sensitivity.json` as their sole source.
-3. Strengthen tests to assert exact historical records and metadata; run the generator twice; prove byte-identical output and preservation after both runs.
-4. Keep exact DP p-values unchanged: 0.75, 0.625, 0.7265625, 1.0. Update all manifest hashes.
-5. Normalize `status.json`, preserving historical R1.10/R1.11 records. Distinguish code/data SHA from docs-only SHA and actual clean-clone-tested SHA. 631 prior test passes remain Executor-reported; GPT has not rerun local pytest.
-6. Run focused and full tests. Run clean-clone on the exact FIX1 SHA. If any gate fails, stop without live calls.
+- Add SHA-256 values for the frozen protocol, `scripts/analyze_r12_replication.py`, pilot `tasks.jsonl`, `events.jsonl`, `proxy-ledger/ledger.jsonl`, `controller_state.json`, and `analysis.json`.
+- Include canary task/event/ledger artifacts and its manifest hash in the pilot's cross-run provenance or a parent round manifest. Do not self-hash a manifest inside itself.
+- Add a deterministic verifier/test that recomputes every listed SHA-256 from the committed bytes and fails on a mismatch.
+- Do not rewrite raw task/event/ledger rows. If a manifest must change after adding hash fields, recompute and verify all referenced artifact hashes.
 
-## Stage 2 — Pre-register R1.12 before any API request
+## Task B — Correct the preregistered statistical family
 
-Commit `docs/PHASE4_R1_12_REPLICATION_PROTOCOL.md`, runner changes and tests **before the canary**.
+In `scripts/analyze_r12_replication.py`:
 
-### Scope and rows
+- Keep CEA-v2-online vs B1-random as the primary comparison; report its exact p unadjusted and use that p in the primary decision rule.
+- Apply Holm only to the three preregistered secondary comparisons.
+- Implement proper Holm adjusted p-values with the cumulative maximum over sorted step-down adjusted values.
+- Add tests covering a nontrivial p-value ordering, the monotonic adjusted-p invariant, and exclusion of the primary from the secondary correction family.
+- Keep the frozen task-cluster estimand, exact sign-flip calculation, bootstrap seed/method and observed raw data unchanged. Do not change analysis after looking for a better outcome.
 
-- This is a **fresh-seed replication on the same 26-task microbenchmark suite**, not unseen-task generalization. R1.9 task IDs are reused; only seeds/run IDs change.
-- Tasks: all 26 frozen tasks under `benchmarks/tasks/`; canonical manifest SHA-256 must remain `fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483`.
-- New seeds: `20261027`, `20261028`. Add an explicit CLI/config argument if needed; preserve the historical default seeds and all historical artifacts.
-- Arms: B0-original, B1-random, B5-v1-frozen-pareto, and the online controller using R1.10 CEA-v2.1 incremental-fitness/no-op-feedback semantics. Preserve code-compatible arm identifiers if needed, but record algorithm/policy version unambiguously.
-- Planned main data: 26 tasks × 2 seeds × 4 arms = 208 rows. Canary is excluded from efficacy analysis but counts against the same cumulative cap.
-- New outputs go under a unique R1.12 run directory. Never overwrite or merge historical R1.9/R1.10/R1.11 data or ledgers.
+The present primary exact p is 1.0 and the present conclusion remains “no evidence of improvement.”
 
-### Frozen analysis
+## Task C — Enforce the exact frozen benchmark coverage
 
-- Primary endpoint: binary `final_success`, fixed planned denominator; classify infrastructure/UNKNOWN outcomes explicitly and never silently drop them or reward infrastructure failures.
-- Primary comparison: CEA-v2.1 online vs B1-random.
-- Primary statistic: task-cluster paired mean difference, both seeds kept together; exact two-sided sign-flip test over 26 clusters plus 10,000-resample task-cluster bootstrap 95% CI.
-- Secondary comparisons: CEA-v2.1 vs B5, CEA-v2.1 vs B0, B5 vs B1; Holm-correct secondary p-values.
-- Practical improvement claim only if primary difference ≥ +0.10, exact cluster-aware p < 0.05, and 95% CI lower bound > 0. Otherwise say “no evidence of improvement.”
-- Report success rates, paired differences, p-values/CIs, discordant task clusters, calls/tokens/cost/latency, online update counts and NSGA-III selection counters.
-- 26 clusters may be underpowered. No unseen-task generalization or L4 RSI claim.
+Strengthen the analyzer to validate against the canonical task manifest, not just the set of task IDs found in the data.
 
-### Algorithm fidelity
+- Require the canonical manifest SHA-256 `fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483`.
+- Require the exact 26 task IDs, seeds `20261027,20261028`, exact four arms, exactly 208 rows and 208 unique `(task_id, seed, arm)` keys.
+- Reject missing entire tasks, unexpected tasks, missing/extra arms, unexpected seeds, duplicate keys and wrong row counts.
+- Add regression tests for each rejection case. Confirm the existing 208-row data still passes without modifying it.
 
-- Run fake-provider end-to-end tests before live.
-- Verify incremental attempt-2 cost/calls, no-op observation exactly once, and no learning from infrastructure/UNKNOWN outcomes.
-- Record `nsga3_parent_selection_calls` and `nsga3_survivor_selection_calls` from live event logs. Claim NSGA-III selection only if the actual counters are positive. If both remain zero, report that; do not change parameters or rerun after seeing outcomes to force a call.
-- Do not tune weights, mutation, intervention mapping, task selection or analysis based on new outcomes.
+## Task D — Normalize status and executor report
 
-## Stage 3 — Live gates and run
+- Archive the previous execution plan to `planner/plans/CE-DSH-P4-R1.12-execution.md` if not already archived.
+- Update `status.json` to `phase_status=READY_FOR_REVIEW` or an explicit offline-audit state, `next_actor=GPT-Planner` after Executor finishes, and current live readiness as stopped/no-more-live-calls.
+- Record the reviewed baseline HEAD `6b9a0a7070d98ce706d37aa1dc0a8b97051c7983`, the reported clean-clone SHA `e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7`, and the fact that current HEAD `6b9a0a7070d98ce706d37aa1dc0a8b97051c7983` has not yet passed the exact-SHA gate.
+- Mark the R1.12 replication as completed (208/208), with 637 full-suite passes as Executor-reported, not independently rerun by GPT.
+- Preserve historical review/status entries. Do not claim that `6b9a0a7070d98ce706d37aa1dc0a8b97051c7983` has already passed clean-clone.
 
-1. After all code/tests/protocol are committed, verify remote HEAD and frozen hashes; run focused/full tests and clean-clone against the exact pre-live SHA.
-2. Verify live authorization, secret isolation, provider allowlist/HTTPS, proxy auth, request validation, atomic reservation, resume/reconciliation and fail-closed behavior. No real key in agent space or argv.
-3. Run one minimal canary first. Count all canary spend/UNKNOWN bound against the new CNY 2.00 cumulative cap. Continue only after authentication, usage accounting and ledger reconciliation pass.
-4. Run the 208-row replication with the new seeds. Do not exceed CNY 1.80 warning / CNY 2.00 hard cap. If cumulative accounting cannot be enforced across canary/interruption/resume, do not start live.
-5. No retry after unknown cost, no ledger resets, and no reconciliation that erases settled spend. If truncated, report actual coverage and stop; no top-up.
+## Task E — Final verification
 
-## Stage 4 — Analysis and final gate
-
-- Add a separate R1.12 analysis script; do not alter historical R1.9 analysis semantics. Reject missing/duplicate task-seed-arm keys before analysis.
-- Recompute outcomes and cluster-aware statistics deterministically from committed R1.12 rows.
-- Reconcile every new ledger, including canary/interrupted/resumed runs; settled + UNKNOWN bound must remain ≤ CNY 2.00.
-- Preserve Phase 0–3, historical 312 rows and R1.9's 208 rows byte-for-byte. Verify hashes, secret scan, status consistency and diff.
-- Run full `pytest tests/ -q` and clean-clone against the **exact final origin/main SHA after the last commit**. No commits after the final gate; if any commit is made, rerun it.
-- Report exact final SHA, actual API calls, settled spend, UNKNOWN bound, cumulative spend, row coverage, NSGA-III counts, statistics, test count and clean-clone output.
-
-## Stop conditions
-
-If Stage 1 fails, the protocol is not committed, the budget cannot be enforced, the secret/proxy gate fails, or canary accounting is uncertain, stop without any further live calls. No Phase 5.
+1. Verify the immutable R1.11 historical Monte Carlo source and repeated-generation regression tests; do not modify historical estimates or R1.9 data.
+2. Run focused tests for analysis, manifest hashes, budget reconciliation and all new regression tests.
+3. Run full `pytest tests/ -q`; record exact terminal output.
+4. Commit all code/tests/manifests/status/report changes before the final gate. Ensure local HEAD equals `git ls-remote origin main` and the worktree is clean.
+5. Run `python scripts/clean_clone_check.py <EXACT_FINAL_ORIGIN_MAIN_SHA>` after the last commit. The exact SHA passed by the command must equal the then-current `origin/main` SHA.
+6. **Do not create any commit after the final clean-clone gate.** If any change is made, rerun the gate on the new final SHA. Report the gate result and exact SHA in the Executor's final response rather than making a post-gate “recording” commit.
 
 ## Required final response
 
-1. Are all three historical estimates retained after two byte-identical regenerations?
-2. Did exact-SHA clean-clone pass before live?
-3. Actual new API calls and settled + UNKNOWN-bound spend?
-4. Completed rows out of 208; are task/seed/arm keys complete and unique?
-5. Exact live NSGA-III parent/survivor call counts?
-6. Primary cluster-aware difference, exact p, 95% CI and Holm-adjusted secondary results?
-7. Frozen historical data, full tests and final-SHA clean-clone status?
+- Exact task coverage and preserved raw artifact hashes.
+- SHA-256 entries added and independently reverified.
+- Primary unadjusted exact p, CI and secondary Holm-adjusted p-values.
+- Test count and exact final SHA clean-clone output.
+- Confirmation of zero additional live API calls/spend.
+- Confirm no Phase 5 and no claim of NSGA-III validation.
 
-Next actor: Kimi-Executor.
+Stop after this offline closure and return to GPT Planner.
