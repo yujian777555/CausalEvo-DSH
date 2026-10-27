@@ -29,11 +29,11 @@
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 632,
+    "passed": 637,
     "failed": 0,
     "skipped": 0,
     "planner_reran": false,
-    "count_note": "R1.11 executor-reported full suite: 631 passed / 0 failed / 0 skipped; not independently rerun by GPT. R1.12 test counts pending execution.",
+    "count_note": "R1.12 final suite: 637 passed / 0 failed / 0 skipped (actual terminal output; adds R1.12 analysis and round-spend tests)",
     "categories": {
       "unit_integration_full_suite": "R1.11: 631/631 Executor-reported; R1.12 full-suite pending",
       "online_evolution_controller": "tests/test_online_evolution.py 19/19 (Executor-reported)",
@@ -857,5 +857,38 @@
     "primary": "CEA-v2.1 online vs B1-random; exact cluster sign-flip + 10,000-resample task-cluster bootstrap",
     "status": "protocol must be committed before any R1.12 live calls; experiment NOT YET RUN",
     "scope_limit": "same-suite fresh-seed replication, not unseen-task generalization"
+  },
+  "phase4_r1_12": {
+    "run_dir": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z",
+    "canary_dir": "results/phase4/live2/phase4-r12-replication-canary-20261027T034020Z",
+    "seeds": [20261027, 20261028],
+    "rows_total": 208,
+    "rows_written_last_process": 208,
+    "real_model_requests_settled": 714,
+    "round_total_settled_requests": 738,
+    "settled_cost_cny_peak_this_run": 1.010491,
+    "canary_settled_cny_peak": 0.029226,
+    "round_total_settled_cny_peak": 1.039717,
+    "unknown_bound_cny": 0.0,
+    "budget_cap_cny": 2.00,
+    "final_success_rates": {"B0-original": 0.8846, "B1-random": 0.9423,
+                            "B5-v1-frozen-pareto": 0.9231, "CEA-v2-online": 0.9423},
+    "comparisons": {
+      "cea_v2_vs_b1_random": {"paired_diff": 0.0, "exact_cluster_signflip_p": 1.0,
+                              "ci95": [-0.0769, 0.0769], "holm_p": 1.0, "benefit": false},
+      "cea_v2_vs_b5_v1": {"paired_diff": 0.0192, "exact_cluster_signflip_p": 1.0,
+                          "ci95": [0.0, 0.0577], "holm_p": 1.0, "benefit": false},
+      "cea_v2_vs_b0": {"paired_diff": 0.0577, "exact_cluster_signflip_p": 0.53125,
+                       "ci95": [-0.0385, 0.1731], "holm_p": 1.0, "benefit": false},
+      "b5_v1_vs_b1": {"paired_diff": -0.0192, "exact_cluster_signflip_p": 1.0,
+                      "ci95": [-0.1154, 0.0577], "holm_p": 1.0, "benefit": false}
+    },
+    "algorithm_fidelity": {"evolve_events": 1, "nsga3_parent_selection_calls": 0,
+                           "nsga3_survivor_selection_calls": 0,
+                           "note": "zero live NSGA-III invocations (4 measured all became parents directly, no overflow); live pilot did crossover/mutation/population update only, NOT a validation of NSGA-III"},
+    "online_updates": {"behavioral_observations": 5, "distinct_selected_genomes": 5,
+                       "distinct_population_versions": [0, 1]},
+    "evidence_class": "fresh-seed same-suite replication; exploratory; NOT unseen-task generalization; L4 RSI not implemented",
+    "clean_clone_final": "RECORDED_IN_FOLLOWUP_COMMIT"
   }
 }

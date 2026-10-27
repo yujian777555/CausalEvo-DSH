@@ -86,6 +86,8 @@ def main() -> int:
              "tests/test_online_evolution.py",
              "tests/test_incremental_fitness.py",
              "tests/test_cluster_sensitivity.py",
+             "tests/test_analyze_r12.py",
+             "tests/test_round_spend.py",
              "tests/test_cea_v2_integration.py",
              "tests/test_cea_v2_offline.py",
              "tests/test_analyze_r19.py",

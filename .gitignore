@@ -33,6 +33,9 @@ logs/
 !results/phase4/r19-audit/auditable_tasks.jsonl
 !results/phase4/r19-audit/auditable_events.jsonl
 !results/phase4/r19-audit/auditable_ledger.jsonl
+!results/phase4/live2/phase4-r12-replication-*/tasks.jsonl
+!results/phase4/live2/phase4-r12-replication-*/events.jsonl
+!results/phase4/live2/phase4-r12-replication-*/proxy-ledger/ledger.jsonl
 
 # --- benchmark scratch ---
 results/phase0/tmp/

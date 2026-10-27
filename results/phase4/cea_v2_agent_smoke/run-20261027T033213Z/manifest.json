@@ -1,0 +1,18 @@
+{
+  "evidence_class": "adapter_integration_smoke",
+  "note": "fake provider; mechanism wiring only; NOT real-model efficacy",
+  "provider_calls_cap": 6,
+  "envelope_note": "tape mechanics need 3 provider requests per attempt (read+write+text); the live protocol envelope is 2 per row (real agent uses 1 per attempt) — smoke budget is larger ONLY to fit the tape, never the live protocol",
+  "arms": [
+    "B0-original",
+    "B1-random",
+    "B5-v1-frozen-pareto",
+    "CEA-v2-online"
+  ],
+  "provenance": {
+    "repo_head_sha": "fec54f2a56ffa446e5e25d221d2ce1813caae8b0",
+    "deepseek_harness_sdk": "0.1.5rc1",
+    "judge_image": "python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+    "recorded_utc": "2026-10-27T03:34:32.227710+00:00"
+  }
+}

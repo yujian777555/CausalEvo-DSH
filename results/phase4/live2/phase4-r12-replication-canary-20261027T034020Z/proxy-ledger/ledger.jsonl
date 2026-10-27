@@ -1,0 +1,72 @@
+{"request_id": "58cf19fb91b4498fbc4fb221658c8dad", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/B0-original", "reserved_cny": 0.15704063999999995}
+{"request_id": "58cf19fb91b4498fbc4fb221658c8dad", "state": "SENT"}
+{"request_id": "58cf19fb91b4498fbc4fb221658c8dad", "state": "SETTLED", "cost_cny": 0.0009247607999999999, "note": "ok"}
+{"request_id": "45572cd0d066422b9164327027cf6e58", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/B0-original", "reserved_cny": 0.15704063999999995}
+{"request_id": "45572cd0d066422b9164327027cf6e58", "state": "SENT"}
+{"request_id": "45572cd0d066422b9164327027cf6e58", "state": "SETTLED", "cost_cny": 0.0013988135999999998, "note": "ok"}
+{"request_id": "01fc09c840ed4d67977850362dd70f45", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/B0-original", "reserved_cny": 0.15704063999999995}
+{"request_id": "01fc09c840ed4d67977850362dd70f45", "state": "SENT"}
+{"request_id": "01fc09c840ed4d67977850362dd70f45", "state": "SETTLED", "cost_cny": 0.0011060663999999999, "note": "ok"}
+{"request_id": "3c10ed367c4344989453954612772409", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/B1-random", "reserved_cny": 0.15704063999999995}
+{"request_id": "3c10ed367c4344989453954612772409", "state": "SENT"}
+{"request_id": "3c10ed367c4344989453954612772409", "state": "SETTLED", "cost_cny": 0.0009247607999999999, "note": "ok"}
+{"request_id": "dc2869017a3848c8a50bf221a2c74767", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/B1-random", "reserved_cny": 0.15704063999999995}
+{"request_id": "dc2869017a3848c8a50bf221a2c74767", "state": "SENT"}
+{"request_id": "dc2869017a3848c8a50bf221a2c74767", "state": "SETTLED", "cost_cny": 0.0015010535999999998, "note": "ok"}
+{"request_id": "71186e83762f4df3b091d008ee11bec3", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/B1-random", "reserved_cny": 0.15704063999999995}
+{"request_id": "71186e83762f4df3b091d008ee11bec3", "state": "SENT"}
+{"request_id": "71186e83762f4df3b091d008ee11bec3", "state": "SETTLED", "cost_cny": 0.0012168263999999998, "note": "ok"}
+{"request_id": "367f9ef73a2344caab829d7f75a865c3", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/B5-v1-frozen-pareto", "reserved_cny": 0.15704063999999995}
+{"request_id": "367f9ef73a2344caab829d7f75a865c3", "state": "SENT"}
+{"request_id": "367f9ef73a2344caab829d7f75a865c3", "state": "SETTLED", "cost_cny": 0.0009247607999999999, "note": "ok"}
+{"request_id": "83f4749ee8804308a93b6225b507262e", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/B5-v1-frozen-pareto", "reserved_cny": 0.15704063999999995}
+{"request_id": "83f4749ee8804308a93b6225b507262e", "state": "SENT"}
+{"request_id": "83f4749ee8804308a93b6225b507262e", "state": "SETTLED", "cost_cny": 0.0014840136, "note": "ok"}
+{"request_id": "b27581200c9c416f84acd0e62c4e261a", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/B5-v1-frozen-pareto", "reserved_cny": 0.15704063999999995}
+{"request_id": "b27581200c9c416f84acd0e62c4e261a", "state": "SENT"}
+{"request_id": "b27581200c9c416f84acd0e62c4e261a", "state": "SETTLED", "cost_cny": 0.0010762463999999998, "note": "ok"}
+{"request_id": "6d3e936bf9b948deb759451c5e15b2c5", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/CEA-v2-online", "reserved_cny": 0.15704063999999995}
+{"request_id": "6d3e936bf9b948deb759451c5e15b2c5", "state": "SENT"}
+{"request_id": "6d3e936bf9b948deb759451c5e15b2c5", "state": "SETTLED", "cost_cny": 0.0009758807999999998, "note": "ok"}
+{"request_id": "8bfa0cb6970b4aa38e61f71fb6905a8a", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/CEA-v2-online", "reserved_cny": 0.15704063999999995}
+{"request_id": "8bfa0cb6970b4aa38e61f71fb6905a8a", "state": "SENT"}
+{"request_id": "8bfa0cb6970b4aa38e61f71fb6905a8a", "state": "SETTLED", "cost_cny": 0.0015479136, "note": "ok"}
+{"request_id": "bd6ed96110c247e28f2eb56582f252bf", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261027/CEA-v2-online", "reserved_cny": 0.15704063999999995}
+{"request_id": "bd6ed96110c247e28f2eb56582f252bf", "state": "SENT"}
+{"request_id": "bd6ed96110c247e28f2eb56582f252bf", "state": "SETTLED", "cost_cny": 0.0012381263999999997, "note": "ok"}
+{"request_id": "db5dea76a47041bd8fdf94cdb8d88459", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/B0-original", "reserved_cny": 0.15704063999999995}
+{"request_id": "db5dea76a47041bd8fdf94cdb8d88459", "state": "SENT"}
+{"request_id": "db5dea76a47041bd8fdf94cdb8d88459", "state": "SETTLED", "cost_cny": 0.0009247607999999999, "note": "ok"}
+{"request_id": "1d276a25d6a74afbbfbc8e9da83cdd11", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/B0-original", "reserved_cny": 0.15704063999999995}
+{"request_id": "1d276a25d6a74afbbfbc8e9da83cdd11", "state": "SENT"}
+{"request_id": "1d276a25d6a74afbbfbc8e9da83cdd11", "state": "SETTLED", "cost_cny": 0.0013988135999999998, "note": "ok"}
+{"request_id": "565e60d605374f59b8fd0936d6393b02", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/B0-original", "reserved_cny": 0.15704063999999995}
+{"request_id": "565e60d605374f59b8fd0936d6393b02", "state": "SENT"}
+{"request_id": "565e60d605374f59b8fd0936d6393b02", "state": "SETTLED", "cost_cny": 0.0010038264000000001, "note": "ok"}
+{"request_id": "c3d8b535a6c14b819fe62e5951feae50", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/B1-random", "reserved_cny": 0.15704063999999995}
+{"request_id": "c3d8b535a6c14b819fe62e5951feae50", "state": "SENT"}
+{"request_id": "c3d8b535a6c14b819fe62e5951feae50", "state": "SETTLED", "cost_cny": 0.0009758807999999998, "note": "ok"}
+{"request_id": "c5a32d8ccd72420ba2c1a9372a975bc7", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/B1-random", "reserved_cny": 0.15704063999999995}
+{"request_id": "c5a32d8ccd72420ba2c1a9372a975bc7", "state": "SENT"}
+{"request_id": "c5a32d8ccd72420ba2c1a9372a975bc7", "state": "SETTLED", "cost_cny": 0.0016671936, "note": "ok"}
+{"request_id": "beb45d3c23fc4b8dae5a377681eb0541", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/B1-random", "reserved_cny": 0.15704063999999995}
+{"request_id": "beb45d3c23fc4b8dae5a377681eb0541", "state": "SENT"}
+{"request_id": "beb45d3c23fc4b8dae5a377681eb0541", "state": "SETTLED", "cost_cny": 0.0012849863999999998, "note": "ok"}
+{"request_id": "6b06ef61bd7d4495a9fd648e45375612", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/B5-v1-frozen-pareto", "reserved_cny": 0.15704063999999995}
+{"request_id": "6b06ef61bd7d4495a9fd648e45375612", "state": "SENT"}
+{"request_id": "6b06ef61bd7d4495a9fd648e45375612", "state": "SETTLED", "cost_cny": 0.0009758807999999998, "note": "ok"}
+{"request_id": "ad837f1f5864417091770710809c0540", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/B5-v1-frozen-pareto", "reserved_cny": 0.15704063999999995}
+{"request_id": "ad837f1f5864417091770710809c0540", "state": "SENT"}
+{"request_id": "ad837f1f5864417091770710809c0540", "state": "SETTLED", "cost_cny": 0.0015138335999999998, "note": "ok"}
+{"request_id": "feb2f15e1985429e97ecd2139fff8949", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/B5-v1-frozen-pareto", "reserved_cny": 0.15704063999999995}
+{"request_id": "feb2f15e1985429e97ecd2139fff8949", "state": "SENT"}
+{"request_id": "feb2f15e1985429e97ecd2139fff8949", "state": "SETTLED", "cost_cny": 0.0014000063999999996, "note": "ok"}
+{"request_id": "524b63a11bc141f084b9cf53943d32c2", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/CEA-v2-online", "reserved_cny": 0.15704063999999995}
+{"request_id": "524b63a11bc141f084b9cf53943d32c2", "state": "SENT"}
+{"request_id": "524b63a11bc141f084b9cf53943d32c2", "state": "SETTLED", "cost_cny": 0.0009844007999999997, "note": "ok"}
+{"request_id": "caafddcb549743aa9b9ebf186028e1c4", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/CEA-v2-online", "reserved_cny": 0.15704063999999995}
+{"request_id": "caafddcb549743aa9b9ebf186028e1c4", "state": "SENT"}
+{"request_id": "caafddcb549743aa9b9ebf186028e1c4", "state": "SETTLED", "cost_cny": 0.0014648436, "note": "ok"}
+{"request_id": "64b8c91570b84f5eba14771c7ca146ef", "state": "RESERVED", "scope": "phase4-r12-replication-canary-20261027T034020Z/micro-000-clamp_value/20261028/CEA-v2-online", "reserved_cny": 0.15704063999999995}
+{"request_id": "64b8c91570b84f5eba14771c7ca146ef", "state": "SENT"}
+{"request_id": "64b8c91570b84f5eba14771c7ca146ef", "state": "SETTLED", "cost_cny": 0.0013126763999999997, "note": "ok"}

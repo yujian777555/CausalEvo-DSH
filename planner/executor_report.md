@@ -1,101 +1,92 @@
-# Executor Report — CE-DSH-P4-R1.11（敏感性可复现与状态收尾）
+# Executor Report — CE-DSH-P4-R1.11-FIX1 + R1.12（历史估计修复 + 新种子复制实验）
 
-日期：2026-10-26。Executor：Kimi。**本轮 0 次真实 DeepSeek 调用、¥0 新增费用；未查询余额。**
-
-计划：planner/latest_plan.md（CE-DSH-P4-R1.11）；审查：planner/reviews/CE-DSH-P4-R1_10-independent-review.md。
+日期：2026-10-27。Executor：Kimi。R1.11-FIX1 离线修复后，按预注册协议执行 R1.12 真实 DeepSeek 复制实验（用户授权，累计硬上限 ¥2.00）。
 
 ## A. Git 状态
 
-- 起始 SHA：`ef7348bfff2d53328b867ddb134356147db9baf9`（与预期 Planner 提交一致，工作区 clean）
+- 起始 SHA：`97374605644a3454e20ede523db1ca4f47a26241`（与预期一致，工作区 clean）
+- FIX1/协议/runner 提交：`fec54f2a56ffa446e5e25d221d2ce1813caae8b0`
 - 最终 SHA / 远端 SHA / clean-clone 验证 SHA：见末节「Git 交付」
 
-## B. Task A：精确簇级敏感性可复现（完成）
+## B. R1.11-FIX1（历史估计恢复，离线）
 
-- 新增 `scripts/analyze_r19_cluster_sensitivity.py`：对 26 个任务簇的配对均值差（**两种子始终同簇**）做**精确动态规划符号翻转**，枚举全部 2^26 符号分配，输出精确双侧 p，无 Monte Carlo 噪声。
-- 从 `results/phase4/r19-audit/auditable_tasks.jsonl`（208 行）重算，精确结果：
+- 根因：生成器把生成的 `sensitivity.json` 当作历史估计来源，第二次重生成时 `previous_monte_carlo_estimates` 被覆盖为 `{}`。
+- 修复：新增不可变来源 `results/phase4/r19-audit/previous_monte_carlo_estimates.json`（provenance 至 `2bb9e5c`），生成器只从该不可变文件读取三条历史估计，不再从生成物读取。
+- 测试 `tests/test_cluster_sensitivity.py` **9/9**：两条历史记录逐字段（p/stat/20000/seed）在两次重生成后完整保留且字节一致；精确 DP p 值不变（0.75 / 0.625 / 0.7265625 / 1.0）。
+- `manifest_reconciled.json` 的 script/output SHA-256 已更新；`status.json` 元数据归一（632 测试 Executor-reported）。
+- **FIX1 clean-clone：PASS at `fec54f2a56ff`**（34 phase4 子集 + 209 关键套件，exit=0）。
 
-| 比较 | 精确双侧 p |
-|---|---|
-| CEA-v2 vs B1-random | **0.750000** |
-| CEA-v2 vs B5-v1-frozen-pareto | **0.625000** |
-| CEA-v2 vs B0-original | **0.7265625** |
-| B5-v1-frozen-pareto vs B1-random | 1.000000 |
+## C. R1.12 预注册与门禁（live 前全部通过）
 
-- 与 Planner 独立精确枚举一致；此前 20000 次置换估计（0.7462/0.62095/0.7268）保留在 `previous_monte_carlo_estimates`，未覆盖或重标。
-- `results/phase4/r19-audit/sensitivity.json` 已重生成，含 `label=POST_HOC_CLUSTER_AWARE_SENSITIVITY`、`not_preregistered_primary=true`。**预注册 McNemar/成功率/费用/探索性结论均未改动。**
-- 测试 `tests/test_cluster_sensitivity.py` **8/8**：26 簇与双种子保持、精确 p 值、双侧尾部/并列处理、缺臂/重复键/缺种子拒绝、事后标签、两次重生成字节一致。
-- `manifest_reconciled.json` 新增 `sensitivity_artifacts`：`script_sha256` 与 `output_sha256`（无自指哈希）。
+- 协议 `docs/PHASE4_R1_12_REPLICATION_PROTOCOL.md` 已提交：26 任务、种子 `20261027,20261028`、四臂 208 行、final_success 主终点、精确簇符号翻转 + 10,000 簇 bootstrap、提升判定（差值≥+0.10 且 p<0.05 且 CI>0）、累计 ¥2.00（预警 ¥1.80）、UNKNOWN fail-closed、禁止余额查询。
+- runner：`--seeds` / `--run-tag`（历史默认保留）；累计预算 `_round_spend`（canary/中断/续跑均扣减，不重置）；2 个离线对账测试。
+- 环境：docker 29.3.1、密钥仅经受控环境入 Proxy（agent 仅 per-run token）、TUN 关闭、直连路径未变、fake-provider E2E 6/6。
+- canary：8 行全成功、0 UNKNOWN、费用 ¥0.029226，账本对账通过后进入完整复制。
 
-## C. Task B：账本数据边界（完成，无伪造字段）
+## D. R1.12 真实复制实验（完成，208/208 行）
 
-- 源 proxy 账本**不含逐请求 token 桶与定价档位**。明确写入 `manifest_reconciled.json.field_definitions.token_limitations` 与 `docs/PHASE4_R1_9_RECONCILIATION.md`：
-  - 可独立复算：SETTLED 成本求和 + UNKNOWN 预留上界（1.3063390536 + 0.15704064 = 1.4633796936）。
-  - 行级聚合 token 桶存在于 `auditable_tasks.jsonl`（input/cache_read/output），但不能映射回每个 proxy 请求。
-  - **逐请求 token 级重计价不可独立复现**，不伪造这些字段。
-- `auditable_ledger.jsonl` 新增 `seq`（保留各 run 内源文件顺序，共 2755 条迁移），其余字段（request_id/scope/状态/预留/结算/安全备注）完整保留。
-- `intervention_text` 有意保留（动作级审计）；口径改为：排除原始请求/响应体、完整 provider payload、凭据与原始会话日志，而非笼统"无 prompt"。
+- 目录：`results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z`（canary：`…canary-20261027T034020Z`）。
+- 全部 208 行完成，`aborted=None`；无 UNKNOWN、无截断、无重试不确定请求。
+- 真实请求：canary 24 + 正式 714 = **738 次**（SETTLED 计）。
+- 费用：canary ¥0.029226 + 正式 ¥1.010491 = **¥1.039717（peak 口径）**，远低于 ¥2.00 上限。
 
-## D. Task C：status.json 元数据归一（完成）
+## E. 结果（探索性同套新种子复制）
 
-- 当前顶层 `planner_review`（R1.10 审查）、`review_path`（R1_10 独立审查）、`phase`、`phase_status=READY_FOR_REVIEW`、`next_actor=GPT-Planner`、`next_goal`、`baseline_main_sha` 与当前 HEAD 字段已按本轮实际更新；历史 R1.7/R1.9 审查记录保留于历史键。
-- `tests.categories.online_evolution_controller = 19/19`（与 Executor 输出一致）。
-- `clean_clone_tested_sha = 5d5777c80713356e2c0e2049e94e8499f8dc16dd`（已测）与当前 docs-only HEAD `2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e`（当时未测）明确区分；本轮新的最终 SHA 将在末节记录。
-- 删除"投影缺失/费用不可验证"等过时结论；保留历史说明并标注为 pre-R1.10。
-- `limitations` 更新为当前事实：GPT 未独立重跑、CEA-v2 无优越性证据、L4 RSI 未实现、逐请求重计价不可得、敏感性脚本已可复现。
-- JSON 解析通过、键唯一。
+| 臂 | 最终成功率 | off-peak 费用 | 请求数 |
+|---|---|---|---|
+| B0-original | 0.8846 | ¥0.116534 | 163 |
+| B1-random | 0.9423 | ¥0.134121 | 192 |
+| B5-v1-frozen-pareto | 0.9231 | ¥0.127357 | 179 |
+| CEA-v2-online | 0.9423 | ¥0.127234 | 180 |
 
-## E. Task D：NSGA-III 遥测口径（完成）
+主比较与次要比较（`analysis.json`）：
 
-`docs/PHASE4_R1_9_CORRECTION_ADDENDUM.md` 与 `docs/PHASE4_R1_10_ALGORITHM_FIDELITY.md` 已明确：
-- 历史 evolve 事件**不含**新加入的调用计数字段（计数器在实验后加入）；
-- "0 次调用"是**依据归档源码分支条件与归档控制器状态重建的事实**，不是当时输出的遥测；
-- 新计数器仅用于未来事件，历史投影未添加合成计数。
+| 比较 | 配对差 | 精确簇 p | 95% CI | Holm p | 提升证据 |
+|---|---|---|---|---|---|
+| CEA-v2 vs B1-random | 0.000 | 1.0 | [−0.077, 0.077] | 1.0 | 无 |
+| CEA-v2 vs B5-v1 | +0.019 | 1.0 | [0.000, 0.058] | 1.0 | 无 |
+| CEA-v2 vs B0 | +0.058 | 0.53125 | [−0.038, 0.173] | 1.0 | 无 |
+| B5-v1 vs B1 | −0.019 | 1.0 | [−0.115, 0.058] | 1.0 | 无 |
+
+- 在线更新：5 条行为观察、5 个选中基因组、population_version {0,1}。
+- **NSGA-III 调用计数：evolve_events=1、parent_selection_calls=0、survivor_selection_calls=0**（4 已测量候选直接成为父母、无溢出；与 R1.9 同型）。**不声称 NSGA-III 已被验证**；live 仅执行交叉/变异/种群更新。
+- 与 R1.9 结论一致：CEA-v2 相对随机/静态基线**无提升证据**；未宣称 L4 RSI。
 
 ## F. 验证矩阵（实际命令与真实输出）
 
 | 项 | 命令 | 结果 |
 |---|---|---|
-| 敏感性脚本×2 | `python scripts/analyze_r19_cluster_sensitivity.py`（两次） | 输出字节一致 |
-| 敏感性测试 | `pytest tests/test_cluster_sensitivity.py -q` | 8 passed |
+| 敏感性/历史估计 | `pytest tests/test_cluster_sensitivity.py -q` | 9 passed |
+| 累计预算对账 | `pytest tests/test_round_spend.py -q` | 2 passed |
+| R1.12 分析 | `pytest tests/test_analyze_r12.py -q` | 3 passed |
 | 控制器 | `pytest tests/test_online_evolution.py -q` | 19 passed |
 | 增量适应度 | `pytest tests/test_incremental_fitness.py -q` | 4 passed |
-| 分析 | `pytest tests/test_analyze_r19.py -q` | 4 passed |
+| agent smoke | `pytest tests/test_cea_v2_integration.py -q` | 6 passed |
+| 合成驱动 | `pytest tests/test_cea_v2_offline.py -q` | 14 passed |
 | 预算四套件 | `pytest tests/test_budget_proxy{,_r14,_r15,_r16}.py -q` | 102 passed |
 | 凭证/控制/e2e/适配器/v2 | 五文件联合 | 50 passed |
-| **全量** | `pytest tests/ -q` | **631 passed / 0 failed / 0 skipped** |
-| clean-clone（精确最终 SHA） | `python scripts/clean_clone_check.py` | 见末节 |
+| **全量** | `pytest tests/ -q` | **637 passed / 0 failed / 0 skipped** |
+| clean-clone（精确最终 SHA） | `python scripts/clean_clone_check.py <sha>` | 见末节 |
 
 无 NOT_VERIFIED 项；Docker 全程可用。
 
 ## G. 费用与安全
 
-- 本轮真实模型调用 **0 次**、费用 **¥0**；未查询余额。
-- 冻结哈希：`calls.csv` `1961bdd8…`、`auditable_tasks.jsonl` `35b9e67a…`、sweep `15e2cb84…` 未变；Phase 0–3 与历史 312 行零改动。
-- 密钥扫描：`git diff --cached | grep -cE "sk-[A-Za-z0-9]{32}"` = 0。
+- 本轮新实验真实调用 **738 次**；结算费用 **¥1.039717**；UNKNOWN 上界 **¥0**。
+- 历史 R1.9 数据未修改；Phase 0–3 冻结工件未改；密钥扫描 `git diff --cached | grep -cE "sk-[A-Za-z0-9]{32}"` = 0；真实 key 未入 Agent 容器/argv/Git/日志。
+- 未查询账户余额；未超过 ¥1.80 预警线（本轮 settled 远低于预警）。
 
 ## H. 未解决问题
 
-1. R1.9 的 CEA-v2 无提升证据（探索性）；本轮仅完成分析与可复现性收尾，不产生新的模型性能结论。
-2. 逐请求 token 级重计价不可得（源账本字段缺失，已明确披露）。
-3. L4 递归自我改进未实现；后续确认性实验需簇感知主检验与新的用户预算授权。
-4. Planner 未独立重跑本机测试；全部数字为 Executor 实际终端输出。
+1. CEA-v2 相对随机/静态基线无提升证据（与 R1.9 一致）；学习信号稀疏（仅 5 行为观察/52 行）。
+2. NSGA-III 在两次 live pilot 中均为 0 调用，**算法选择机制本身尚未被真实实验验证**（离线测试验证其实现）。
+3. 探索性同套复制：26 簇功效有限，不作论文级确认性结论或未见任务泛化宣称。
+4. Planner 未独立重跑本机测试；数字为 Executor 实际终端输出。
 
 ## I. Git 交付（精确最终 SHA / clean-clone / 同步）
 
-- **R1.11 主提交：`3ecd7691e8d93d8357b60531e1722b1d5ba4e044`**（push 后 `git ls-remote origin main` 与本地 HEAD 一致）。
-- **最终 SHA Gate（逐字输出）**：
-  ```
-  verified: 312 auditable rows recompute to the committed analysis (incl. cluster bootstrap)
-  34 passed in 4.48s (phase4 subset)
-  208 passed in 369.64s (key suites incl. test_cluster_sensitivity exact DP)
-  CLEAN CLONE OK: HEAD 3ecd7691e8d9 == origin/main; 312 auditable rows recompute in a fresh clone
-  exit=0
-  ```
-- **clean-clone 验证 SHA（完整）**：`3ecd7691e8d93d8357b60531e1722b1d5ba4e044`（脚本强制 clone HEAD == ls-remote，失配 exit 2；命令行显式传入该 SHA）。
-- 本记录提交（housekeeping）仅改 status.json 与 executor_report.md，不含代码/测试变更；按惯例如实声明：Gate 在 `3ecd769…` 通过，记录提交本身未再触发 Gate（如需可用 `python scripts/clean_clone_check.py <sha>` 随时对当前 HEAD 重验）。
-- 同步状态：本地 HEAD == `git ls-remote origin main`；`git status --porcelain` = 0（clean）。
-- 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 零改动；密钥扫描 0 命中。
+（push 后实测填写。）
 
 ## 停止
 
-停在 Phase 4 R1.11。未进入付费 pilot 或 Phase 5。`next_actor = GPT-Planner`。
+停在 Phase 4 R1.12。未进入 Phase 5。`next_actor = GPT-Planner`。

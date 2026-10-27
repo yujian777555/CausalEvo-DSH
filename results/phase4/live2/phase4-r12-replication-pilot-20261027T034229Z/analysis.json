@@ -1,0 +1,145 @@
+{
+  "run_dir": "results\\phase4\\live2\\phase4-r12-replication-pilot-20261027T034229Z",
+  "rows_total": 208,
+  "coverage": {
+    "tasks": 26,
+    "seeds": [
+      20261027,
+      20261028
+    ],
+    "unique_keys": 208,
+    "duplicates": []
+  },
+  "protocol": "docs/PHASE4_R1_12_REPLICATION_PROTOCOL.md",
+  "per_arm": {
+    "B0-original": {
+      "rows": 52,
+      "final_success_rate": 0.8846153846153846,
+      "attempt1_success_rate": 0.8846153846153846,
+      "retried_rows": 0,
+      "recovery_rate": null,
+      "recovery_denominator": 0,
+      "provider_calls": 163,
+      "input_tokens": 35319,
+      "cache_read_tokens": 260731,
+      "output_tokens": 17222,
+      "cost_cny": 0.11653403,
+      "latency_ms_mean": 9805.423076923076
+    },
+    "B1-random": {
+      "rows": 52,
+      "final_success_rate": 0.9423076923076923,
+      "attempt1_success_rate": 0.8461538461538461,
+      "retried_rows": 8,
+      "recovery_rate": 0.625,
+      "recovery_denominator": 8,
+      "provider_calls": 192,
+      "input_tokens": 40488,
+      "cache_read_tokens": 309364,
+      "output_tokens": 19815,
+      "cost_cny": 0.13412107,
+      "latency_ms_mean": 11412.788461538461
+    },
+    "B5-v1-frozen-pareto": {
+      "rows": 52,
+      "final_success_rate": 0.9230769230769231,
+      "attempt1_success_rate": 0.8653846153846154,
+      "retried_rows": 7,
+      "recovery_rate": 0.42857142857142855,
+      "recovery_denominator": 7,
+      "provider_calls": 179,
+      "input_tokens": 38421,
+      "cache_read_tokens": 286331,
+      "output_tokens": 18859,
+      "cost_cny": 0.12735656,
+      "latency_ms_mean": 10968.942307692309
+    },
+    "CEA-v2-online": {
+      "rows": 52,
+      "final_success_rate": 0.9423076923076923,
+      "attempt1_success_rate": 0.9038461538461539,
+      "retried_rows": 4,
+      "recovery_rate": 0.5,
+      "recovery_denominator": 4,
+      "provider_calls": 180,
+      "input_tokens": 38481,
+      "cache_read_tokens": 290167,
+      "output_tokens": 18796,
+      "cost_cny": 0.12723378,
+      "latency_ms_mean": 10854.461538461539
+    }
+  },
+  "comparisons": {
+    "CEA-v2-online vs B1-random": {
+      "paired_rows": 52,
+      "discordant_pos": 2,
+      "discordant_neg": 2,
+      "paired_diff": 0.0,
+      "cluster_bootstrap_ci95": [
+        -0.07692307692307693,
+        0.07692307692307693
+      ],
+      "exact_cluster_signflip_p": 1.0,
+      "mcnemar_exact_p": 1.0,
+      "holm_adj_p": 1.0,
+      "evidence_of_improvement": false
+    },
+    "CEA-v2-online vs B5-v1-frozen-pareto": {
+      "paired_rows": 52,
+      "discordant_pos": 2,
+      "discordant_neg": 1,
+      "paired_diff": 0.019230769230769232,
+      "cluster_bootstrap_ci95": [
+        0.0,
+        0.057692307692307696
+      ],
+      "exact_cluster_signflip_p": 1.0,
+      "mcnemar_exact_p": 1.0,
+      "holm_adj_p": 1.0,
+      "evidence_of_improvement": false
+    },
+    "CEA-v2-online vs B0-original": {
+      "paired_rows": 52,
+      "discordant_pos": 5,
+      "discordant_neg": 2,
+      "paired_diff": 0.057692307692307696,
+      "cluster_bootstrap_ci95": [
+        -0.038461538461538464,
+        0.17307692307692307
+      ],
+      "exact_cluster_signflip_p": 0.53125,
+      "mcnemar_exact_p": 0.453125,
+      "holm_adj_p": 1.0,
+      "evidence_of_improvement": false
+    },
+    "B5-v1-frozen-pareto vs B1-random": {
+      "paired_rows": 52,
+      "discordant_pos": 2,
+      "discordant_neg": 3,
+      "paired_diff": -0.019230769230769232,
+      "cluster_bootstrap_ci95": [
+        -0.11538461538461539,
+        0.057692307692307696
+      ],
+      "exact_cluster_signflip_p": 1.0,
+      "mcnemar_exact_p": 1.0,
+      "holm_adj_p": 1.0,
+      "evidence_of_improvement": false
+    }
+  },
+  "algorithm_fidelity": {
+    "evolve_events": 1,
+    "nsga3_parent_selection_calls": 0,
+    "nsga3_survivor_selection_calls": 0,
+    "claim_rule": "claim NSGA-III selection only if the actual counters are positive"
+  },
+  "online_updates": {
+    "behavioral_observations": 5,
+    "distinct_selected_genomes": 5,
+    "distinct_population_versions": [
+      0,
+      1
+    ]
+  },
+  "evidence_class": "fresh-seed same-suite replication; NOT unseen-task generalization; exploratory"
+}
