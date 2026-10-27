@@ -101,10 +101,12 @@ def main() -> int:
         encoding="utf-8").splitlines() if l.strip()]
     assert len(rows) == 208, f"expected 208 rows, got {len(rows)}"
     results = analyze(rows)
-    previous_path = AUDIT / "sensitivity.json"
-    previous = {}
-    if previous_path.is_file():
-        previous = json.loads(previous_path.read_text(encoding="utf-8"))
+    # R1.11-FIX1: the three historical Monte Carlo estimates come from an
+    # IMMUTABLE source file with provenance, never from the generated
+    # sensitivity.json itself (which would lose them on the next run).
+    estimates_path = AUDIT / "previous_monte_carlo_estimates.json"
+    previous_doc = json.loads(estimates_path.read_text(encoding="utf-8"))
+    estimates = previous_doc["estimates"]
     out = {
         "method": "exact_sign_flip_dynamic_programming",
         "label": "POST_HOC_CLUSTER_AWARE_SENSITIVITY",
@@ -113,12 +115,9 @@ def main() -> int:
         "seeds_kept_together": True,
         "rows_total": len(rows),
         "comparisons": results,
-        "previous_monte_carlo_estimates": {
-            k: v.get("cluster_permutation_sensitivity")
-            for k, v in previous.get("comparisons", {}).items()
-            if "cluster_permutation_sensitivity" in v
-        },
-        "note": "exact DP enumeration over 2^26 sign assignments; previous 20000-permutation estimates are preserved in previous_monte_carlo_estimates and are not overwritten by this exact computation",
+        "previous_monte_carlo_estimates": estimates,
+        "previous_monte_carlo_provenance": previous_doc["provenance"],
+        "note": "exact DP enumeration over 2^26 sign assignments; the three historical 20000-permutation estimates are loaded from the immutable previous_monte_carlo_estimates.json (provenance to commit 2bb9e5c) and are preserved on every regeneration",
     }
     (AUDIT / "sensitivity.json").write_text(json.dumps(out, indent=2,
                                                        ensure_ascii=False),

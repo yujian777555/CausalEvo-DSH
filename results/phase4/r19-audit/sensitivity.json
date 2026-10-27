@@ -31,6 +31,37 @@
       "exact_two_sided_p": 1.0
     }
   },
-  "previous_monte_carlo_estimates": {},
-  "note": "exact DP enumeration over 2^26 sign assignments; previous 20000-permutation estimates are preserved in previous_monte_carlo_estimates and are not overwritten by this exact computation"
+  "previous_monte_carlo_estimates": {
+    "CEA-v2-online vs B1-random": {
+      "p": 0.7462,
+      "stat": -0.038461538461538464,
+      "n_clusters": 26,
+      "n_permutations": 20000,
+      "seed": 20261026
+    },
+    "CEA-v2-online vs B5-v1-frozen-pareto": {
+      "p": 0.62095,
+      "stat": -0.038461538461538464,
+      "n_clusters": 26,
+      "n_permutations": 20000,
+      "seed": 20261026
+    },
+    "CEA-v2-online vs B0-original": {
+      "p": 0.7268,
+      "stat": 0.038461538461538464,
+      "n_clusters": 26,
+      "n_permutations": 20000,
+      "seed": 20261026
+    }
+  },
+  "previous_monte_carlo_provenance": {
+    "source_commit": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
+    "source_file": "results/phase4/r19-audit/sensitivity.json at that commit",
+    "method": "paired sign-flip permutation on task-mean differences (both seeds of a task stay together), 20000 permutations, seed 20261026",
+    "n_clusters": 26,
+    "n_permutations": 20000,
+    "seed": 20261026,
+    "immutability_note": "These three historical Monte Carlo estimates are immutable source data for every later regeneration of sensitivity.json. They must NEVER be sourced from the generated sensitivity.json itself (which gets overwritten and would otherwise lose them on the second regeneration)."
+  },
+  "note": "exact DP enumeration over 2^26 sign assignments; the three historical 20000-permutation estimates are loaded from the immutable previous_monte_carlo_estimates.json (provenance to commit 2bb9e5c) and are preserved on every regeneration"
 }

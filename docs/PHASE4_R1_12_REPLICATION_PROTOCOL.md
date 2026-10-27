@@ -1,61 +1,52 @@
-# CE-DSH-P4-R1.12 — Fresh-Seed Same-Suite Replication Protocol
+# CE-DSH-P4-R1.12 — 新种子同套复制实验协议（预注册，live 前冻结）
 
-**Status:** preregistered before any R1.12 live request.  
-**Authorization:** user requested a new experiment on 2026-10-27; new-run cumulative hard cap CNY 2.00.  
-**Scope:** same-suite fresh-seed replication, not unseen-task generalization.
+日期：2026-10-27。状态：**冻结，live 前提交，执行中不得更改**。授权：用户要求“快点进行实验吧”，本轮新实验累计硬上限 **¥2.00**，预警线 **¥1.80**。历史 R1.9 费用（¥1.4633796936）为历史数据，不与本轮混合、不重置。
 
-## 1. Research question
+## 1. 范围与样本
 
-Does the current CEA-v2.1 online evolutionary controller improve final task success over random intervention selection and a frozen Pareto policy on fresh seeds, using incremental-fitness and explicit no-op feedback semantics?
+- 任务：`benchmarks/tasks/` 下全部 26 个冻结 microtask；**canonical manifest SHA-256 必须为 `fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483`**（与 R1.9 一致）。
+- 新种子：**20261027、20261028**（CLI `--seeds`；历史默认种子 `20261014,20261015` 与全部历史工件保持不变）。
+- 臂：`B0-original`、`B1-random`、`B5-v1-frozen-pareto`、`CEA-v2-online`（使用 **CEA-v2.1** 增量成本/no-op 语义；记录算法/策略版本，不使用旧 B4/B5 代理名称）。
+- 计划主数据：**26 × 2 × 4 = 208 行**；canary 仅用于计量/鉴权/账本验证，**不计入效能分析，但计入同一累计预算**。
+- 输出目录：`results/phase4/live2/phase4-r12-replication-<run_id>/`（唯一，不覆盖或合并 R1.9/R1.10/R1.11 数据或账本）。
 
-## 2. Frozen benchmark and seeds
+## 2. 主终点与统计（冻结，未看新结果前确定）
 
-- Benchmark: all 26 tasks under `benchmarks/tasks/`.
-- Canonical benchmark manifest SHA-256: `fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483`.
-- New seeds: `20261027`, `20261028`.
-- Arms: B0-original, B1-random, B5-v1-frozen-pareto, and the online controller using R1.10 CEA-v2.1 semantics.
-- Planned main rows: 26 × 2 × 4 = 208. Canary rows are excluded from efficacy analysis but included in the cumulative spend cap.
-- R1.9 task IDs are reused; only seeds/run IDs are new. Conclusions are limited to replication on this fixed task suite.
+- **主终点**：`final_success`（二值，固定计划分母=全部预定行）；基础设施/UNKNOWN 结局显式分类，**不删除、不奖励**。
+- **主比较**：CEA-v2.1-online vs B1-random 的配对成功率差。
+- **主统计**：任务簇配对均值差（**两种子始终同簇，不视为独立簇**）；**精确双侧符号翻转检验**（26 簇全枚举）+ **10,000 次任务簇 bootstrap 95% CI**。
+- **次要比较**（Holm 校正）：CEA-v2.1 vs B5-v1、CEA-v2.1 vs B0、B5-v1 vs B1-random。
+- **提升判定（预注册）**：仅当主差值 **≥ +0.10** 且簇感知精确 p **< 0.05** 且 95% CI 下界 **> 0** 时，才可称“有提升证据”；否则写“无提升证据”。
+- 报告：成功率、配对差、p/CI、不一致簇、调用/token/费用/延迟、在线更新次数、**NSGA-III 父代/幸存者选择调用次数**（见 §4）。
+- 26 簇功效可能不足；**不作未见任务泛化或 L4 RSI 宣称**。
 
-## 3. Endpoint and estimand
+## 3. 预算与停止（冻结）
 
-- Primary endpoint: binary `final_success`, fixed denominator. Infrastructure and UNKNOWN outcomes must be separately classified; do not silently drop them or use them as behavioral rewards.
-- Primary estimand: mean task-level paired difference in final success, CEA-v2.1 minus B1-random. Average paired differences over both seeds within each task, then average equally over the 26 task clusters.
+- **累计硬上限 ¥2.00**（canary + 全部尝试 + 中断 + 续跑 + SETTLED 费用 + UNKNOWN 预留上界，全部计入同一轮累计）。预警线 **¥1.80**。
+- 续跑/中断处理：`--resume`（账本+控制器重放）与 `--previous-runs`（扣减历史已结算与 UNKNOWN 上界），**不得通过更换 run_id 或重启 proxy 重置上限**。
+- 出现 UNKNOWN 费用、账本损坏、在途不确定请求、provider 5xx、SSE/传输失败或协议错误：**立即停止全部 live 活动，不重试不确定请求**。
+- **禁止查询账户余额**；若某必需路径必须查余额，则在首个 live 请求前停止并报告阻塞。
+- **API Key 不得进入 Agent 容器、argv、Git、日志或工件**；真实 key 仅经受控环境进入 Proxy（裸 `-e` 透传），agent 仅持 per-run proxy token。
+- 无自动追加预算、无 Phase 5。
 
-## 4. Statistical plan
+## 4. 算法保真（冻结）
 
-- Primary test: exact two-sided sign-flip test on 26 task-cluster mean differences, keeping both seeds together; enumerate the exact distribution with dynamic programming.
-- Interval: task-cluster bootstrap, 10,000 resamples, 95% percentile CI; resample task IDs and keep both seeds together.
-- Secondary comparisons: CEA-v2.1 vs B5-v1, CEA-v2.1 vs B0, and B5-v1 vs B1. Apply Holm correction to secondary p-values.
-- Practical success criterion: primary difference ≥ +0.10, exact cluster-aware p < 0.05, and bootstrap 95% CI lower bound > 0. Otherwise conclude no evidence of improvement.
-- Report task-cluster discordance, arm success rates, request/token/cost/latency summaries, and online-evolution telemetry. If fewer than 8 task clusters are discordant on the primary comparison, explicitly mark the study underpowered/exploratory.
-- This is a 26-cluster replication, not an unseen-task generalization study or L4 RSI test.
+- live 前通过 fake-provider 端到端测试（四臂 runner + CEA-v2.1 增量适应度/no-op/infra 排除）。
+- 检查：attempt-2 增量成本/调用进入适应度；no-op 恰好观察一次；基础设施/UNKNOWN 结局不产生行为学习更新。
+- 从 live 事件日志记录 **`nsga3_parent_selection_calls` 与 `nsga3_survivor_selection_calls`**：**仅当实际计数 > 0 时才可声称使用了 NSGA-III 选择；两者均为 0 则如实报告**。**不得为产生调用而修改参数或在看到结果后重跑**。
+- 不得根据新结果调整权重、变异、干预映射、任务选择或分析。
 
-## 5. Algorithm fidelity
+## 5. 运行前门禁（全部通过方可 live）
 
-- The controller must use the R1.10 incremental attempt-2 cost/call fitness contract.
-- A selected no-op is observed exactly once with zero incremental cost/calls; infrastructure and UNKNOWN outcomes never become behavioral reward.
-- Record `policy_version`, `population_version`, selected genome, selection reason, lineage, `nsga3_parent_selection_calls`, and `nsga3_survivor_selection_calls`.
-- Claim NSGA-III selection was exercised only if live event counters show a positive call count. Do not change parameters after looking at outcomes.
+1. R1.11-FIX1 全部通过（历史估计不可变来源 + 测试 + manifest 哈希 + 全量测试 + 精确 FIX1 SHA clean-clone）。
+2. 本协议、runner 变更与测试已提交。
+3. 远端 HEAD 与冻结哈希核验；live 授权、密钥隔离、上游白名单/HTTPS、proxy 鉴权、请求校验、原子预留、续跑/对账与 fail-closed 行为就绪。
+4. 最小 canary：鉴权、usage 计量、账本对账通过后，方可进入 208 行复制。
+5. 若累计预算无法强制执行（canary/中断/续跑），不得开始 live。
 
-## 6. Budget and stopping
+## 6. 分析与最终门禁
 
-- Cumulative hard cap for the entire new R1.12 effort: CNY 2.00, including canary, all live requests, interrupted attempts, resumes, settled charges and UNKNOWN reservation upper bounds.
-- Warning line: CNY 1.80. Never reset or split the cap across run IDs. If multiple ledgers are unavoidable, aggregate them in a parent ledger and reduce each subsequent run's available cap to the remaining amount.
-- Per-scope request cap: 8.
-- On UNKNOWN cost, malformed ledger, ambiguous in-flight request, provider 5xx, SSE/transport failure or protocol error: stop all live activity, preserve artifacts and do not retry the uncertain request.
-- No balance queries, no automatic top-up, no further live run after the cap is reached.
-- If cumulative budget enforcement cannot be demonstrated before the canary, do not send any live request.
-
-## 7. Reproducibility and data integrity
-
-- Freeze this protocol and its hash before the first live call.
-- New outputs use a unique R1.12 run directory and new ledger. Never overwrite or merge historical R1.9/R1.10/R1.11 artifacts.
-- Validate all task/seed/arm keys and reject duplicates or missing rows before analysis.
-- Analysis script and output hashes go in the R1.12 manifest. Analysis must be deterministic.
-- Preserve Phase 0–3 data, the historical 312 rows, and R1.9's 208 rows byte-for-byte.
-- Final full tests and clean-clone must pass at the exact final origin/main SHA; no commits after the final gate.
-
-## 8. Interpretation limits
-
-A positive result supports only a same-suite fresh-seed replication under the tested model, prompts, budget and 26 task clusters. It does not establish generalization to unseen tasks, superiority on broader Agent tasks, or recursive self-improvement at L4.
+- 独立 R1.12 分析脚本（不改历史 R1.9 语义）：拒绝缺失/重复 (task,seed,arm) 键后重算全部结局与簇感知统计。
+- 全轮账本对账（canary/中断/续跑）：SETTLED + UNKNOWN 上界 ≤ ¥2.00。
+- Phase 0–3、历史 312 行与 R1.9 的 208 行逐字节保留；哈希、密钥扫描、status 一致性与 diff 核验。
+- 全量 `pytest tests/ -q` 与**最后一次提交后精确 origin/main SHA** 的 clean-clone。最终门禁后不再提交；若再提交，必须重跑。

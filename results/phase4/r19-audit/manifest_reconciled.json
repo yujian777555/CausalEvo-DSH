@@ -86,8 +86,8 @@
   },
   "sensitivity_artifacts": {
     "script": "scripts/analyze_r19_cluster_sensitivity.py",
-    "script_sha256": "b5b30db4a2af58afecb51ba8a05564ab3afee4db4aca2fefab3cbb5675184239",
+    "script_sha256": "5d177b63ce90546155d446e5fc951b4f9a0cb4be499e01c8c33f1ed120649ca6",
     "output": "results/phase4/r19-audit/sensitivity.json",
-    "output_sha256": "c2c57b34f1e19dce8f467cd27cd0a0b81a8788c5b64b2bfd2e518c194040cfa4"
+    "output_sha256": "32395e047770a11a057d150613073e0e337cad5094cdc3cc3f64423d2242671a"
   }
 }

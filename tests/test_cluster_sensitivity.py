@@ -71,8 +71,34 @@ def test_label_is_post_hoc_not_primary():
     out = json.loads((AUDIT / "sensitivity.json").read_text(encoding="utf-8"))
     assert out["label"] == "POST_HOC_CLUSTER_AWARE_SENSITIVITY"
     assert out["not_preregistered_primary"] is True
-    assert "previous_monte_carlo_estimates" in out, \
-        "previous 20000-permutation estimates must be preserved, not overwritten"
+
+
+def test_historical_estimates_preserved_exactly_after_two_regenerations():
+    """R1.11-FIX1: the three historical Monte Carlo records must survive every
+    regeneration, byte-identically and with exact p/stat/permutations/seed."""
+    import hashlib
+    import subprocess
+    import sys
+    script = REPO / "scripts" / "analyze_r19_cluster_sensitivity.py"
+    target = AUDIT / "sensitivity.json"
+    source = json.loads((AUDIT / "previous_monte_carlo_estimates.json").read_text(
+        encoding="utf-8"))
+    expected = source["estimates"]
+    hashes = []
+    for _ in range(2):
+        subprocess.run([sys.executable, str(script)], check=True,
+                       capture_output=True, text=True, timeout=120)
+        hashes.append(hashlib.sha256(target.read_bytes()).hexdigest())
+        out = json.loads(target.read_text(encoding="utf-8"))
+        got = out["previous_monte_carlo_estimates"]
+        assert set(got) == set(expected), "all three estimates must be retained"
+        for key, rec in expected.items():
+            assert got[key] == rec, f"historical record changed: {key}"
+        assert out["previous_monte_carlo_provenance"]["source_commit"] == \
+            "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e"
+        assert out["previous_monte_carlo_provenance"]["n_permutations"] == 20000
+        assert out["previous_monte_carlo_provenance"]["seed"] == 20261026
+    assert hashes[0] == hashes[1], "regeneration must be byte-identical"
 
 
 def test_regeneration_is_byte_deterministic(tmp_path):

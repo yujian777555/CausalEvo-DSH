@@ -326,31 +326,54 @@ def _read_ledger(path: Path) -> list[dict]:
             if l.strip()]
 
 
+def _read_ledger(path: Path) -> list[dict]:
+    if not path.is_file():
+        return []
+    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()
+            if l.strip()]
+
+
+def _round_spend(run_dirs: list[Path]) -> tuple[float, float]:
+    """Return (settled_cny, unknown_bound_cny) across run ledgers.
+
+    Used to enforce the CUMULATIVE round cap across canary/interruption/
+    resume: a later run's cap is the round cap minus earlier settled spend
+    and unresolved reservation bounds. Never a reset.
+    """
+    settled = 0.0
+    unknown_bound = 0.0
+    for d in run_dirs:
+        entries = _read_ledger(Path(d) / "proxy-ledger" / "ledger.jsonl")
+        settled += sum(e.get("cost_cny", 0.0) for e in entries
+                       if e.get("state") == "SETTLED")
+        for e in entries:
+            if e.get("state") == "RESERVED" and not any(
+                    x.get("request_id") == e["request_id"]
+                    and x.get("state") in ("SETTLED", "REJECTED")
+                    for x in entries):
+                unknown_bound += e.get("reserved_cny", 0.15704064)
+    return settled, unknown_bound
+
+
 def live_pilot(canary: bool, out_override: str | None,
                resume_dir: str | None = None,
-               previous_runs: list[str] | None = None) -> int:
+               previous_runs: list[str] | None = None,
+               seeds: list[int] | None = None,
+               run_tag: str = "phase4-r19") -> int:
     require_live_authorization()
     import os
     key = os.environ["DEEPSEEK_API_KEY"]
     previous_runs = previous_runs or []
+    seed_list = seeds or SEEDS
+    previous_settled, unknown_bound = _round_spend(
+        [Path(d) for d in previous_runs])
     if resume_dir:
         run_dir = Path(resume_dir)
         run_id = run_dir.name
         out_dir = run_dir.parent
-        # round accounting: previous runs' settled spend + this aborted run's
-        # unknown-bound reservations are subtracted from the round cap
-        previous_settled = 0.0
-        for d in previous_runs:
-            entries = _read_ledger(Path(d) / "proxy-ledger" / "ledger.jsonl")
-            previous_settled += sum(e.get("cost_cny", 0.0) for e in entries
-                                    if e.get("state") == "SETTLED")
-        aborted_entries = _read_ledger(run_dir / "proxy-ledger" / "ledger.jsonl")
-        unknown_bound = sum(e.get("reserved_cny", 0.15704064)
-                            for e in aborted_entries
-                            if e.get("state") == "RESERVED"
-                            and not any(x.get("request_id") == e["request_id"]
-                                        and x.get("state") in ("SETTLED", "REJECTED")
-                                    for x in aborted_entries))
+        # the aborted run's own unresolved reservations also count as unknown
+        _s, _u = _round_spend([run_dir])
+        unknown_bound += _u
         cap_cny = GLOBAL_CAP_CNY - previous_settled - unknown_bound
         if cap_cny <= 0.05:
             raise RuntimeError(f"round budget exhausted: remaining cap {cap_cny}")
@@ -362,6 +385,7 @@ def live_pilot(canary: bool, out_override: str | None,
                     completed.add(json.loads(line)["episode_id"])
         # operator-scoped reconcile of the aborted run's unresolved requests:
         # appended to the audit ledger (never silently cleared, never zeroed)
+        aborted_entries = _read_ledger(run_dir / "proxy-ledger" / "ledger.jsonl")
         final_states: dict[str, dict] = {}
         for e in aborted_entries:
             if e.get("request_id"):
@@ -382,10 +406,14 @@ def live_pilot(canary: bool, out_override: str | None,
             run_dir / "events.jsonl",
             pareto_front_path=FRONT, manifest_path=MANIFEST)
     else:
-        run_id = f"phase4-r19-{'canary' if canary else 'pilot'}-{new_run_id()}"
+        run_id = f"{run_tag}-{'canary' if canary else 'pilot'}-{new_run_id()}"
         out_dir = Path(out_override) if out_override else REPO / "results" / "phase4" / "live2"
         run_dir = out_dir / run_id
-        cap_cny = GLOBAL_CAP_CNY
+        # cumulative round cap: canary/interrupted spend and UNKNOWN bounds
+        # are subtracted BEFORE the fresh run's first request (no reset)
+        cap_cny = GLOBAL_CAP_CNY - previous_settled - unknown_bound
+        if cap_cny <= 0.05:
+            raise RuntimeError(f"round budget exhausted: remaining cap {cap_cny}")
         completed = set()
         controller = OnlineEvolutionController(pareto_front_path=FRONT,
                                                manifest_path=MANIFEST)
@@ -407,7 +435,7 @@ def live_pilot(canary: bool, out_override: str | None,
     events_written = len(controller.events) if resume_dir else 0
     warn_cap = cap_cny - 0.20  # internal warning line below the remaining cap
     try:
-        for seed in SEEDS:
+        for seed in seed_list:
             rng = np.random.default_rng(seed)
             for ti, spec in enumerate(specs):
                 for arm in ARMS:
@@ -475,7 +503,7 @@ def live_pilot(canary: bool, out_override: str | None,
     n_unknown = sum(1 for s in final_states.values() if s == "UNKNOWN")
     n_unsettled = sum(1 for s in final_states.values() if s in ("RESERVED", "SENT"))
     (run_dir / "manifest.json").write_text(json.dumps({
-        "run_id": run_id, "canary": canary, "arms": ARMS, "seeds": SEEDS,
+        "run_id": run_id, "canary": canary, "arms": ARMS, "seeds": seed_list,
         "task_count": len(specs), "rows": rows, "aborted": aborted,
         "global_cap_cny": GLOBAL_CAP_CNY, "warn_cap_cny": warn_cap,
         "cap_cny_this_run": cap_cny,
@@ -506,14 +534,20 @@ def main() -> int:
     p.add_argument("--previous-runs", default="",
                    help="comma-separated earlier run dirs whose settled spend "
                         "is subtracted from the round cap")
+    p.add_argument("--seeds", default="",
+                   help="comma-separated seeds (default: historical 20261014,20261015)")
+    p.add_argument("--run-tag", default="phase4-r19",
+                   help="run-id prefix (e.g. phase4-r12-replication)")
     args = p.parse_args()
     if args.offline_smoke:
         return offline_smoke()
     if args.live or args.canary:
+        seed_list = [int(s) for s in args.seeds.split(",") if s.strip()] or None
         return live_pilot(canary=args.canary, out_override=args.out,
                           resume_dir=args.resume,
                           previous_runs=[d for d in args.previous_runs.split(",")
-                                         if d.strip()])
+                                         if d.strip()],
+                          seeds=seed_list, run_tag=args.run_tag)
     p.error("choose --offline-smoke or --live/--canary")
     return 2
 

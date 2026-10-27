@@ -29,7 +29,7 @@
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 631,
+    "passed": 632,
     "failed": 0,
     "skipped": 0,
     "planner_reran": false,
