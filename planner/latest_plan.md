@@ -1,122 +1,91 @@
-# CE-DSH-P4-R1.12-REVIEW-FIX2 — Offline Audit Closure
+# CE-DSH-P4-R1.12-REVIEW-FIX3 — Final Offline Audit Closure
 
-Reviewed executor HEAD: `c436de3086c31c6f7bdb21a32c83b06b7c173ed4`
-Review: `planner/reviews/CE-DSH-P4-R1_12-review-fix1-independent-review.md`
+Reviewed executor HEAD: `e00630d57104ba7d4700e0c72bd3af4d36c94ae7`
+Review: `planner/reviews/CE-DSH-P4-R1_12-review-fix2-independent-review.md`
 Decision: **REQUEST CHANGES**.
 Next actor: Kimi-Executor.
 
 ## Absolute boundary
 
-**Offline-only: zero new real API calls and zero new spend.** Do not rerun the live experiment or canary, do not query account balance, do not enter Phase 5, and do not alter historical R1.9 or Phase 0–3 frozen artifacts. R1.12 raw tasks, events, and proxy ledgers must remain byte-for-byte unchanged.
+**Offline only. Zero additional real API calls and zero new spend.** Do not rerun the live pilot or canary, do not query account balance, do not enter Phase 5, and do not modify R1.12 raw tasks/events/proxy ledger or frozen Phase 0–3/R1.9 artifacts.
 
-Before modifying anything, fetch the latest `origin/main`, inspect the Planner review commit and this plan, and verify the worktree is clean. Do not reset or overwrite any existing commits.
+Fetch latest `origin/main` first, inspect the FIX2 independent review and this plan, and preserve all existing commits. The review commit itself changes main; use the current remote HEAD after these Planner updates as your starting point.
 
-## Task A — Fix the final-SHA gate and status/report contradiction
+## Task A — Make the symlink regression test genuinely exercise the verifier
 
-The current main SHA at review time was `c436de3086c31c6f7bdb21a32c83b06b7c173ed4`, but the committed executor report records clean-clone PASS only for `9488a3f7f9ddde10442e0d25e4c1ebded1fc574e`. Commit `c436de` is a later status/report-only commit. Therefore the exact-final-SHA gate has **not** been demonstrated for current main, regardless of the user-facing summary.
+File: `tests/test_r12_hashes.py`
 
-- Keep the already reported 655-pass suite as Executor-reported until you actually rerun it.
-- Normalize `status.json` and `planner/executor_report.md` to distinguish the code/test commit, previously tested SHA, current pre-fix SHA, and eventual final SHA.
-- Do not mark the final gate PASS before running it on the exact final SHA.
-- Keep the phase stopped at R1.12 offline review; no live work and no Phase 5.
-- All status/report edits must happen **before** the final clean-clone command.
+The current test creates a symlink under `tmp_path` (normally outside the repository) and then calls `link.relative_to(REPO)`. On a platform where symlink creation succeeds, that raises `ValueError` before the verifier runs. On the reported Windows account, the test is skipped, so the symlink containment behavior remains untested.
 
-## Task B — Harden the R1.12 artifact hash verifier
+- Create the symlink in a temporary directory under the real allowed artifact root, such as `results/phase4/live2/`.
+- Point it to a file outside that allowed root (for example, the repository's `status.json`).
+- Use the manifest path relative to `REPO`, call the verifier, and assert it rejects the resolved symlink escape.
+- Remove the temporary symlink/directory in a `finally` block even on assertion failure.
+- Skip only if symlink creation genuinely is unsupported or denied. Do not count a skipped case as passed.
+- Keep parent traversal, absolute path, inventory, malformed hash/entry, missing-file and hash-mismatch tests.
 
-Files:
-- `scripts/verify_r12_hashes.py`
-- `scripts/build_r12_manifest.py`
-- `tests/test_r12_hashes.py`
+Do not weaken the verifier to make the test pass.
 
-Two gaps remain.
+## Task B — Make the Holm mapping regression test non-vacuous
 
-### B1. Enforce resolved path containment
+File: `tests/test_holm_mapping.py`
 
-The verifier checks the raw string prefix, then uses `str(resolved_path).startswith(str(REPO))`. This permits a path like `results/phase4/live2/../../../status.json`: it begins with an allowed raw prefix and resolves to another file inside the repository.
+The current test contains `assert ordered_keys != sorted(secondary) or True`, which always passes. It also does not assert the raw p-values are distinct or that raw-p ordering actually differs from lexical key ordering.
 
-- Resolve all paths against the canonical repository root.
-- Require the resolved path to be inside the specific allowed root corresponding to its artifact class, not just anywhere inside the repository.
-- Use path-aware containment such as `Path.relative_to`, not string-prefix matching.
-- Reject absolute paths, parent traversal, symlink escapes, malformed hashes, and paths outside the allowed artifact roots.
-- Add tests for traversal from an allowed prefix to `status.json`, absolute paths, and symlink escape where supported.
+- Remove the tautological assertion.
+- Prefer extracting a small pure helper that accepts a mapping from comparison key to raw p-value and returns the Holm-adjusted p-values by the same keys.
+- Test a deterministic fixture with three distinct raw p-values whose lexical key order differs from p-value order, for example 0.20, 0.01, and 0.04. Assert the raw values are distinct, the two orderings differ, and the mathematically correct adjusted values are returned to their original keys.
+- Keep an integration test verifying the analyzer applies the helper only to the three preregistered secondary comparisons and leaves the primary `CEA-v2-online vs B1-random` unadjusted.
+- Keep deterministic tie handling and cumulative-maximum monotonicity.
+- Preserve the current experiment's raw data and statistical definitions.
 
-### B2. Enforce the exact manifest inventory
+The production mapping code currently appears correctly keyed; this task is to ensure the regression test actually protects that behavior.
 
-The verifier currently loops only over entries present. Removing a required artifact entry can still leave the remaining entries valid.
+## Task C — Reconcile all test counts and active status fields
 
-- Require the exact 12 expected artifact labels.
-- Reject missing labels, unexpected labels, malformed entries, and non-SHA256 values.
-- Add a regression test that deletes a required label (e.g. `pilot_ledger`) and confirms verification fails.
-- Keep the manifest deterministic and avoid self-referential hashes.
-- Recompute and verify all 12 hashes after any permitted derived-artifact update.
+Files: `status.json`, `planner/executor_report.md`.
 
-Do not edit raw tasks/events/ledger files.
+The current records conflict:
+- `status.json` says 663 passed / 0 failed / 0 skipped;
+- its `count_note` says 668 passed / 0 failed / 0 skipped;
+- the Executor report says the full suite had 663 passed / 0 failed / 0 skipped;
+- the hash-verifier suite is reported as 9 passed / 1 skipped;
+- the final user execution summary reports 663 passed / 0 failed / 1 skipped;
+- clean-clone's key suites report 240 passed / 1 skipped.
+The active status also still reports `current_remote_head=4349161...` while the current main at the time of review was `e00630d...`, and historical gate text remains mixed into active fields.
 
-## Task C — Correct Holm result-to-comparison mapping
+Required:
+1. Rerun the focused tests and `pytest tests/ -q` after Task A and Task B.
+2. Record the exact terminal output, exit code, passed count and skipped count. Do not infer or hand-edit counts.
+3. Ensure `status.json` and `planner/executor_report.md` match that exact output. Distinguish full-suite results from clean-clone's key-suite subset.
+4. Keep historical notes but mark them clearly historical; update active `current_remote_head`, `reviewed_executor_head`, gate SHA, and gate state only with values that are true at the time recorded.
+5. Until the terminal gate passes on the exact final SHA, set `phase_status=CHANGES_REQUESTED` (or an equally explicit non-ready state), `next_actor=Kimi-Executor`, and list these blockers. Do not mark `READY_FOR_REVIEW` prematurely.
+6. Do not make any post-gate commit just to record the gate result.
 
-File: `scripts/analyze_r12_replication.py`
+## Task D — Final preservation and exact-SHA gate
 
-The standalone `holm_step_down` calculation uses cumulative maxima, but the integration code sorts the p-values and then assigns adjusted values by lexicographically sorted comparison names. For nontrivial p-values, this can attach an adjusted p-value to the wrong comparison.
+1. Verify the canonical task manifest SHA-256 remains `fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483`; exactly 26 tasks, seeds `20261027, 20261028`, four arms, 208 unique task/seed/arm keys.
+2. Run `scripts/verify_r12_hashes.py` and confirm all 12 required artifacts. Confirm raw tasks/events/proxy ledger bytes and historical frozen artifacts remain unchanged.
+3. Reconcile the committed ledger and verify the reported 738 settled requests, CNY 1.0397171982 settled cost and UNKNOWN bound 0 from evidence. Confirm zero new API calls and zero new spend.
+4. Finish all code, tests, status/report, manifests and review-state changes before the final gate.
+5. Commit and push; confirm local HEAD = `git ls-remote origin main` and the worktree is clean.
+6. Run `python scripts/clean_clone_check.py <EXACT_FINAL_ORIGIN_MAIN_SHA>` with the exact SHA just read from current `origin/main`. Confirm the command validates that exact SHA and record the actual output/exit code.
+7. **Do not commit or edit any file after the gate.** If any change follows, rerun the gate on the new final SHA. A docs-only commit also invalidates the previous exact-final-SHA claim.
 
-- Preserve the association between each raw p-value and its comparison key.
-- Sort (raw p-value, comparison key) pairs by raw p-value, calculate Holm step-down adjusted values, and write each adjusted value back to its originating comparison key. Handle ties deterministically.
-- Keep the primary comparison `CEA-v2-online vs B1-random` unadjusted.
-- Apply Holm only to the three preregistered secondary comparisons.
-- Preserve the frozen estimand, task clustering, bootstrap seed/method, and raw data.
+If the gate cannot be run or fails, report that honestly and leave the phase blocked.
 
-Add an integration regression test with distinct nontrivial secondary p-values, including a case where lexical comparison order differs from p-value order. Assert the correct adjusted p-value is assigned to each comparison key. A unit test that only checks the returned sorted list is insufficient.
+## Scientific interpretation and stop boundary
 
-The current observed secondary p-values are 1.0, 0.53125, and 1.0, with adjusted values all 1.0; this bug does not change the current scientific conclusion, but must be fixed for statistical correctness.
-
-## Task D — Make R1.12 analysis output reproducible across clones
-
-The committed `analysis.json` stores a machine-specific absolute Windows path in `run_dir`. Re-running the analyzer in a clean clone or another workspace changes that field and therefore changes the output hash even if all statistical results are identical.
-
-- Store a stable repository-relative POSIX path (or another documented stable run identifier) in `analysis.json`.
-- Re-run the analyzer against the existing R1.12 raw tasks without changing the raw task/event/ledger bytes.
-- Rebuild `manifest_reconciled.json` and verify all 12 entries.
-- Add a test that executes analysis twice in isolated output locations or with different checkout roots and proves normalized analysis output is byte-identical.
-- Clearly distinguish deterministic derived output from immutable raw experimental data.
-
-Do not change statistical definitions or task outcomes.
-
-## Task E — Tests, preservation, and final gate
-
-1. Add/adjust focused tests for path containment, exact artifact inventory, Holm key mapping, and deterministic analysis output.
-2. Run the focused test suites, then the full `pytest tests/ -q`. Record exact output and exit code.
-3. Verify the canonical task manifest hash remains `fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483`, with exactly 26 tasks, seeds `20261027, 20261028`, four arms, 208 unique rows.
-4. Verify the reconciled artifact manifest after the last derived-output regeneration. Confirm historical Monte Carlo source/provenance and Phase 0–3/R1.9 frozen artifacts remain unchanged; confirm R1.12 raw tasks/events/proxy ledger hashes are unchanged.
-5. Run the secret scan and ledger reconciliation; report 738 settled requests, CNY 1.0397171982 settled cost, UNKNOWN bound 0, and zero new calls/spend only if confirmed by the committed evidence.
-6. Finish all code, test, derived-artifact, manifest, status, report, and plan changes before the terminal gate.
-7. Commit and push all changes. Verify local HEAD equals `git ls-remote origin main`, and the worktree is clean.
-8. Run `python scripts/clean_clone_check.py <EXACT_FINAL_ORIGIN_MAIN_SHA>` using the exact SHA returned by the current `origin/main`. Verify the command itself confirms that SHA.
-9. **Do not make any commit after the final gate.** If any change is needed after the gate, rerun the gate on the new final SHA. Do not write a post-gate “result-recording” commit.
-
-If clean-clone does not run or fails, report the blocker honestly; do not claim PASS.
-
-## Scientific conclusion and stop boundary
-
-Preserve the narrow conclusion:
-
+The scientific result is unchanged:
 - Primary CEA-v2-online vs B1-random: paired difference 0, unadjusted exact cluster p = 1.0, reported 95% CI [-0.076923, 0.076923].
-- No evidence of CEA-v2 superiority over random or static Pareto selection.
+- No evidence of CEA-v2 superiority.
 - Live NSGA-III parent-selection calls = 0 and survivor-selection calls = 0.
-- Only 5 behavioral observations; no claim of reliable learned selection policy.
+- Only five behavioral observations; no claim of a reliable learned selection policy.
 - Same-suite fresh-seed replication, not unseen-task generalization.
 - L4 RSI is not implemented.
 
-No additional API calls, no account balance query, no new pilot, and no Phase 5.
+No additional API calls, no balance query, no new pilot, and no Phase 5.
 
 ## Required final response
 
-Report:
-1. Fixes and changed files.
-2. Regression-test results for path containment, required manifest labels, Holm key mapping, and deterministic output.
-3. Raw-data preservation and all 12 artifact hashes verified.
-4. Full test count and actual exit code.
-5. Final commit SHA, remote equality, and clean worktree.
-6. Exact final-SHA clean-clone command/output/exit code.
-7. Zero new API calls and zero new spend.
-8. Remaining limitations and explicit no-Phase-5 statement.
-
-After all gates pass, set `phase_status=READY_FOR_REVIEW`, `next_actor=GPT-Planner`, and stop.
+Report changed files; focused and full test outputs with actual skip count; raw-data preservation and 12 hash verification; exact final SHA, remote equality and clean worktree; exact final-SHA clean-clone output and exit code; zero new API calls/spend; remaining limitations. After every gate passes, set `phase_status=READY_FOR_REVIEW`, `next_actor=GPT-Planner`, and stop.
