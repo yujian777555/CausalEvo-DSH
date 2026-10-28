@@ -90,7 +90,13 @@ def main(benchmarks_root: Path | None = None) -> int:
                 if (t, s, arm) not in keys:
                     raise ValueError(f"missing row {t}/{s}/{arm}")
 
-    out = {"run_dir": str(run_dir), "rows_total": len(rows),
+    try:
+        stable_run_id = run_dir.relative_to(REPO).as_posix()
+    except ValueError:
+        # outside the repository: use the stable run DIRECTORY NAME, so two
+        # different checkout roots produce identical analysis output
+        stable_run_id = run_dir.name
+    out = {"run_dir": stable_run_id, "rows_total": len(rows),
            "coverage": {"tasks": len({r["task_id"] for r in rows}),
                         "seeds": seeds, "unique_keys": len(keys),
                         "duplicates": dups},
@@ -121,11 +127,14 @@ def main(benchmarks_root: Path | None = None) -> int:
     # (with cumulative maximum).
     primary_key = "CEA-v2-online vs B1-random"
     secondary = [(a, b) for a, b in comparisons if f"{a} vs {b}" != primary_key]
-    pvals = sorted(comps[f"{a} vs {b}"]["exact_cluster_signflip_p"]
+    # P4-R1.12-REVIEW-FIX2 Task C: keep the raw-p -> comparison-key association.
+    # Sort (raw_p, key) pairs by raw p, compute Holm step-down, then write each
+    # adjusted value back to its ORIGINATING key (ties broken by key name).
+    pairs = sorted((comps[f"{a} vs {b}"]["exact_cluster_signflip_p"], f"{a} vs {b}")
                    for a, b in secondary)
-    adjusted = holm_step_down(pvals)
-    for (a, b), adj in zip(sorted(secondary), adjusted):
-        comps[f"{a} vs {b}"]["holm_adj_p"] = adj
+    adjusted = holm_step_down([p for p, _ in pairs])
+    for (_p, key), adj in zip(pairs, adjusted):
+        comps[key]["holm_adj_p"] = adj
     comps[primary_key]["holm_adj_p"] = None  # primary is NOT Holm-adjusted
     for k, v in comps.items():
         if k == primary_key:

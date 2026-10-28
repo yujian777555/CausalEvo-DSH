@@ -1,5 +1,5 @@
-"""Regression tests for the R1.12 artifact-hash manifest and verifier
-(P4-R1.12-REVIEW-FIX1 Task A)."""
+"""Regression tests for the hardened R1.12 hash verifier
+(P4-R1.12-REVIEW-FIX2 Task B: containment + exact inventory)."""
 
 import json
 import subprocess
@@ -33,15 +33,92 @@ def test_build_and_verify_pass():
     assert "HASH VERIFIED: 12 artifacts" in proc.stdout
 
 
-def test_changed_content_rejected(tmp_path):
+def test_parent_traversal_to_status_rejected(tmp_path):
     _build()
     doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    doc["artifacts"]["pilot_analysis"]["sha256"] = "0" * 64
+    doc["artifacts"]["evil"] = {"path": "results/phase4/live2/../../../status.json",
+                                "sha256": "0" * 64}
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps(doc), encoding="utf-8")
     proc = _verify(bad)
     assert proc.returncode == 1
-    assert "hash mismatch" in proc.stdout
+    assert "parent traversal" in proc.stdout
+
+
+def test_absolute_path_rejected(tmp_path):
+    _build()
+    doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    doc["artifacts"]["evil"] = {"path": "/etc/passwd", "sha256": "0" * 64}
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps(doc), encoding="utf-8")
+    proc = _verify(bad)
+    assert proc.returncode == 1
+    assert "absolute path" in proc.stdout
+
+
+def test_symlink_escape_rejected_if_supported(tmp_path):
+    _build()
+    # create a symlink under an allowed root that resolves OUTSIDE it
+    link_dir = tmp_path / "allowed"
+    link_dir.mkdir()
+    target = REPO / "status.json"
+    link = link_dir / "tasks.jsonl"
+    try:
+        link.symlink_to(target)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlink creation not supported on this platform")
+    doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    doc["artifacts"]["pilot_tasks"]["path"] = str(link.relative_to(REPO))
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps(doc), encoding="utf-8")
+    proc = _verify(bad)
+    # must reject because the resolved path leaves the allowed artifact root
+    assert proc.returncode == 1
+    assert "escapes allowed artifact root" in proc.stdout
+
+
+def test_missing_required_label_rejected(tmp_path):
+    _build()
+    doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    del doc["artifacts"]["pilot_ledger"]
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps(doc), encoding="utf-8")
+    proc = _verify(bad)
+    assert proc.returncode == 1
+    assert "inventory mismatch" in proc.stdout
+
+
+def test_unexpected_label_rejected(tmp_path):
+    _build()
+    doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    doc["artifacts"]["unexpected"] = {"path": "docs/x", "sha256": "0" * 64}
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps(doc), encoding="utf-8")
+    proc = _verify(bad)
+    assert proc.returncode == 1
+    assert "inventory mismatch" in proc.stdout
+
+
+def test_malformed_sha256_rejected(tmp_path):
+    _build()
+    doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    doc["artifacts"]["pilot_analysis"]["sha256"] = "not-a-hash"
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps(doc), encoding="utf-8")
+    proc = _verify(bad)
+    assert proc.returncode == 1
+    assert "malformed sha256" in proc.stdout
+
+
+def test_malformed_entry_rejected(tmp_path):
+    _build()
+    doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    doc["artifacts"]["pilot_analysis"] = "not-an-object"
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps(doc), encoding="utf-8")
+    proc = _verify(bad)
+    assert proc.returncode == 1
+    assert "malformed entry" in proc.stdout
 
 
 def test_missing_file_rejected(tmp_path):
@@ -55,24 +132,12 @@ def test_missing_file_rejected(tmp_path):
     assert "missing file" in proc.stdout
 
 
-def test_path_traversal_rejected(tmp_path):
+def test_hash_mismatch_rejected(tmp_path):
     _build()
     doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    doc["artifacts"]["evil"] = {"path": "../../etc/passwd", "sha256": "0" * 64}
+    doc["artifacts"]["pilot_analysis"]["sha256"] = "0" * 64
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps(doc), encoding="utf-8")
     proc = _verify(bad)
     assert proc.returncode == 1
-    assert "path traversal" in proc.stdout
-
-
-def test_manifest_has_required_entries_and_no_self_hash():
-    doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    artifacts = doc["artifacts"]
-    for key in ("protocol", "analysis_script", "pilot_tasks", "pilot_events",
-                "pilot_ledger", "pilot_controller_state", "pilot_analysis",
-                "canary_tasks", "canary_events", "canary_ledger", "canary_manifest",
-                "pilot_original_manifest"):
-        assert key in artifacts, f"missing {key}"
-        assert len(artifacts[key]["sha256"]) == 64
-    assert "manifest_reconciled.json" not in artifacts, "no self-referential hash"
+    assert "hash mismatch" in proc.stdout

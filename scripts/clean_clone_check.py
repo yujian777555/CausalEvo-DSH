@@ -91,6 +91,8 @@ def main() -> int:
              "tests/test_r12_hashes.py",
              "tests/test_holm_step_down.py",
              "tests/test_frozen_task_set.py",
+             "tests/test_holm_mapping.py",
+             "tests/test_analysis_determinism.py",
              "tests/test_cea_v2_integration.py",
              "tests/test_cea_v2_offline.py",
              "tests/test_analyze_r19.py",

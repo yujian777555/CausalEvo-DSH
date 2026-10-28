@@ -1,5 +1,5 @@
 {
-  "run_dir": "D:\\CausalEvo-DSH\\results\\phase4\\live2\\phase4-r12-replication-pilot-20261027T034229Z",
+  "run_dir": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z",
   "rows_total": 208,
   "coverage": {
     "tasks": 26,

@@ -8,7 +8,7 @@
     },
     "analysis_script": {
       "path": "scripts/analyze_r12_replication.py",
-      "sha256": "c6193c55cce249d512842720feead0ded257dacbc955baf081c0016722c9410d"
+      "sha256": "74954045e4eb0adb578beea9bc0a653ed2daf58bb75507a7a0baea2508393f3c"
     },
     "pilot_tasks": {
       "path": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z/tasks.jsonl",
@@ -28,7 +28,7 @@
     },
     "pilot_analysis": {
       "path": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z/analysis.json",
-      "sha256": "e33fdb6d91f34ae6ad05d096de688892bf4631ede4e9bdab7d7e1e52025b20eb"
+      "sha256": "fb6387ce333722be730fed4c5d692af00c1ae051073c6aad7018432cb56f4ba9"
     },
     "canary_tasks": {
       "path": "results/phase4/live2/phase4-r12-replication-canary-20261027T034020Z/tasks.jsonl",
