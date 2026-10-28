@@ -1,5 +1,5 @@
 {
-  "run_dir": "results\\phase4\\live2\\phase4-r12-replication-pilot-20261027T034229Z",
+  "run_dir": "D:\\CausalEvo-DSH\\results\\phase4\\live2\\phase4-r12-replication-pilot-20261027T034229Z",
   "rows_total": 208,
   "coverage": {
     "tasks": 26,
@@ -69,6 +69,16 @@
       "latency_ms_mean": 10854.461538461539
     }
   },
+  "primary_comparison": {
+    "arm_pair": "CEA-v2-online vs B1-random",
+    "exact_cluster_signflip_p_unadjusted": 1.0,
+    "decision_rule": "primary exact p UNADJUSTED; secondary comparisons use Holm step-down"
+  },
+  "secondary_holm_family": [
+    "CEA-v2-online vs B5-v1-frozen-pareto",
+    "CEA-v2-online vs B0-original",
+    "B5-v1-frozen-pareto vs B1-random"
+  ],
   "comparisons": {
     "CEA-v2-online vs B1-random": {
       "paired_rows": 52,
@@ -81,7 +91,7 @@
       ],
       "exact_cluster_signflip_p": 1.0,
       "mcnemar_exact_p": 1.0,
-      "holm_adj_p": 1.0,
+      "holm_adj_p": null,
       "evidence_of_improvement": false
     },
     "CEA-v2-online vs B5-v1-frozen-pareto": {

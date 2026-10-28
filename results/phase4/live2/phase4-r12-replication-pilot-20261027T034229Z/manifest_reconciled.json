@@ -1,0 +1,54 @@
+{
+  "reconciled_by": "scripts/build_r12_manifest.py",
+  "note": "cross-run SHA-256 manifest for R1.12; this file itself is not hashed inside itself (no self-reference)",
+  "artifacts": {
+    "protocol": {
+      "path": "docs/PHASE4_R1_12_REPLICATION_PROTOCOL.md",
+      "sha256": "5b9e519c67e8f69ce557068f9235705940f1d9468bf79bbb70bc5ca827a4a32f"
+    },
+    "analysis_script": {
+      "path": "scripts/analyze_r12_replication.py",
+      "sha256": "c6193c55cce249d512842720feead0ded257dacbc955baf081c0016722c9410d"
+    },
+    "pilot_tasks": {
+      "path": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z/tasks.jsonl",
+      "sha256": "b07c743779bc678ed7723a0bc5bf9af429aca2af3d59a45f43e4a9a1146a6220"
+    },
+    "pilot_events": {
+      "path": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z/events.jsonl",
+      "sha256": "ad5a5fda2818498912fc423da8312aaf6e9e3e7a69aecfac13dbc59228129986"
+    },
+    "pilot_ledger": {
+      "path": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z/proxy-ledger/ledger.jsonl",
+      "sha256": "a8f922ba5695d2258c35c4577f5aeb806c00bca55e428452f41b1bf758e944bb"
+    },
+    "pilot_controller_state": {
+      "path": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z/controller_state.json",
+      "sha256": "1c31720fba4cc535a6164915e861e5a5c5bd046f14a58708720704a1553b1855"
+    },
+    "pilot_analysis": {
+      "path": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z/analysis.json",
+      "sha256": "e33fdb6d91f34ae6ad05d096de688892bf4631ede4e9bdab7d7e1e52025b20eb"
+    },
+    "canary_tasks": {
+      "path": "results/phase4/live2/phase4-r12-replication-canary-20261027T034020Z/tasks.jsonl",
+      "sha256": "eb6dc932cff11cae2ac876a6ae3c259452361f20f77de2a02a2edde9821a3662"
+    },
+    "canary_events": {
+      "path": "results/phase4/live2/phase4-r12-replication-canary-20261027T034020Z/events.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "canary_ledger": {
+      "path": "results/phase4/live2/phase4-r12-replication-canary-20261027T034020Z/proxy-ledger/ledger.jsonl",
+      "sha256": "4b05f13319379d235419b30aa96708ced9ee5f4890f23830c2e8819708f4f66e"
+    },
+    "canary_manifest": {
+      "path": "results/phase4/live2/phase4-r12-replication-canary-20261027T034020Z/manifest.json",
+      "sha256": "d48fe662e720a56998e9351ba12fb8782135f258b9e8dcde1be297a510293a55"
+    },
+    "pilot_original_manifest": {
+      "path": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z/manifest.json",
+      "sha256": "9c265f65a5d1328dc6cf734a32b7cc78aa32de2b19c8c4a7e3fcb0a97b026196"
+    }
+  }
+}

@@ -48,7 +48,9 @@ def _run(d):
 
 def test_analysis_structure_and_counters(tmp_path):
     rows = []
-    for t in ["t1", "t2"]:
+    tasks = sorted(p.name for p in (REPO / "benchmarks" / "tasks").iterdir()
+                   if p.is_dir())
+    for t in tasks:
         for seed in (20261027, 20261028):
             for arm in a12.ARMS_R12:
                 rows.append(_row(t, seed, arm, final=(arm != "CEA-v2-online")))
@@ -56,7 +58,7 @@ def test_analysis_structure_and_counters(tmp_path):
         {"kind": "evolve", "nsga3_parent_selection_calls": 1,
          "nsga3_survivor_selection_calls": 0}])
     out = _run(d)
-    assert out["rows_total"] == 16
+    assert out["rows_total"] == 208
     assert out["coverage"]["seeds"] == [20261027, 20261028]
     assert out["algorithm_fidelity"]["nsga3_parent_selection_calls"] == 1
     assert out["algorithm_fidelity"]["nsga3_survivor_selection_calls"] == 0

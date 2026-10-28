@@ -19,21 +19,72 @@ from analyze_r19_cluster_sensitivity import (analyze as exact_analyze,
                                              task_mean_differences)
 
 ARMS_R12 = ["B0-original", "B1-random", "B5-v1-frozen-pareto", "CEA-v2-online"]
+REPO = Path(__file__).resolve().parents[1]
 
 
-def main() -> int:
+def holm_step_down(pvals: list[float]) -> list[float]:
+    """Holm step-down adjusted p-values with cumulative maximum.
+
+    Sort ascending, adjust p_i -> min(1, (m - i) * p_i (0-based rank i), then
+    enforce monotonicity via running maximum. Clamped to [0, 1].
+    """
+    if not pvals:
+        return []
+    ordered = sorted(pvals)
+    m = len(ordered)
+    adjusted = []
+    running = 0.0
+    for rank, p in enumerate(ordered):
+        running = max(running, min(1.0, (m - rank) * p))
+        adjusted.append(running)
+    return adjusted
+
+
+def _canonical_task_manifest(root: Path) -> tuple[str, set[str]]:
+    """Compute the canonical task-manifest SHA-256 and the frozen task ID set.
+
+    Matches the preregistered value fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483:
+    SHA-256 of the JSON mapping of sorted relative file paths to their file
+    SHA-256 values, over all files under benchmarks/tasks.
+    """
+    import hashlib
+    entries = {}
+    for p in sorted(root.rglob("*")):
+        if p.is_file():
+            entries[str(p.relative_to(root))] = hashlib.sha256(p.read_bytes()).hexdigest()
+    blob = json.dumps(entries, sort_keys=True).encode()
+    return hashlib.sha256(blob).hexdigest(), {p.name for p in root.iterdir() if p.is_dir()}
+
+
+def main(benchmarks_root: Path | None = None) -> int:
     import sys
     run_dir = Path(sys.argv[1])
     rows = [json.loads(l) for l in (run_dir / "tasks.jsonl").read_text(
         encoding="utf-8").splitlines() if l.strip()]
+    # P4-R1.12-REVIEW-FIX1 Task C: validate against the CANONICAL frozen task
+    # set and its manifest hash, not merely the observed task IDs.
+    root = benchmarks_root or (REPO / "benchmarks" / "tasks")
+    expected_hash, expected_tasks = _canonical_task_manifest(root)
+    if expected_hash != "fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483":
+        raise ValueError(f"canonical task manifest hash mismatch: {expected_hash}")
+    observed_tasks = {r["task_id"] for r in rows}
+    if observed_tasks != expected_tasks:
+        raise ValueError(
+            f"frozen task set mismatch: missing={sorted(expected_tasks - observed_tasks)}, "
+            f"unexpected={sorted(observed_tasks - expected_tasks)}")
     keys = Counter((r["task_id"], r["seed"], r["arm"]) for r in rows)
     dups = [k for k, n in keys.items() if n > 1]
     if dups:
         raise ValueError(f"duplicate (task_id, seed, arm) keys: {dups}")
+    if len(rows) != 208:
+        raise ValueError(f"expected exactly 208 rows, got {len(rows)}")
     seeds = sorted({r["seed"] for r in rows})
     if seeds != [20261027, 20261028]:
         raise ValueError(f"unexpected seeds for R1.12: {seeds}")
-    for t in sorted({r["task_id"] for r in rows}):
+    observed_arms = {r["arm"] for r in rows}
+    if observed_arms != set(ARMS_R12):
+        raise ValueError(f"unexpected arms: {sorted(observed_arms)}")
+    for t in sorted(expected_tasks):
         for s in seeds:
             for arm in ARMS_R12:
                 if (t, s, arm) not in keys:
@@ -64,15 +115,34 @@ def main() -> int:
             "exact_cluster_signflip_p": p_exact,
             "mcnemar_exact_p": p_mcn,
         }
-    # Holm across all comparisons
-    pvals = sorted((v["exact_cluster_signflip_p"], k) for k, v in comps.items())
-    m = len(pvals)
-    for rank, (p, key) in enumerate(pvals):
-        comps[key]["holm_adj_p"] = min(1.0, p * (m - rank))
+    # P4-R1.12-REVIEW-FIX1 Task B: the PRIMARY comparison (CEA-v2-online vs
+    # B1-random) uses its exact cluster sign-flip p UNADJUSTED; only the three
+    # preregistered SECONDARY comparisons enter the Holm step-down family
+    # (with cumulative maximum).
+    primary_key = "CEA-v2-online vs B1-random"
+    secondary = [(a, b) for a, b in comparisons if f"{a} vs {b}" != primary_key]
+    pvals = sorted(comps[f"{a} vs {b}"]["exact_cluster_signflip_p"]
+                   for a, b in secondary)
+    adjusted = holm_step_down(pvals)
+    for (a, b), adj in zip(sorted(secondary), adjusted):
+        comps[f"{a} vs {b}"]["holm_adj_p"] = adj
+    comps[primary_key]["holm_adj_p"] = None  # primary is NOT Holm-adjusted
     for k, v in comps.items():
-        v["evidence_of_improvement"] = bool(
-            v["paired_diff"] is not None and v["paired_diff"] >= 0.10
-            and v["holm_adj_p"] < 0.05 and v["cluster_bootstrap_ci95"][0] > 0)
+        if k == primary_key:
+            v["evidence_of_improvement"] = bool(
+                v["paired_diff"] is not None and v["paired_diff"] >= 0.10
+                and v["exact_cluster_signflip_p"] < 0.05
+                and v["cluster_bootstrap_ci95"][0] > 0)
+        else:
+            v["evidence_of_improvement"] = bool(
+                v["paired_diff"] is not None and v["paired_diff"] >= 0.10
+                and v["holm_adj_p"] < 0.05 and v["cluster_bootstrap_ci95"][0] > 0)
+    out["primary_comparison"] = {
+        "arm_pair": primary_key,
+        "exact_cluster_signflip_p_unadjusted": comps[primary_key]["exact_cluster_signflip_p"],
+        "decision_rule": "primary exact p UNADJUSTED; secondary comparisons use Holm step-down",
+    }
+    out["secondary_holm_family"] = [f"{a} vs {b}" for a, b in secondary]
     out["comparisons"] = comps
     # algorithm-fidelity counters from the live event log (never fabricated)
     events_file = run_dir / "events.jsonl"
