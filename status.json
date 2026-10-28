@@ -12,7 +12,7 @@
   "planner_review_date": "2026-10-26",
   "executor_fix_date": "2026-10-28",
   "baseline_main_sha": "c436de3086c31c6f7bdb21a32c83b06b7c173ed4",
-  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
+  "reviewed_executor_head": "4349161eace78db9988a6add27fae7960e8df943",
   "live_readiness": "STOPPED_AT_PHASE4; R1.12 live run completed; no additional real API calls or spend authorized; offline audit fixes only",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_12-independent-review.md",
@@ -59,7 +59,7 @@
     },
     "planner_reviewed_head": "6b9a0a7070d98ce706d37aa1dc0a8b97051c7983",
     "clean_clone_tested_sha": "e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7",
-    "current_remote_head": "RECORDED_IN_FOLLOWUP_COMMIT",
+    "current_remote_head": "4349161eace78db9988a6add27fae7960e8df943",
     "final_head_clean_clone_status": "Executor-reported PASS at e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7; reviewed main HEAD 6b9a0a7070d98ce706d37aa1dc0a8b97051c7983 is a later docs/status commit and has NOT passed the exact-final-SHA gate. Offline fixes must be committed first, then clean-clone must run on the exact final origin/main SHA. No commits after that gate."
   },
   "live_api": {
@@ -955,7 +955,7 @@
       ]
     },
     "evidence_class": "fresh-seed same-suite replication; exploratory; no evidence of improvement; NOT unseen-task generalization; L4 RSI not implemented",
-    "clean_clone_final": "PENDING_FINAL_GATE (executed on the exact final origin/main SHA; output reported in the Executor response)",
+    "clean_clone_final": "PASS at 4349161eace78db9988a6add27fae7960e8df943: 'CLEAN CLONE OK: HEAD 4349161eace7 == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 240 key-suite tests passed (exit 0). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)",
     "planner_review": {
       "decision": "REQUEST_CHANGES",
       "reviewed_head": "6b9a0a7070d98ce706d37aa1dc0a8b97051c7983",
