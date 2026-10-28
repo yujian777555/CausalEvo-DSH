@@ -3,19 +3,19 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX2",
+  "plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX3",
   "previous_plan_id": "CE-DSH-P4-R1.11-FIX1-R1.12",
   "phase": "Phase 4 R1.12 — independent review and offline audit closure",
-  "phase_status": "READY_FOR_REVIEW",
-  "planner_review": "R1.12_INDEPENDENT_REVIEW_REQUEST_CHANGES_FINAL_SHA_HOLM_MANIFEST_HASHES_TASK_VALIDATION_STATUS",
-  "next_actor": "GPT-Planner",
+  "phase_status": "CHANGES_REQUESTED",
+  "planner_review": "R1.12_REVIEW_FIX2_REQUEST_CHANGES_POST_GATE_SHA_TEST_COUNT_SYMLINK_TEST_HOLM_TEST",
+  "next_actor": "Kimi-Executor",
   "planner_review_date": "2026-10-26",
   "executor_fix_date": "2026-10-28",
-  "baseline_main_sha": "c436de3086c31c6f7bdb21a32c83b06b7c173ed4",
-  "reviewed_executor_head": "4349161eace78db9988a6add27fae7960e8df943",
-  "live_readiness": "STOPPED_AT_PHASE4; R1.12 live run completed; no additional real API calls or spend authorized; offline audit fixes only",
+  "baseline_main_sha": "e00630d57104ba7d4700e0c72bd3af4d36c94ae7",
+  "reviewed_executor_head": "e00630d57104ba7d4700e0c72bd3af4d36c94ae7",
+  "live_readiness": "STOPPED_AT_PHASE4; offline-only FIX3 audit corrections pending; zero additional live calls/spend authorized",
   "plan_path": "planner/latest_plan.md",
-  "review_path": "planner/reviews/CE-DSH-P4-R1_12-independent-review.md",
+  "review_path": "planner/reviews/CE-DSH-P4-R1_12-review-fix2-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
@@ -31,9 +31,9 @@
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
     "passed": 663,
     "failed": 0,
-    "skipped": 0,
+    "skipped": 1,
     "planner_reran": false,
-    "count_note": "REVIEW-FIX2 final suite: 668 passed / 0 failed / 0 skipped (actual terminal output; adds hash-verifier hardening, Holm mapping and determinism tests)",
+    "count_note": "UNRECONCILED Executor evidence: final user summary reports 663 passed / 0 failed / 1 skipped; executor_report.md says 663 passed / 0 failed / 0 skipped; previous note says 668 passed / 0 failed / 0 skipped. FIX3 must rerun pytest tests/ -q and replace these provisional fields with exact terminal output. Not accepted as final evidence.",
     "categories": {
       "unit_integration_full_suite": "R1.12: 637 passed / 0 failed / 0 skipped (Executor-reported; not independently rerun by GPT)",
       "online_evolution_controller": "tests/test_online_evolution.py 19/19 (Executor-reported)",
@@ -59,8 +59,8 @@
     },
     "planner_reviewed_head": "6b9a0a7070d98ce706d37aa1dc0a8b97051c7983",
     "clean_clone_tested_sha": "e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7",
-    "current_remote_head": "4349161eace78db9988a6add27fae7960e8df943",
-    "final_head_clean_clone_status": "Executor-reported PASS at e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7; reviewed main HEAD 6b9a0a7070d98ce706d37aa1dc0a8b97051c7983 is a later docs/status commit and has NOT passed the exact-final-SHA gate. Offline fixes must be committed first, then clean-clone must run on the exact final origin/main SHA. No commits after that gate."
+    "current_remote_head": "PENDING_FIX3_FINAL_COMMIT",
+    "final_head_clean_clone_status": "PENDING_FIX3_FINAL_SHA_GATE. Historical clean-clone PASS was run at 4349161eace78db9988a6add27fae7960e8df943; a later docs/status commit e00630d57104ba7d4700e0c72bd3af4d36c94ae7 followed it, so the exact-final-SHA requirement is not satisfied for current main."
   },
   "live_api": {
     "run": true,
@@ -108,9 +108,14 @@
     "new_live_calls_authorized_after_review": 0,
     "note": "R1.12 canary+pilot complete. No additional live calls or spend authorized; review fixes are offline-only."
   },
-  "blockers": [],
-  "blockers_note": "R1.12 independent-review issues are addressed in REVIEW-FIX1: deterministic SHA-256 manifest (12 artifacts) with an independent verifier and 5 regression tests; primary exact p kept unadjusted while only the three secondary comparisons get Holm step-down with cumulative maximum (4 tests); strict frozen task-set validation with canonical manifest hash + 26 tasks + 2 seeds + 4 arms + 208 unique rows (9 rejection tests); status metadata normalized to current HEAD. No new live calls authorized; no Phase 5.",
-  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.12-REVIEW-FIX1",
+  "blockers": [
+    "Exact-final-SHA clean-clone was followed by docs/status commit e00630d57104ba7d4700e0c72bd3af4d36c94ae7; rerun on final remote SHA after all edits.",
+    "Full-suite test counts conflict across status.json, executor_report.md, and the Executor's final summary; rerun and record exact output including skips.",
+    "Symlink regression test creates its link outside REPO then calls link.relative_to(REPO); on a symlink-capable platform the test errors before invoking verifier, while current run skipped it.",
+    "Holm mapping regression test includes tautological assertion 'ordered_keys != sorted(secondary) or True' and does not enforce distinct p-values/order mismatch."
+  ],
+  "blockers_note": "FIX2 implementation changes appear directionally correct, but final audit is not closed. See planner/reviews/CE-DSH-P4-R1_12-review-fix2-independent-review.md and planner/latest_plan.md (FIX3). Offline-only; preserve raw artifacts; no live calls or Phase 5.",
+  "next_goal": "CE-DSH-P4-R1.12-REVIEW-FIX3: fix symlink test and non-vacuous Holm mapping test, reconcile test counts/status, then run exact final origin/main clean-clone with no post-gate commit.",
   "limitations": [
     "GPT has not independently run local pytest; 631 passed / 0 failed / 0 skipped remains Executor-reported for R1.11",
     "Current main SHA 4f60c4e400fe0f47bf822e9ded0d652be38e88e0 has not passed clean-clone; historical reported pass was at 3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
@@ -150,7 +155,6 @@
     "tests/test_phase4_v2_offline.py"
   ],
   "notes": "GPT independently fetched raw GitHub artifacts and recomputed coverage, rates, exact sign-flip p-values and ledger cost. Data/ledger match report; NSGA-III counters are both zero and only 5 behavioral observations occurred. The live result shows no evidence of CEA-v2 improvement and does not validate NSGA-III selection.",
-  "next_goal": "Offline-only: add artifact SHA-256 verification, correct Holm family/implementation, validate exact frozen task manifest and normalize status; then full tests and exact final-origin/main SHA clean-clone. No further live calls.",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -955,14 +959,14 @@
       ]
     },
     "evidence_class": "fresh-seed same-suite replication; exploratory; no evidence of improvement; NOT unseen-task generalization; L4 RSI not implemented",
-    "clean_clone_final": "PASS at 4349161eace78db9988a6add27fae7960e8df943: 'CLEAN CLONE OK: HEAD 4349161eace7 == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 240 key-suite tests passed (exit 0). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)",
+    "clean_clone_final": "Historical PASS at 4349161eace78db9988a6add27fae7960e8df943, but not the final main SHA because docs/status commit e00630d57104ba7d4700e0c72bd3af4d36c94ae7 followed the gate. FIX3 exact-final-SHA gate is pending.",
     "planner_review": {
       "decision": "REQUEST_CHANGES",
-      "reviewed_head": "6b9a0a7070d98ce706d37aa1dc0a8b97051c7983",
-      "review_path": "planner/reviews/CE-DSH-P4-R1_12-independent-review.md",
-      "raw_data_recomputed": true,
+      "reviewed_head": "e00630d57104ba7d4700e0c72bd3af4d36c94ae7",
+      "review_path": "planner/reviews/CE-DSH-P4-R1_12-review-fix2-independent-review.md",
+      "raw_data_recomputed": false,
       "local_tests_rerun": false,
-      "final_head_clean_clone": "NOT_RUN_AT_REVIEWED_HEAD",
+      "final_head_clean_clone": "PENDING_FIX3_FINAL_SHA_GATE",
       "additional_live_calls_authorized": 0
     }
   }
