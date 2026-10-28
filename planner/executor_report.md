@@ -79,7 +79,19 @@
 
 ## I. Git 交付（精确最终 SHA / clean-clone / 同步）
 
-（push 后实测填写；最终门禁后不再提交，结果以本条与最终回复为准。）
+- **REVIEW-FIX1 主提交：`9488a3f7f9ddde10442e0d25e4c1ebded1fc574e`**（push 后 `git ls-remote origin main` 与本地 HEAD 一致）。
+- **最终 SHA Gate（逐字输出）**：
+  ```
+  verified: 312 auditable rows recompute to the committed analysis (incl. cluster bootstrap)
+  34 passed in 3.77s (phase4 subset)
+  232 passed in 316.15s (key suites incl. r12_hashes, holm_step_down, frozen_task_set)
+  CLEAN CLONE OK: HEAD 9488a3f7f9dd == origin/main; 312 auditable rows recompute in a fresh clone
+  exit=0
+  ```
+- **clean-clone 验证 SHA（完整）**：`9488a3f7f9ddde10442e0d25e4c1ebded1fc574e`（脚本强制 clone HEAD == ls-remote，失配 exit 2；命令行显式传入该 SHA）。
+- 本记录提交（housekeeping）仅改 status.json 与 executor_report.md，不含代码/测试变更；按 Planner 要求，最终门禁后不再做任何提交，Gate 结果以本条与最终回复为准。
+- 同步状态：本地 HEAD == `git ls-remote origin main`；`git status --porcelain` = 0（clean）。
+- 冻结校验：staged diff 中 results/phase0–3 与 results/phase4/live 零改动；密钥扫描 0 命中。
 
 ## 停止
 
