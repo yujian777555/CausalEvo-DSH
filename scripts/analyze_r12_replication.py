@@ -56,6 +56,18 @@ def _canonical_task_manifest(root: Path) -> tuple[str, set[str]]:
     return hashlib.sha256(blob).hexdigest(), {p.name for p in root.iterdir() if p.is_dir()}
 
 
+def holm_adjusted_by_key(p_by_key: dict[str, float]) -> dict[str, float]:
+    """Map raw p-values to Holm step-down adjusted values BY COMPARISON KEY.
+
+    Sort (raw_p, key) pairs by raw p (then key for deterministic ties), compute
+    Holm step-down with cumulative maximum, and return {key: adjusted_p}.
+    This preserves the raw-p -> key association (no lexicographic misassignment).
+    """
+    pairs = sorted(p_by_key.items(), key=lambda kv: (kv[1], kv[0]))
+    adjusted = holm_step_down([p for _, p in pairs])
+    return {comp_key: adj for (comp_key, _p), adj in zip(pairs, adjusted)}
+
+
 def main(benchmarks_root: Path | None = None) -> int:
     import sys
     run_dir = Path(sys.argv[1])
@@ -130,10 +142,9 @@ def main(benchmarks_root: Path | None = None) -> int:
     # P4-R1.12-REVIEW-FIX2 Task C: keep the raw-p -> comparison-key association.
     # Sort (raw_p, key) pairs by raw p, compute Holm step-down, then write each
     # adjusted value back to its ORIGINATING key (ties broken by key name).
-    pairs = sorted((comps[f"{a} vs {b}"]["exact_cluster_signflip_p"], f"{a} vs {b}")
-                   for a, b in secondary)
-    adjusted = holm_step_down([p for p, _ in pairs])
-    for (_p, key), adj in zip(pairs, adjusted):
+    adjusted = holm_adjusted_by_key({f"{a} vs {b}": comps[f"{a} vs {b}"]["exact_cluster_signflip_p"]
+                                     for a, b in secondary})
+    for key, adj in adjusted.items():
         comps[key]["holm_adj_p"] = adj
     comps[primary_key]["holm_adj_p"] = None  # primary is NOT Holm-adjusted
     for k, v in comps.items():

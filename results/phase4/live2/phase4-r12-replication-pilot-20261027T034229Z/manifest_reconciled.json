@@ -8,7 +8,7 @@
     },
     "analysis_script": {
       "path": "scripts/analyze_r12_replication.py",
-      "sha256": "74954045e4eb0adb578beea9bc0a653ed2daf58bb75507a7a0baea2508393f3c"
+      "sha256": "a7c4b3fcf7a363d1e9067ff18c24268c6548ab9fb19cccdcc37936c81e5c35d4"
     },
     "pilot_tasks": {
       "path": "results/phase4/live2/phase4-r12-replication-pilot-20261027T034229Z/tasks.jsonl",

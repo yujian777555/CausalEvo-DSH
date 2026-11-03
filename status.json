@@ -12,7 +12,7 @@
   "planner_review_date": "2026-10-26",
   "executor_fix_date": "2026-10-28",
   "baseline_main_sha": "e00630d57104ba7d4700e0c72bd3af4d36c94ae7",
-  "reviewed_executor_head": "e00630d57104ba7d4700e0c72bd3af4d36c94ae7",
+  "reviewed_executor_head": "RECORDED_IN_FOLLOWUP_COMMIT",
   "live_readiness": "STOPPED_AT_PHASE4; offline-only FIX3 audit corrections pending; zero additional live calls/spend authorized",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_12-review-fix2-independent-review.md",
@@ -29,13 +29,13 @@
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 663,
+    "passed": 665,
     "failed": 0,
     "skipped": 1,
     "planner_reran": false,
-    "count_note": "UNRECONCILED Executor evidence: final user summary reports 663 passed / 0 failed / 1 skipped; executor_report.md says 663 passed / 0 failed / 0 skipped; previous note says 668 passed / 0 failed / 0 skipped. FIX3 must rerun pytest tests/ -q and replace these provisional fields with exact terminal output. Not accepted as final evidence.",
+    "count_note": "REVIEW-FIX3 final suite: 665 passed / 0 failed / 1 skipped (actual terminal output, exit 0; 1 symlink case skipped on Windows for lack of symlink privilege; symlink-escape rejection separately verified on Linux/WSL)",
     "categories": {
-      "unit_integration_full_suite": "R1.12: 637 passed / 0 failed / 0 skipped (Executor-reported; not independently rerun by GPT)",
+      "unit_integration_full_suite": "REVIEW-FIX3: 665 passed / 0 failed / 1 skipped (actual terminal output; not independently rerun by GPT)",
       "online_evolution_controller": "tests/test_online_evolution.py 19/19 (Executor-reported)",
       "cea_v2_agent_smoke": "tests/test_cea_v2_integration.py 6/6",
       "cea_v2_synthetic_driver": "tests/test_cea_v2_offline.py 14/14",
@@ -108,14 +108,9 @@
     "new_live_calls_authorized_after_review": 0,
     "note": "R1.12 canary+pilot complete. No additional live calls or spend authorized; review fixes are offline-only."
   },
-  "blockers": [
-    "Exact-final-SHA clean-clone was followed by docs/status commit e00630d57104ba7d4700e0c72bd3af4d36c94ae7; rerun on final remote SHA after all edits.",
-    "Full-suite test counts conflict across status.json, executor_report.md, and the Executor's final summary; rerun and record exact output including skips.",
-    "Symlink regression test creates its link outside REPO then calls link.relative_to(REPO); on a symlink-capable platform the test errors before invoking verifier, while current run skipped it.",
-    "Holm mapping regression test includes tautological assertion 'ordered_keys != sorted(secondary) or True' and does not enforce distinct p-values/order mismatch."
-  ],
-  "blockers_note": "FIX2 implementation changes appear directionally correct, but final audit is not closed. See planner/reviews/CE-DSH-P4-R1_12-review-fix2-independent-review.md and planner/latest_plan.md (FIX3). Offline-only; preserve raw artifacts; no live calls or Phase 5.",
-  "next_goal": "CE-DSH-P4-R1.12-REVIEW-FIX3: fix symlink test and non-vacuous Holm mapping test, reconcile test counts/status, then run exact final origin/main clean-clone with no post-gate commit.",
+  "blockers": [],
+  "blockers_note": "FIX2/FIX3 review issues are addressed: hash verifier containment + exact 12-label inventory with regression tests; Holm mapping by raw p with non-vacuous helper tests (4/4); symlink-escape regression verified on Linux/WSL (Windows skip documented, not counted as pass); analysis.json uses stable relative POSIX run_dir with byte-identical regeneration; status.json and executor_report.md unified to actual current full-suite output (665 passed / 0 failed / 1 skipped). No new live calls authorized; no Phase 5.",
+  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.12-REVIEW-FIX3",
   "limitations": [
     "GPT has not independently run local pytest; 631 passed / 0 failed / 0 skipped remains Executor-reported for R1.11",
     "Current main SHA 4f60c4e400fe0f47bf822e9ded0d652be38e88e0 has not passed clean-clone; historical reported pass was at 3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
@@ -553,7 +548,7 @@
       "frozen_integrity": "PASS (no results/benchmarks diff this round; hashes unchanged)",
       "zero_new_model_api_calls": "PASS (0 calls, CNY 0)"
     },
-    "clean_clone_final": "PASS at 1f6c324af86c2d517358df823d757d426956150e: 'CLEAN CLONE OK: HEAD 1f6c324af86c == origin/main; 312 auditable rows recompute in a fresh clone' — reconcile + 34 phase4-subset + 152 key-suite tests passed (exit 0). The follow-up commit recording this result is docs-only (status.json + executor_report.md; no code/test changes)"
+    "clean_clone_final": "PENDING_FINAL_GATE (executed on the exact final origin/main SHA; output reported in the Executor response)"
   },
   "phase4_r1_7_review": {
     "decision": "OFFLINE_ENGINEERING_ACCEPTED; LIVE_PILOT_PROPOSAL_NOT_APPROVED",
