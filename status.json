@@ -3,19 +3,19 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX3",
-  "previous_plan_id": "CE-DSH-P4-R1.11-FIX1-R1.12",
-  "phase": "Phase 4 R1.12 — independent review and offline audit closure",
-  "phase_status": "READY_FOR_REVIEW",
-  "planner_review": "R1.12_REVIEW_FIX2_REQUEST_CHANGES_POST_GATE_SHA_TEST_COUNT_SYMLINK_TEST_HOLM_TEST",
-  "next_actor": "GPT-Planner",
-  "planner_review_date": "2026-10-26",
+  "plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX4",
+  "previous_plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX3",
+  "phase": "Phase 4 R1.12 — final offline audit remediation",
+  "phase_status": "CHANGES_REQUESTED",
+  "planner_review": "R1.12_REVIEW_FIX3_REQUEST_CHANGES_EXACT_SHA_STATUS_SYMLINK_HOLM_SMOKE_PROVENANCE",
+  "next_actor": "Kimi-Executor",
+  "planner_review_date": "2026-11-03",
   "executor_fix_date": "2026-10-29",
-  "baseline_main_sha": "c007b5c64280bad53c5c6f272be961eca472e855",
-  "reviewed_executor_head": "b9c949981c8489ada1a48a8cad43a57a3895115c",
-  "live_readiness": "STOPPED_AT_PHASE4; offline-only FIX3 audit corrections pending; zero additional live calls/spend authorized",
+  "baseline_main_sha": "ddbb1f82498c4e7bce4d52eed591e32811e3399b",
+  "reviewed_executor_head": "ddbb1f82498c4e7bce4d52eed591e32811e3399b",
+  "live_readiness": "STOPPED_AT_PHASE4; REVIEW-FIX4 offline-only; zero additional live calls/spend authorized",
   "plan_path": "planner/latest_plan.md",
-  "review_path": "planner/reviews/CE-DSH-P4-R1_12-review-fix2-independent-review.md",
+  "review_path": "planner/reviews/CE-DSH-P4-R1_12-review-fix3-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
@@ -33,34 +33,20 @@
     "failed": 0,
     "skipped": 1,
     "planner_reran": false,
-    "count_note": "REVIEW-FIX3 final suite: 665 passed / 0 failed / 1 skipped (actual terminal output, exit 0; 1 symlink case skipped on Windows for lack of symlink privilege; symlink-escape rejection separately verified on Linux/WSL)",
+    "count_note": "Executor-reported only: 665 passed / 0 failed / 1 skipped, exit 0. Planner inspected source and GitHub artifacts but did not run pytest locally. One Windows symlink test was skipped; Linux/WSL execution remains Executor-reported pending reproducible evidence.",
     "categories": {
-      "unit_integration_full_suite": "REVIEW-FIX3: 665 passed / 0 failed / 1 skipped (actual terminal output; not independently rerun by GPT)",
-      "online_evolution_controller": "tests/test_online_evolution.py 19/19 (Executor-reported)",
-      "cea_v2_agent_smoke": "tests/test_cea_v2_integration.py 6/6",
-      "cea_v2_synthetic_driver": "tests/test_cea_v2_offline.py 14/14",
-      "r19_analysis": "tests/test_analyze_r19.py 4/4 (Executor-reported)",
-      "budget_proxy_recovery_bounds_ingress": "tests/test_budget_proxy.py 27/27",
-      "r14_output_limit_scoped_reconcile_duplicates": "tests/test_budget_proxy_r14.py 25/25",
-      "r15_alias_strictness_and_ledger_numerics": "tests/test_budget_proxy_r15.py 42/42 (21 alias + 21 ledger, measured)",
-      "r16_overflow_safe_replay": "tests/test_budget_proxy_r16.py 8/8",
-      "credential_isolation_canary": "tests/test_credential_isolation.py 9/9",
-      "control_channel_generation_ack": "tests/test_proxy_control.py 8/8",
-      "docker_e2e_proxy_chain": "tests/test_proxy_integration_e2e.py 8/8 (incl. stale-control resume regression)",
-      "algorithm_adapter": "tests/test_causal_policy_adapter.py 19/19",
-      "v2_offline_driver": "tests/test_phase4_v2_offline.py 7/7",
-      "clean_clone": "Executor-reported PASS at e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7; reviewed current main 6b9a0a7070d98ce706d37aa1dc0a8b97051c7983 untested",
-      "frozen_integrity": "test_live_csv_consistency/test_phase4_integrity etc. pass",
-      "incremental_fitness": "tests/test_incremental_fitness.py 4/4 (Executor-reported)",
-      "r12_replication": "208/208 rows; raw coverage/rates/exact p-values/ledger independently recomputed; no performance improvement evidence",
-      "r12_manifest_hashes": "MISSING_REQUIRED_HASHES; offline fix required",
-      "r12_holm_analysis": "REQUEST_CHANGES; primary included in Holm family and cumulative maximum omitted",
-      "r12_task_manifest_validation": "REQUEST_CHANGES; missing-whole-task guard absent"
+      "unit_integration_full_suite": "Executor-reported: 665 passed / 0 failed / 1 skipped, exit 0; Planner did not rerun.",
+      "clean_clone": "Executor-reported PASS at b9c949981c8489ada1a48a8cad43a57a3895115c only; current/final main SHA not tested.",
+      "r12_manifest_hashes": "Executor-reported HASH VERIFIED: 12 artifacts; Planner inspected exact 12-label inventory and paths but did not recompute file hashes.",
+      "r12_holm_analysis": "Source review: Holm step-down and keyed mapping implementation appear correct. FIX4 required for the ineffective lexical negative-control fixture and static-artifact-only integration test.",
+      "r12_task_manifest_validation": "Executor-reported 26 tasks × 2 seeds × 4 arms = 208 unique keys; source contains canonical task and key coverage guards; no local rerun.",
+      "r12_symlink_containment": "Executor-reported Linux/WSL rejection; source review found cleanup-on-skip bug and non-standalone helper.",
+      "cea_v2_agent_smoke": "Fake-provider mechanism smoke only; artifact provenance explanation pending."
     },
-    "planner_reviewed_head": "6b9a0a7070d98ce706d37aa1dc0a8b97051c7983",
-    "clean_clone_tested_sha": "e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7",
-    "current_remote_head": "b9c949981c8489ada1a48a8cad43a57a3895115c",
-    "final_head_clean_clone_status": "PENDING_FIX3_FINAL_SHA_GATE. Historical clean-clone PASS was run at 4349161eace78db9988a6add27fae7960e8df943; a later docs/status commit e00630d57104ba7d4700e0c72bd3af4d36c94ae7 followed it, so the exact-final-SHA requirement is not satisfied for current main."
+    "planner_reviewed_head": "ddbb1f82498c4e7bce4d52eed591e32811e3399b",
+    "clean_clone_tested_sha": "b9c949981c8489ada1a48a8cad43a57a3895115c",
+    "current_remote_head": "RE_READ_REQUIRED_AFTER_STATUS_COMMIT",
+    "final_head_clean_clone_status": "NOT_PROVEN_FOR_CURRENT_MAIN: clean-clone output in executor_report.md is for b9c9499; later commits 5cbda42, ddbb1f8 and Planner review commits followed."
   },
   "live_api": {
     "run": true,
@@ -108,21 +94,25 @@
     "new_live_calls_authorized_after_review": 0,
     "note": "R1.12 canary+pilot complete. No additional live calls or spend authorized; review fixes are offline-only."
   },
-  "blockers": [],
-  "blockers_note": "FIX2/FIX3 review issues are addressed: hash verifier containment + exact 12-label inventory with regression tests; Holm mapping by raw p with non-vacuous helper tests (4/4); symlink-escape regression verified on Linux/WSL (Windows skip documented, not counted as pass); analysis.json uses stable relative POSIX run_dir with byte-identical regeneration; status.json and executor_report.md unified to actual current full-suite output (665 passed / 0 failed / 1 skipped). No new live calls authorized; no Phase 5.",
-  "next_goal": "GPT-Planner independent review of CE-DSH-P4-R1.12-REVIEW-FIX3",
+  "blockers": [
+    "Exact-final-SHA clean-clone is only Executor-reported at b9c949981c8489ada1a48a8cad43a57a3895115c; later commits 5cbda42 and ddbb1f8 are not covered.",
+    "status.json active fields contradict one another and retain FIX2-era blockers and SHA references.",
+    "Symlink regression test can leave its fixed temp directory when symlink creation is denied; standalone helper assumes a pre-existing symlink.",
+    "Holm negative-control fixture uses identical lexical and raw-p order; production integration test reads a static analysis.json snapshot.",
+    "New CEA-v2 agent smoke artifacts lack an explanation in the FIX3 executor report."
+  ],
+  "blockers_note": "Planner independent source/Git review requests changes. No new live API calls or spend. Current active blockers are exact-final-SHA gate, status drift, symlink test cleanup/reproducibility, Holm regression test coverage and smoke-artifact provenance. Historical FIX1/FIX2 findings remain in historical review files.",
+  "next_goal": "Kimi-Executor to execute CE-DSH-P4-R1.12-REVIEW-FIX4, then return exact final-SHA clean-clone evidence to GPT-Planner.",
   "limitations": [
-    "GPT has not independently run local pytest; 631 passed / 0 failed / 0 skipped remains Executor-reported for R1.11",
-    "Current main SHA 4f60c4e400fe0f47bf822e9ded0d652be38e88e0 has not passed clean-clone; historical reported pass was at 3ecd7691e8d93d8357b60531e1722b1d5ba4e044",
-    "L4 recursive self-improvement is not implemented",
-    "The proxy ledger lacks per-request token buckets/pricing-tier details; per-request token-level repricing is not reproducible",
-    "GPT did not independently run local pytest or clean-clone; 637 passed and clean-clone at e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7 remain Executor-reported",
-    "R1.12 live data has 208/208 unique task/seed/arm rows; independently recomputed exact cluster p-values are 1.0, 1.0, 0.53125, 1.0; no evidence of CEA-v2 superiority",
-    "R1.12 live NSGA-III parent/survivor selection counts are both zero; intended NSGA-III selection mechanism remains empirically unvalidated",
-    "Current reviewed main HEAD 6b9a0a7070d98ce706d37aa1dc0a8b97051c7983 has not passed the exact-final-SHA clean-clone gate; prior gate was at e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7",
-    "R1.12 run manifest lacks the artifact SHA-256 entries required by the frozen protocol; offline correction required",
-    "R1.12 analyzer applies Holm correction to all four comparisons rather than only the three secondary comparisons and omits the cumulative-max step; observed conclusion remains unchanged",
-    "R1.12 analyzer does not reject omission of an entire task if all remaining task/seed/arm combinations are present; current data coverage itself is complete"
+    "Planner did not independently run local pytest, clean-clone or recompute all 12 SHA-256 values; FIX3 runtime/test evidence remains Executor-reported.",
+    "The only recorded clean-clone PASS is at b9c949981c8489ada1a48a8cad43a57a3895115c; current main ddbb1f82498c4e7bce4d52eed591e32811e3399b and later Planner commits are not covered.",
+    "CEA-v2 has no evidence of superiority over random or static baselines in R1.12.",
+    "Live NSGA-III parent-selection and survivor-selection calls are both zero; the intended NSGA-III selection mechanism is not validated by the live experiment.",
+    "Only five behavioral observations were recorded; a reliable learned intervention policy is not established.",
+    "L4 recursive self-improvement is not implemented.",
+    "R1.12 is same-suite fresh-seed replication, not unseen-task generalization.",
+    "The proxy ledger lacks per-request token buckets/pricing-tier details; per-request token-level repricing is not reproducible.",
+    "The FIX3 fake-provider smoke artifacts need documented provenance and must not be described as real-model efficacy."
   ],
   "evidence": [
     "scripts/clean_clone_check.py",
@@ -147,9 +137,12 @@
     "tests/test_credential_isolation.py",
     "tests/test_proxy_control.py",
     "tests/test_causal_policy_adapter.py",
-    "tests/test_phase4_v2_offline.py"
+    "tests/test_phase4_v2_offline.py",
+    "planner/reviews/CE-DSH-P4-R1_12-review-fix3-independent-review.md",
+    "planner/latest_plan.md",
+    "planner/SESSION_HANDOFF_PROMPT.md"
   ],
-  "notes": "GPT independently fetched raw GitHub artifacts and recomputed coverage, rates, exact sign-flip p-values and ledger cost. Data/ledger match report; NSGA-III counters are both zero and only 5 behavioral observations occurred. The live result shows no evidence of CEA-v2 improvement and does not validate NSGA-III selection.",
+  "notes": "Planner review of FIX3 is REQUEST_CHANGES. Source review found the keyed Holm implementation and path-containment approach broadly correct, but the exact-final-SHA clean-clone gate is not proven for current main, active status fields are stale, symlink test cleanup/reproducibility needs repair, Holm tests contain an ineffective negative control/static artifact integration, and smoke-artifact provenance is undocumented. No live API calls or spend authorized.",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -954,15 +947,45 @@
       ]
     },
     "evidence_class": "fresh-seed same-suite replication; exploratory; no evidence of improvement; NOT unseen-task generalization; L4 RSI not implemented",
-    "clean_clone_final": "Historical PASS at 4349161eace78db9988a6add27fae7960e8df943, but not the final main SHA because docs/status commit e00630d57104ba7d4700e0c72bd3af4d36c94ae7 followed the gate. FIX3 exact-final-SHA gate is pending.",
+    "clean_clone_final": "NOT_PROVEN_FOR_CURRENT_MAIN; reported PASS at b9c949981c8489ada1a48a8cad43a57a3895115c only; subsequent commits are outside that gate.",
     "planner_review": {
       "decision": "REQUEST_CHANGES",
-      "reviewed_head": "e00630d57104ba7d4700e0c72bd3af4d36c94ae7",
-      "review_path": "planner/reviews/CE-DSH-P4-R1_12-review-fix2-independent-review.md",
+      "reviewed_head": "ddbb1f82498c4e7bce4d52eed591e32811e3399b",
+      "review_path": "planner/reviews/CE-DSH-P4-R1_12-review-fix3-independent-review.md",
+      "review_method": "GitHub source/Git review; no local pytest, clean-clone or byte-level hash recomputation",
+      "source_reviewed": true,
       "raw_data_recomputed": false,
       "local_tests_rerun": false,
-      "final_head_clean_clone": "PENDING_FIX3_FINAL_SHA_GATE",
+      "hashes_recomputed": false,
+      "final_head_clean_clone": "NOT_PROVEN_FOR_CURRENT_MAIN",
       "additional_live_calls_authorized": 0
     }
+  },
+  "phase4_r1_12_review_fix3": {
+    "decision": "REQUEST_CHANGES",
+    "reviewed_head": "ddbb1f82498c4e7bce4d52eed591e32811e3399b",
+    "implementation_commit": "b9c949981c8489ada1a48a8cad43a57a3895115c",
+    "executor_reported_clean_clone_sha": "b9c949981c8489ada1a48a8cad43a57a3895115c",
+    "later_commits_outside_gate": [
+      "5cbda42a37da955da3ddecfd798edadbd127699e",
+      "ddbb1f82498c4e7bce4d52eed591e32811e3399b"
+    ],
+    "findings": [
+      "Exact-final-SHA clean-clone is only Executor-reported at b9c949981c8489ada1a48a8cad43a57a3895115c; later commits 5cbda42 and ddbb1f8 are not covered.",
+      "status.json active fields contradict one another and retain FIX2-era blockers and SHA references.",
+      "Symlink regression test can leave its fixed temp directory when symlink creation is denied; standalone helper assumes a pre-existing symlink.",
+      "Holm negative-control fixture uses identical lexical and raw-p order; production integration test reads a static analysis.json snapshot.",
+      "New CEA-v2 agent smoke artifacts lack an explanation in the FIX3 executor report."
+    ],
+    "review_path": "planner/reviews/CE-DSH-P4-R1_12-review-fix3-independent-review.md",
+    "evidence_boundary": "Source/Git observations are Planner-reviewed; test/hash/runtime claims remain Executor-reported."
+  },
+  "phase4_r1_12_review_fix4": {
+    "plan_path": "planner/latest_plan.md",
+    "status": "PLANNED",
+    "next_actor": "Kimi-Executor",
+    "api_calls_authorized": 0,
+    "spend_authorized_cny": 0,
+    "phase5_authorized": false
   }
 }
