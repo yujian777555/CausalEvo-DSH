@@ -70,9 +70,14 @@ def holm_adjusted_by_key(p_by_key: dict[str, float]) -> dict[str, float]:
 
 def apply_secondary_holm(
     primary_key: str,
-    secondary_raw_p: dict[str, float],
+    raw_p_by_key: dict[str, float],
 ) -> dict[str, float | None]:
-    """Adjust secondary p-values by key and keep the primary unadjusted."""
+    """Adjust only secondary p-values from a mapping containing the primary."""
+    if primary_key not in raw_p_by_key:
+        raise ValueError(f"missing primary comparison: {primary_key}")
+    secondary_raw_p = {
+        key: raw_p for key, raw_p in raw_p_by_key.items() if key != primary_key
+    }
     return {primary_key: None, **holm_adjusted_by_key(secondary_raw_p)}
 
 
@@ -153,7 +158,7 @@ def main(benchmarks_root: Path | None = None) -> int:
     adjusted = apply_secondary_holm(
         primary_key,
         {f"{a} vs {b}": comps[f"{a} vs {b}"]["exact_cluster_signflip_p"]
-         for a, b in secondary},
+         for a, b in comparisons},
     )
     for key, adj in adjusted.items():
         comps[key]["holm_adj_p"] = adj

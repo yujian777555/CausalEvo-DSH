@@ -6,12 +6,12 @@
   "plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX5",
   "previous_plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX4",
   "phase": "Phase 4 R1.12 — final offline audit remediation",
-  "phase_status": "CHANGES_REQUESTED",
+  "phase_status": "READY_FOR_REVIEW",
   "planner_review": "R1.12_REVIEW_FIX4_REQUEST_CHANGES_SYMLINK_SKIP_CLASSIFICATION_HOLM_PRIMARY_GUARD_CLEAN_CLONE_REMOTE",
-  "next_actor": "Kimi-Executor",
+  "next_actor": "GPT-Planner",
   "planner_review_date": "2026-11-04",
   "executor_fix_date": "2026-11-04",
-  "baseline_main_sha": "717a1fbe8371a444c33f02ff9300c90505ec5ea7",
+  "baseline_main_sha": "3ae1913fa87a23eebab8e6ec3ff33a31a8448fe5",
   "reviewed_executor_head": "717a1fbe8371a444c33f02ff9300c90505ec5ea7",
   "live_readiness": "STOPPED_AT_PHASE4; REVIEW-FIX5 offline-only; zero additional live calls/spend authorized",
   "plan_path": "planner/latest_plan.md",
@@ -20,10 +20,10 @@
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "717a1fbe8371a444c33f02ff9300c90505ec5ea7",
-    "github_commit_verified": true,
-    "executor_reports_local_clean": true,
-    "note": "FIX4 commit 717a1fbe8371a444c33f02ff9300c90505ec5ea7 is independently confirmed as GitHub refs/heads/main at Planner review time. Executor reports local HEAD/ls-remote equality and clean worktree; Planner did not inspect the Executor local filesystem.",
+    "latest_executor_commit": null,
+    "github_commit_verified": false,
+    "executor_reports_local_clean": false,
+    "note": "FIX5 final commit SHA and synchronization are returned after the exact-SHA gate, not invented in this pre-commit record. Previous FIX4 submission 717a1fbe8371a444c33f02ff9300c90505ec5ea7 was Planner-reviewed; Planner did not rerun Executor tests.",
     "historical_r1_10": {
       "code_data_commit": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
       "docs_followup_commit": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
@@ -33,26 +33,27 @@
   "tests": {
     "executor_reported_run": true,
     "command": ".venv/Scripts/python.exe -m pytest tests/ -q",
-    "passed": 665,
+    "passed": 687,
     "failed": 0,
     "skipped": 1,
     "planner_reran": false,
-    "count_note": "FIX4 final Executor run: 665 passed / 0 failed / 1 skipped in 724.87s, exit 0. Windows symlink skip is reported as WinError 1314. Planner did not rerun pytest.",
+    "count_note": "FIX5 final Executor run: 687 passed / 0 failed / 1 skipped in 829.51s, exit 0. The only skip is Windows symlink WinError 1314, not a pass. Planner did not rerun pytest.",
     "categories": {
-      "unit_integration_full_suite": "Executor-reported: 665 passed / 0 failed / 1 skipped, exit 0; Docker restored; Planner did not rerun.",
-      "clean_clone": "Executor-reported PASS at 717a1fbe8371a444c33f02ff9300c90505ec5ea7. GitHub API independently confirms main SHA. Source review found explicit-SHA mode bypasses _remote_sha and clones local REPO; hardening required in FIX5.",
-      "r12_manifest_hashes": "Executor-reported HASH VERIFIED: 12 artifacts, exit 0; Planner inspected manifest inventory but did not recompute all SHA-256 values.",
-      "r12_holm_analysis": "Non-vacuous lexical negative control is correct. Production main currently filters primary correctly, but apply_secondary_holm permits primary-key contamination to overwrite None; FIX5 guard/test required.",
-      "r12_task_manifest_validation": "Executor-reported canonical hash fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483 and 26 tasks × 2 seeds × 4 arms = 208 unique keys.",
-      "r12_symlink_containment": "Unique temp directory and finally cleanup are correct; WSL standalone rejection evidence Executor-reported. Test still catches all OSError as skip; FIX5 must narrow classification.",
-      "cea_v2_agent_smoke": "Source manifest labels fake-provider adapter integration smoke, not real-model efficacy; directory contains only manifest.json and controller_state.json. SHA-256/security scan remain Executor-reported."
+      "unit_integration_full_suite": "687 passed / 0 failed / 1 skipped, exit 0; Docker 29.3.1 verified before the run; Executor-reported only.",
+      "clean_clone": "PENDING_EXACT_FINAL_ORIGIN_MAIN_SHA using the hardened helper. Historical FIX4 PASS at 717a1fbe8371a444c33f02ff9300c90505ec5ea7 does not cover FIX5; final result is returned separately without a post-gate commit.",
+      "clean_clone_helper": "Seven deterministic tests pass: explicit/remote mismatch, unknown remote, configured origin main clone, sanitized output/failure, key-suite inclusion and cloned-HEAD mismatch before install.",
+      "r12_manifest_hashes": "Executor ran scripts/verify_r12_hashes.py: HASH VERIFIED: 12 artifacts, exit 0; Planner did not independently recompute them.",
+      "r12_holm_analysis": "apply_secondary_holm receives all four raw p-values, excludes primary internally, preserves primary None and adjusts only three secondary comparisons; five focused tests pass.",
+      "r12_task_manifest_validation": "Executor recomputed canonical fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483 and 26 tasks × 2 seeds × 4 arms = 208 unique keys.",
+      "r12_symlink_containment": "Only explicit permission/unsupported errors skip; EIO/ENOSPC/ENOENT re-raise. Thirteen classifier cases plus EIO propagation/cleanup verified; Windows WinError 1314 remains one skip and WSL standalone escape rejection passed.",
+      "cea_v2_agent_smoke": "Unchanged fake-provider mechanism artifacts; not real-model efficacy."
     },
     "planner_reviewed_head": "717a1fbe8371a444c33f02ff9300c90505ec5ea7",
     "clean_clone_tested_sha": "717a1fbe8371a444c33f02ff9300c90505ec5ea7",
-    "current_remote_head": "717a1fbe8371a444c33f02ff9300c90505ec5ea7",
-    "current_remote_head_scope": "GitHub refs/heads/main observed at FIX4 Planner review time; subsequent Planner metadata commits may advance main.",
-    "final_head_clean_clone_status": "Executor-reported clean-clone PASS at 717a1fbe8371a444c33f02ff9300c90505ec5ea7; GitHub API independently confirms main pointed to the same SHA. Planner did not run the gate. FIX5 will harden the helper's explicit-SHA remote verification.",
-    "executor_submission_sha": "717a1fbe8371a444c33f02ff9300c90505ec5ea7"
+    "current_remote_head": "3ae1913fa87a23eebab8e6ec3ff33a31a8448fe5",
+    "current_remote_head_scope": "Actual origin/main at FIX5 takeover; the new final commit SHA is intentionally not self-recorded before commit.",
+    "final_head_clean_clone_status": "PENDING_EXACT_FINAL_ORIGIN_MAIN_SHA with hardened remote verification; completion message must supply actual command, output and exit code. No FIX5 final-SHA PASS is claimed in this file.",
+    "executor_submission_sha": null
   },
   "live_api": {
     "run": true,
@@ -101,18 +102,14 @@
     "note": "R1.12 canary+pilot complete. No additional live calls or spend authorized; review fixes are offline-only."
   },
   "blockers": [
-    "tests/test_r12_hashes.py catches every OSError from symlink_to and converts it to pytest.skip; unrelated filesystem errors can be hidden.",
-    "apply_secondary_holm can let a primary_key present in its input overwrite the primary None with a Holm-adjusted value; current test does not exercise contaminated input.",
-    "scripts/clean_clone_check.py bypasses _remote_sha when an explicit SHA is passed and clones the local REPO path, while its success message claims origin/main verification."
+    "At commit time, only the exact-final-origin/main-SHA clean-clone remains pending; its actual result is returned in the Executor completion message because no post-gate tracked-file change is allowed."
   ],
-  "blockers_note": "FIX4 source review found three remaining offline test/gate-helper gaps: broad symlink OSError skip classification, Holm primary-key contamination not guarded/tested, and clean-clone explicit-SHA mode bypassing remote verification. No new live API calls or spend.",
-  "next_goal": "Kimi-Executor to execute CE-DSH-P4-R1.12-REVIEW-FIX5, then return exact final-remote-main gate evidence for Planner review.",
+  "blockers_note": "All three FIX5 code/test findings are repaired and independently source/quality reviewed. Focused tests 46/1, full suite 687/0/1, 12-label hashes, 208-row coverage and frozen-data checks passed. The pending final gate is not recorded as PASS in this file.",
+  "next_goal": "GPT-Planner to independently review FIX5 and the hardened exact-final-remote-main gate evidence returned by Executor; do not enter Phase 5.",
   "limitations": [
     "Planner did not independently run local pytest, WSL symlink script, clean-clone, or recompute all 12 artifact SHA-256 values; runtime/test results remain Executor-reported.",
-    "GitHub API independently confirmed refs/heads/main at 717a1fbe8371a444c33f02ff9300c90505ec5ea7 during review; the Executor's local git ls-remote and worktree-clean outputs remain self-reported.",
-    "The clean_clone_check.py explicit-SHA path bypasses remote lookup and clones the local repository path; FIX5 must correct this reusable gate-helper behavior.",
-    "The symlink test still classifies all OSError values as skip; unrelated filesystem errors could be hidden.",
-    "The Holm wrapper can overwrite the primary None if the primary key is included in its secondary input; current main filters it but the invariant is not enforced.",
+    "The hardened clean-clone gate is pending for the final FIX5 SHA at commit time; historical FIX4 PASS at 717a1fbe8371a444c33f02ff9300c90505ec5ea7 does not cover this round.",
+    "Windows symlink creation remains one explicit WinError 1314 skip; unrelated OSError values now propagate. WSL evidence is from the real standalone verifier script.",
     "CEA-v2 has no evidence of superiority over random or static baselines in R1.12.",
     "Live NSGA-III parent-selection and survivor-selection calls are both zero; intended online selection is not validated by the live experiment.",
     "Only five behavioral observations were recorded; a reliable learned intervention policy is not established.",
@@ -150,7 +147,7 @@
     "planner/SESSION_HANDOFF_PROMPT.md",
     "planner/reviews/CE-DSH-P4-R1_12-review-fix4-independent-review.md"
   ],
-  "notes": "FIX4 substantially resolves the prior findings. Planner independently confirmed GitHub main at 717a1fbe8371a444c33f02ff9300c90505ec5ea7 and reviewed changed code. Three narrow issues remain: broad OSError skip, primary Holm key can overwrite None if passed in secondary map, and explicit-SHA clean-clone helper does not verify remote main. Decision REQUEST_CHANGES; no live API calls or spend authorized.",
+  "notes": "FIX5 narrows symlink skips to explicit capability/permission failures with EIO propagation, enforces primary exclusion inside the full-mapping Holm helper, and makes clean-clone always verify remote main before cloning the configured origin with sanitized output. Focused 46/1 and full 687/0/1 are Executor results. Current Planner decision remains FIX4 REQUEST_CHANGES until independent FIX5 review. Exact-final-SHA gate evidence is returned separately without a post-gate commit. No live API calls or spend authorized.",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -1017,9 +1014,17 @@
     "additional_live_calls_authorized": 0
   },
   "phase4_r1_12_review_fix5": {
-    "status": "PLANNED",
+    "status": "IMPLEMENTED_FULL_SUITE_PASS_EXACT_FINAL_SHA_GATE_PENDING",
     "plan_path": "planner/latest_plan.md",
-    "next_actor": "Kimi-Executor",
+    "next_actor": "GPT-Planner",
+    "takeover_main_sha": "3ae1913fa87a23eebab8e6ec3ff33a31a8448fe5",
+    "planner_reviewed_executor_sha": "717a1fbe8371a444c33f02ff9300c90505ec5ea7",
+    "symlink_classifier": "Explicit allowlist only; 13 classifier cases and EIO propagation/cleanup; WSL escape rejection verified.",
+    "holm_primary_invariant": "Full four-comparison mapping enters helper; primary excluded internally and always None; three secondary Holm adjustments.",
+    "clean_clone_remote_guard": "Always query origin/main; mismatch/unknown fail before clone; configured origin main clone; cloned HEAD checked; credentials not printed; seven helper tests.",
+    "clean_clone_final": "PENDING_EXACT_FINAL_ORIGIN_MAIN_SHA; result returned in completion message without a post-gate commit.",
+    "new_api_calls": 0,
+    "new_spend_cny": 0,
     "api_calls_authorized": 0,
     "spend_authorized_cny": 0,
     "phase5_authorized": false

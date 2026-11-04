@@ -47,16 +47,16 @@ def test_helper_ties_and_cumulative_maximum():
 
 def test_analyzer_applies_holm_only_to_secondary_and_primary_unadjusted():
     primary = "CEA-v2-online vs B1-random"
-    secondary_raw = {
+    raw_p_by_key = {
+        primary: 0.001,
         "CEA-v2-online vs B5-v1-frozen-pareto": 0.20,
         "CEA-v2-online vs B0-original": 0.01,
         "B5-v1-frozen-pareto vs B1-random": 0.04,
     }
-    assert primary not in secondary_raw
 
-    adjusted = a12.apply_secondary_holm(primary, secondary_raw)
+    adjusted = a12.apply_secondary_holm(primary, raw_p_by_key)
 
-    assert set(adjusted) == {primary, *secondary_raw}
+    assert set(adjusted) == set(raw_p_by_key)
     assert adjusted[primary] is None
     expected_secondary = {
         "CEA-v2-online vs B5-v1-frozen-pareto": 0.20,
@@ -65,6 +65,16 @@ def test_analyzer_applies_holm_only_to_secondary_and_primary_unadjusted():
     }
     for key, expected in expected_secondary.items():
         assert adjusted[key] == pytest.approx(expected)
+
+    changed_primary_raw = {**raw_p_by_key, primary: 0.9}
+    adjusted_with_changed_primary = a12.apply_secondary_holm(primary, changed_primary_raw)
+    for key in expected_secondary:
+        assert adjusted_with_changed_primary[key] == adjusted[key]
+
+
+def test_apply_secondary_holm_requires_primary_raw_p():
+    with pytest.raises(ValueError, match="missing primary comparison"):
+        a12.apply_secondary_holm("primary", {"secondary": 0.01})
 
 
 def test_old_lexical_assignment_would_be_wrong():

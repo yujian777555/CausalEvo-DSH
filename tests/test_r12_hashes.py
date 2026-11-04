@@ -1,6 +1,7 @@
 """Regression tests for the hardened R1.12 hash verifier
 (P4-R1.12-REVIEW-FIX2 Task B: containment + exact inventory)."""
 
+import errno
 import json
 import subprocess
 import sys
@@ -24,6 +25,50 @@ def _verify(path=None):
     if path is not None:
         args.append(str(path))
     return subprocess.run(args, capture_output=True, text=True, timeout=60)
+
+
+def _symlink_unavailable(exc):
+    if isinstance(exc, NotImplementedError):
+        return True
+    if not isinstance(exc, OSError):
+        return False
+    if getattr(exc, "winerror", None) in (5, 1314):
+        return True
+    errno_values = {errno.EPERM, errno.EACCES}
+    for name in ("ENOTSUP", "EOPNOTSUPP", "ENOSYS"):
+        value = getattr(errno, name, None)
+        if value is not None:
+            errno_values.add(value)
+    return exc.errno in errno_values
+
+
+def _os_error(errno_value=None, winerror=None):
+    exc = OSError(errno_value, "injected") if errno_value is not None else OSError("injected")
+    if winerror is not None:
+        exc.winerror = winerror
+    return exc
+
+
+@pytest.mark.parametrize(
+    ("exc", "expected"),
+    [
+        pytest.param(NotImplementedError(), True, id="not-implemented"),
+        pytest.param(_os_error(winerror=1314), True, id="winerror-privilege"),
+        pytest.param(_os_error(winerror=5), True, id="winerror-access-denied"),
+        pytest.param(_os_error(errno_value=errno.EPERM), True, id="eperm"),
+        pytest.param(_os_error(errno_value=errno.EACCES), True, id="eacces"),
+        pytest.param(_os_error(errno_value=errno.ENOTSUP), True, id="enotsup"),
+        pytest.param(_os_error(errno_value=errno.EOPNOTSUPP), True, id="eopnotsupp"),
+        pytest.param(_os_error(errno_value=errno.ENOSYS), True, id="enosys"),
+        pytest.param(_os_error(errno_value=errno.EIO), False, id="eio"),
+        pytest.param(_os_error(errno_value=errno.ENOSPC), False, id="enospc"),
+        pytest.param(_os_error(errno_value=errno.ENOENT), False, id="enoent"),
+        pytest.param(_os_error(), False, id="other-os-error"),
+        pytest.param(ValueError("not an OS error"), False, id="non-os-error"),
+    ],
+)
+def test_symlink_unavailable_classifier(exc, expected):
+    assert _symlink_unavailable(exc) is expected
 
 
 def test_build_and_verify_pass():
@@ -68,7 +113,9 @@ def test_symlink_escape_rejected_if_supported(tmp_path):
         try:
             link.symlink_to(REPO / "status.json")
         except (OSError, NotImplementedError) as exc:
-            pytest.skip(f"symlink creation not permitted on this platform: {exc}")
+            if _symlink_unavailable(exc):
+                pytest.skip(f"symlink creation not permitted on this platform: {exc}")
+            raise
         doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
         doc["artifacts"]["pilot_tasks"]["path"] = link.relative_to(REPO).as_posix()
         bad = tmp_path / "bad.json"
@@ -81,6 +128,26 @@ def test_symlink_escape_rejected_if_supported(tmp_path):
             link.unlink()
         if link_dir is not None and link_dir.exists():
             link_dir.rmdir()
+
+
+def test_symlink_escape_io_error_propagates_and_cleans_up(tmp_path, monkeypatch):
+    link_dirs = []
+
+    def raise_eio(link, target):
+        link_dirs.append(link.parent)
+        raise OSError(errno.EIO, "injected I/O failure")
+
+    monkeypatch.setattr(Path, "symlink_to", raise_eio)
+    try:
+        test_symlink_escape_rejected_if_supported(tmp_path)
+    except OSError as exc:
+        assert exc.errno == errno.EIO
+    except BaseException as exc:
+        pytest.fail(f"EIO was not propagated: {type(exc).__name__}: {exc}")
+    else:
+        pytest.fail("EIO was not raised")
+    assert len(link_dirs) == 1
+    assert not link_dirs[0].exists()
 
 
 def test_missing_required_label_rejected(tmp_path):
