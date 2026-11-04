@@ -6,13 +6,13 @@
   "plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX4",
   "previous_plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX3",
   "phase": "Phase 4 R1.12 — final offline audit remediation",
-  "phase_status": "CHANGES_REQUESTED",
+  "phase_status": "READY_FOR_REVIEW",
   "planner_review": "R1.12_REVIEW_FIX3_REQUEST_CHANGES_EXACT_SHA_STATUS_SYMLINK_HOLM_SMOKE_PROVENANCE",
-  "next_actor": "Kimi-Executor",
+  "next_actor": "GPT-Planner",
   "planner_review_date": "2026-11-03",
-  "executor_fix_date": "2026-10-29",
-  "baseline_main_sha": "ddbb1f82498c4e7bce4d52eed591e32811e3399b",
-  "reviewed_executor_head": "ddbb1f82498c4e7bce4d52eed591e32811e3399b",
+  "executor_fix_date": "2026-11-04",
+  "baseline_main_sha": "5d1c12c3d9b709530e6decbaa4bd7289826b2b97",
+  "reviewed_executor_head": "5d1c12c3d9b709530e6decbaa4bd7289826b2b97",
   "live_readiness": "STOPPED_AT_PHASE4; REVIEW-FIX4 offline-only; zero additional live calls/spend authorized",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_12-review-fix3-independent-review.md",
@@ -20,11 +20,15 @@
   "fix_report_path": "planner/executor_report.md",
   "implementation": {
     "started": true,
-    "latest_executor_commit": "e1df3bdee14f9a23a7d32638a8a9ba19eba7fed7",
-    "github_commit_verified": true,
-    "executor_reports_local_clean": true,
-    "note": "R1.10 code/data commit 5d5777c passed clean-clone per Executor report; docs/status-only follow-up 2bb9e5c was not clean-clone tested. GPT did not rerun local tests.",
-    "latest_executor_followup_commit": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e"
+    "latest_executor_commit": null,
+    "github_commit_verified": false,
+    "executor_reports_local_clean": false,
+    "note": "FIX4 final commit SHA and synchronization are recorded in the completion message after the exact-SHA gate, not invented in this pre-commit record. Planner has not rerun Executor tests.",
+    "historical_r1_10": {
+      "code_data_commit": "5d5777c80713356e2c0e2049e94e8499f8dc16dd",
+      "docs_followup_commit": "2bb9e5c3e6f9ac8c01e9f2529d4939459b055b1e",
+      "note": "Historical only: the code/data commit passed clean-clone per Executor report; the docs follow-up was not clean-clone tested."
+    }
   },
   "tests": {
     "executor_reported_run": true,
@@ -33,20 +37,21 @@
     "failed": 0,
     "skipped": 1,
     "planner_reran": false,
-    "count_note": "Executor-reported only: 665 passed / 0 failed / 1 skipped, exit 0. Planner inspected source and GitHub artifacts but did not run pytest locally. One Windows symlink test was skipped; Linux/WSL execution remains Executor-reported pending reproducible evidence.",
+    "count_note": "FIX4 final Executor run after Docker recovery: 665 passed / 0 failed / 1 skipped in 724.87s, exit 0. The skip is Windows symlink WinError 1314, not a pass. Planner did not rerun pytest.",
     "categories": {
-      "unit_integration_full_suite": "Executor-reported: 665 passed / 0 failed / 1 skipped, exit 0; Planner did not rerun.",
-      "clean_clone": "Executor-reported PASS at b9c949981c8489ada1a48a8cad43a57a3895115c only; current/final main SHA not tested.",
-      "r12_manifest_hashes": "Executor-reported HASH VERIFIED: 12 artifacts; Planner inspected exact 12-label inventory and paths but did not recompute file hashes.",
-      "r12_holm_analysis": "Source review: Holm step-down and keyed mapping implementation appear correct. FIX4 required for the ineffective lexical negative-control fixture and static-artifact-only integration test.",
-      "r12_task_manifest_validation": "Executor-reported 26 tasks × 2 seeds × 4 arms = 208 unique keys; source contains canonical task and key coverage guards; no local rerun.",
-      "r12_symlink_containment": "Executor-reported Linux/WSL rejection; source review found cleanup-on-skip bug and non-standalone helper.",
-      "cea_v2_agent_smoke": "Fake-provider mechanism smoke only; artifact provenance explanation pending."
+      "unit_integration_full_suite": "665 passed / 0 failed / 1 skipped, exit 0; Executor-reported. Earlier Docker-unavailable run was 608 passed / 58 skipped and is separately disclosed.",
+      "clean_clone": "PENDING_EXACT_FINAL_ORIGIN_MAIN_SHA at this commit. Historical Executor-reported PASS applies only to b9c949981c8489ada1a48a8cad43a57a3895115c; final result is returned separately without a post-gate commit.",
+      "r12_manifest_hashes": "Executor ran scripts/verify_r12_hashes.py: HASH VERIFIED: 12 artifacts, exit 0; Planner did not independently recompute them.",
+      "r12_holm_analysis": "FIX4 negative control has different raw-p and lexical orders; production apply_secondary_holm integration keeps primary unadjusted and adjusts three secondary comparisons; focused suite 4 passed, exit 0.",
+      "r12_task_manifest_validation": "Executor recomputed canonical fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483 and 26 tasks × 2 seeds × 4 arms = 208 unique keys.",
+      "r12_symlink_containment": "Windows WinError 1314: 1 skipped with cleanup. Self-contained WSL script created links and observed verifier exit 1 / escapes allowed artifact root repeatedly; WSL pytest is unavailable (No module named pytest).",
+      "cea_v2_agent_smoke": "Provenance documented: fake-provider --offline-smoke at c007b5c64280bad53c5c6f272be961eca472e855; both SHA-256 values and sensitive-content scan recorded; mechanism only, not efficacy."
     },
     "planner_reviewed_head": "ddbb1f82498c4e7bce4d52eed591e32811e3399b",
     "clean_clone_tested_sha": "b9c949981c8489ada1a48a8cad43a57a3895115c",
-    "current_remote_head": "RE_READ_REQUIRED_AFTER_STATUS_COMMIT",
-    "final_head_clean_clone_status": "NOT_PROVEN_FOR_CURRENT_MAIN: clean-clone output in executor_report.md is for b9c9499; later commits 5cbda42, ddbb1f8 and Planner review commits followed."
+    "current_remote_head": "5d1c12c3d9b709530e6decbaa4bd7289826b2b97",
+    "current_remote_head_scope": "Actual origin/main at FIX4 takeover; the new final commit SHA is intentionally not self-recorded before commit.",
+    "final_head_clean_clone_status": "PENDING_EXACT_FINAL_ORIGIN_MAIN_SHA; completion message must supply actual command, output and exit code. No PASS claimed for the FIX4 final SHA in this file."
   },
   "live_api": {
     "run": true,
@@ -95,24 +100,21 @@
     "note": "R1.12 canary+pilot complete. No additional live calls or spend authorized; review fixes are offline-only."
   },
   "blockers": [
-    "Exact-final-SHA clean-clone is only Executor-reported at b9c949981c8489ada1a48a8cad43a57a3895115c; later commits 5cbda42 and ddbb1f8 are not covered.",
-    "status.json active fields contradict one another and retain FIX2-era blockers and SHA references.",
-    "Symlink regression test can leave its fixed temp directory when symlink creation is denied; standalone helper assumes a pre-existing symlink.",
-    "Holm negative-control fixture uses identical lexical and raw-p order; production integration test reads a static analysis.json snapshot.",
-    "New CEA-v2 agent smoke artifacts lack an explanation in the FIX3 executor report."
+    "At commit time, only the exact-final-origin/main-SHA clean-clone remains pending; its actual result is returned in the Executor completion message because no post-gate commit is allowed."
   ],
-  "blockers_note": "Planner independent source/Git review requests changes. No new live API calls or spend. Current active blockers are exact-final-SHA gate, status drift, symlink test cleanup/reproducibility, Holm regression test coverage and smoke-artifact provenance. Historical FIX1/FIX2 findings remain in historical review files.",
-  "next_goal": "Kimi-Executor to execute CE-DSH-P4-R1.12-REVIEW-FIX4, then return exact final-SHA clean-clone evidence to GPT-Planner.",
+  "blockers_note": "FIX4 code/test repairs, full 665/0/1 suite, 12-label hash verification, frozen-data checks and smoke provenance are complete. Historical FIX1/FIX2 findings are preserved in their review files, not active blockers. The pending final gate is not recorded as PASS in this file.",
+  "next_goal": "GPT-Planner to independently review FIX4 and the exact final-SHA gate evidence returned by Executor; do not enter Phase 5.",
   "limitations": [
-    "Planner did not independently run local pytest, clean-clone or recompute all 12 SHA-256 values; FIX3 runtime/test evidence remains Executor-reported.",
-    "The only recorded clean-clone PASS is at b9c949981c8489ada1a48a8cad43a57a3895115c; current main ddbb1f82498c4e7bce4d52eed591e32811e3399b and later Planner commits are not covered.",
+    "Planner did not independently run local pytest, clean-clone or recompute all 12 SHA-256 values; runtime/test evidence is Executor-reported.",
+    "The only completed historical clean-clone PASS is at b9c949981c8489ada1a48a8cad43a57a3895115c; the FIX4 final SHA gate is pending and will be returned in the completion message.",
+    "Windows symlink creation is denied with WinError 1314 and remains a skip; self-contained WSL rejection checks passed repeatedly, but WSL pytest itself is unavailable because pytest is not installed.",
     "CEA-v2 has no evidence of superiority over random or static baselines in R1.12.",
     "Live NSGA-III parent-selection and survivor-selection calls are both zero; the intended NSGA-III selection mechanism is not validated by the live experiment.",
     "Only five behavioral observations were recorded; a reliable learned intervention policy is not established.",
     "L4 recursive self-improvement is not implemented.",
     "R1.12 is same-suite fresh-seed replication, not unseen-task generalization.",
     "The proxy ledger lacks per-request token buckets/pricing-tier details; per-request token-level repricing is not reproducible.",
-    "The FIX3 fake-provider smoke artifacts need documented provenance and must not be described as real-model efficacy."
+    "The retained smoke artifacts are fake-provider mechanism evidence only, not real-model efficacy."
   ],
   "evidence": [
     "scripts/clean_clone_check.py",
@@ -142,7 +144,7 @@
     "planner/latest_plan.md",
     "planner/SESSION_HANDOFF_PROMPT.md"
   ],
-  "notes": "Planner review of FIX3 is REQUEST_CHANGES. Source review found the keyed Holm implementation and path-containment approach broadly correct, but the exact-final-SHA clean-clone gate is not proven for current main, active status fields are stale, symlink test cleanup/reproducibility needs repair, Holm tests contain an ineffective negative control/static artifact integration, and smoke-artifact provenance is undocumented. No live API calls or spend authorized.",
+  "notes": "FIX4 repairs are implemented: symlink creation/verification is cleanup-protected and independently reproducible in WSL; Holm negative-control and production-family tests are non-vacuous; smoke provenance/hashes/scope are documented; active SHA, review and test categories are normalized. The current Planner decision remains FIX3 REQUEST_CHANGES until independent review. Exact-final-SHA gate evidence is returned separately without a post-gate commit. No live API calls or spend authorized.",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -982,8 +984,16 @@
   },
   "phase4_r1_12_review_fix4": {
     "plan_path": "planner/latest_plan.md",
-    "status": "PLANNED",
-    "next_actor": "Kimi-Executor",
+    "status": "IMPLEMENTED_FULL_SUITE_PASS_EXACT_FINAL_SHA_GATE_PENDING",
+    "next_actor": "GPT-Planner",
+    "takeover_main_sha": "5d1c12c3d9b709530e6decbaa4bd7289826b2b97",
+    "planner_reviewed_head": "ddbb1f82498c4e7bce4d52eed591e32811e3399b",
+    "symlink_remediation": "Unique cleanup-protected pytest directory; self-contained WSL verifier rejected escape repeatedly; Windows WinError 1314 remains skipped.",
+    "holm_remediation": "Non-vacuous lexical negative control plus production apply_secondary_holm integration; focused suite 4 passed.",
+    "smoke_provenance": "Fake-provider --offline-smoke at source c007b5c64280bad53c5c6f272be961eca472e855; hashes and no-sensitive-content scan documented; not real-model efficacy.",
+    "clean_clone_final": "PENDING_EXACT_FINAL_ORIGIN_MAIN_SHA; historical b9c9499 PASS does not cover FIX4.",
+    "new_api_calls": 0,
+    "new_spend_cny": 0,
     "api_calls_authorized": 0,
     "spend_authorized_cny": 0,
     "phase5_authorized": false

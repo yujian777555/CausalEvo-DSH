@@ -68,6 +68,14 @@ def holm_adjusted_by_key(p_by_key: dict[str, float]) -> dict[str, float]:
     return {comp_key: adj for (comp_key, _p), adj in zip(pairs, adjusted)}
 
 
+def apply_secondary_holm(
+    primary_key: str,
+    secondary_raw_p: dict[str, float],
+) -> dict[str, float | None]:
+    """Adjust secondary p-values by key and keep the primary unadjusted."""
+    return {primary_key: None, **holm_adjusted_by_key(secondary_raw_p)}
+
+
 def main(benchmarks_root: Path | None = None) -> int:
     import sys
     run_dir = Path(sys.argv[1])
@@ -142,11 +150,13 @@ def main(benchmarks_root: Path | None = None) -> int:
     # P4-R1.12-REVIEW-FIX2 Task C: keep the raw-p -> comparison-key association.
     # Sort (raw_p, key) pairs by raw p, compute Holm step-down, then write each
     # adjusted value back to its ORIGINATING key (ties broken by key name).
-    adjusted = holm_adjusted_by_key({f"{a} vs {b}": comps[f"{a} vs {b}"]["exact_cluster_signflip_p"]
-                                     for a, b in secondary})
+    adjusted = apply_secondary_holm(
+        primary_key,
+        {f"{a} vs {b}": comps[f"{a} vs {b}"]["exact_cluster_signflip_p"]
+         for a, b in secondary},
+    )
     for key, adj in adjusted.items():
         comps[key]["holm_adj_p"] = adj
-    comps[primary_key]["holm_adj_p"] = None  # primary is NOT Holm-adjusted
     for k, v in comps.items():
         if k == primary_key:
             v["evidence_of_improvement"] = bool(

@@ -58,27 +58,28 @@ def test_absolute_path_rejected(tmp_path):
 
 def test_symlink_escape_rejected_if_supported(tmp_path):
     _build()
-    # create the symlink INSIDE a real allowed artifact root, pointing OUTSIDE it
-    link_dir = REPO / "results" / "phase4" / "live2" / "symlink-test-tmp"
-    target = REPO / "status.json"  # outside results/phase4/live2
-    link = link_dir / "tasks.jsonl"
+    import tempfile
+    link_dir = None
+    link = None
     try:
-        link_dir.mkdir()
-        link.symlink_to(target)
-    except (OSError, NotImplementedError) as exc:
-        pytest.skip(f"symlink creation not permitted on this platform: {exc}")
-    try:
+        link_dir = Path(tempfile.mkdtemp(
+            prefix="symlink-test-", dir=REPO / "results" / "phase4" / "live2"))
+        link = link_dir / "tasks.jsonl"
+        try:
+            link.symlink_to(REPO / "status.json")
+        except (OSError, NotImplementedError) as exc:
+            pytest.skip(f"symlink creation not permitted on this platform: {exc}")
         doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
-        doc["artifacts"]["pilot_tasks"]["path"] = str(link.relative_to(REPO)).replace("\\", "/")
+        doc["artifacts"]["pilot_tasks"]["path"] = link.relative_to(REPO).as_posix()
         bad = tmp_path / "bad.json"
         bad.write_text(json.dumps(doc), encoding="utf-8")
         proc = _verify(bad)
         assert proc.returncode == 1, "symlink escape must be rejected"
         assert "escapes allowed artifact root" in proc.stdout
     finally:
-        if link.is_symlink() or link.exists():
+        if link is not None and (link.is_symlink() or link.exists()):
             link.unlink()
-        if link_dir.exists():
+        if link_dir is not None and link_dir.exists():
             link_dir.rmdir()
 
 

@@ -1,4 +1,4 @@
-"""Non-vacuous Holm mapping regression tests (P4-R1.12-REVIEW-FIX3 Task B).
+"""Non-vacuous Holm mapping regression tests (P4-R1.12-REVIEW-FIX4 Task B).
 
 Deterministic fixture with three DISTINCT raw p-values whose lexical key order
 differs from raw-p order. Verifies the helper maps adjusted values back to the
@@ -7,8 +7,6 @@ the analyzer applies Holm only to the three secondary comparisons while the
 primary stays unadjusted.
 """
 
-import json
-import runpy
 import sys
 from pathlib import Path
 
@@ -48,27 +46,44 @@ def test_helper_ties_and_cumulative_maximum():
 
 
 def test_analyzer_applies_holm_only_to_secondary_and_primary_unadjusted():
-    out = json.loads((REPO / "results" / "phase4" / "live2" /
-                      "phase4-r12-replication-pilot-20261027T034229Z" / "analysis.json")
-                     .read_text(encoding="utf-8"))
-    secondary = set(out["secondary_holm_family"])
-    assert secondary == {"CEA-v2-online vs B5-v1-frozen-pareto",
-                         "CEA-v2-online vs B0-original",
-                         "B5-v1-frozen-pareto vs B1-random"}
-    primary = out["primary_comparison"]["arm_pair"]
-    assert primary not in secondary
-    assert out["comparisons"][primary]["holm_adj_p"] is None
-    for key in secondary:
-        assert out["comparisons"][key]["holm_adj_p"] is not None
+    primary = "CEA-v2-online vs B1-random"
+    secondary_raw = {
+        "CEA-v2-online vs B5-v1-frozen-pareto": 0.20,
+        "CEA-v2-online vs B0-original": 0.01,
+        "B5-v1-frozen-pareto vs B1-random": 0.04,
+    }
+    assert primary not in secondary_raw
+
+    adjusted = a12.apply_secondary_holm(primary, secondary_raw)
+
+    assert set(adjusted) == {primary, *secondary_raw}
+    assert adjusted[primary] is None
+    expected_secondary = {
+        "CEA-v2-online vs B5-v1-frozen-pareto": 0.20,
+        "CEA-v2-online vs B0-original": 0.03,
+        "B5-v1-frozen-pareto vs B1-random": 0.08,
+    }
+    for key, expected in expected_secondary.items():
+        assert adjusted[key] == pytest.approx(expected)
 
 
 def test_old_lexical_assignment_would_be_wrong():
     # Guard against the OLD bug: assigning adjusted values by lexicographic
     # comparison-name order instead of by raw-p order would attach the WRONG
     # adjusted value to a key when p-values differ.
-    fixture = {"comparison_z": 0.20, "comparison_a": 0.01, "comparison_m": 0.04}
+    fixture = {"comparison_z": 0.01, "comparison_a": 0.20, "comparison_m": 0.04}
+    raw_p_keys = sorted(fixture, key=fixture.get)
+    lexical_keys = sorted(fixture)
+    assert raw_p_keys == ["comparison_z", "comparison_m", "comparison_a"]
+    assert lexical_keys == ["comparison_a", "comparison_m", "comparison_z"]
+    assert raw_p_keys != lexical_keys
+
+    # The sorted adjusted values are [0.03, 0.08, 0.20]. Assigning them to
+    # lexical keys rather than raw-p-sorted keys misassigns two values.
+    lexical_misassigned = dict(zip(lexical_keys, [0.03, 0.08, 0.20]))
     adjusted = a12.holm_adjusted_by_key(fixture)
-    # if someone assigned by lexical order, comparison_a would get 0.20, not 0.03
-    assert adjusted["comparison_a"] != 0.20, \
-        "lexical-order misassignment would put the largest adjusted value on comparison_a"
-    assert adjusted["comparison_z"] == 0.20, "the largest adjusted value belongs to comparison_z"
+    assert any(lexical_misassigned[key] != adjusted[key] for key in fixture)
+    assert lexical_misassigned["comparison_a"] != adjusted["comparison_a"]
+    assert adjusted["comparison_z"] == pytest.approx(0.03)
+    assert adjusted["comparison_m"] == pytest.approx(0.08)
+    assert adjusted["comparison_a"] == pytest.approx(0.20)
