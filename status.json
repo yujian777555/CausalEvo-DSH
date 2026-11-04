@@ -3,17 +3,17 @@
   "repository": "yujian777555/CausalEvo-DSH",
   "branch": "main",
   "role_protocol": "GPT-Planner/Kimi-Executor",
-  "plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX5-R1-REMOTE-ERROR-AND-HANDOFF-RECONCILIATION",
-  "previous_plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX5",
-  "phase": "Phase 4 R1.12 — final offline audit remediation",
+  "plan_id": "CE-DSH-R1.12-FIX5-R1_R1.13-OFFLINE-FAST-TRACK",
+  "previous_plan_id": "CE-DSH-P4-R1.12-REVIEW-FIX5-R1-REMOTE-ERROR-AND-HANDOFF-RECONCILIATION",
+  "phase": "Phase 4 R1.12 closeout + R1.13 offline algorithm experiment",
   "phase_status": "CHANGES_REQUESTED",
-  "planner_review": "R1.12_REVIEW_FIX5_REQUEST_CHANGES_REMOTE_OSERROR_AND_HANDOFF_SYNC",
+  "planner_review": "FIX5_REQUEST_CHANGES; R1.13_OFFLINE_EXPERIMENT_AUTHORIZED",
   "next_actor": "Kimi-Executor",
   "planner_review_date": "2026-11-04",
   "executor_fix_date": "2026-11-04",
-  "baseline_main_sha": "3238ff5c646e09c8c80fa9f89dde54120476d8c6",
+  "baseline_main_sha": "0776da95852d9b176684b20975b1a7ec5650fd58",
   "reviewed_executor_head": "3238ff5c646e09c8c80fa9f89dde54120476d8c6",
-  "live_readiness": "STOPPED_AT_PHASE4; REVIEW-FIX5 offline-only; zero additional live calls/spend authorized",
+  "live_readiness": "STOPPED_AT_PHASE4; offline-only R1.13 experiment authorized; no new live calls/spend",
   "plan_path": "planner/latest_plan.md",
   "review_path": "planner/reviews/CE-DSH-P4-R1_12-review-fix4-independent-review.md",
   "executor_report_path": "planner/executor_report.md",
@@ -50,9 +50,9 @@
     },
     "planner_reviewed_head": "3238ff5c646e09c8c80fa9f89dde54120476d8c6",
     "clean_clone_tested_sha": "3238ff5c646e09c8c80fa9f89dde54120476d8c6",
-    "current_remote_head": "e1c465b017e5ebdbabb20d2349db3dc33bfd972c",
-    "current_remote_head_scope": "GitHub API refs/heads/main independently observed at e1c465b017e5ebdbabb20d2349db3dc33bfd972c before this Planner status/plan/handoff refresh; this metadata commit will advance main again, so Executor must re-read it.",
-    "final_head_clean_clone_status": "Executor-reported PASS at 3238ff5c646e09c8c80fa9f89dde54120476d8c6 only. New Planner metadata commits mean exact-final-origin/main clean-clone is pending.",
+    "current_remote_head": "0776da95852d9b176684b20975b1a7ec5650fd58",
+    "current_remote_head_scope": "GitHub API confirmed at plan/handoff update; status commit will advance main, so Executor must re-query.",
+    "final_head_clean_clone_status": "PENDING after R1.12 OSError fix, R1.13 code/results/docs; exact final remote-main SHA gate required.",
     "executor_submission_sha": "3238ff5c646e09c8c80fa9f89dde54120476d8c6"
   },
   "live_api": {
@@ -99,14 +99,15 @@
     "unknown_bound_cny": 0,
     "budget_cap_cny": 2,
     "new_live_calls_authorized_after_review": 0,
-    "note": "R1.12 canary+pilot complete. No additional live calls or spend authorized; review fixes are offline-only.",
-    "new_spend_authorized_after_review_cny": 0
+    "note": "R1.12 CNY 2 budget consumed. No new live calls/spend authorized; R1.13 offline simulation is authorized.",
+    "new_spend_authorized_after_review_cny": 0,
+    "additional_live_calls_authorized": false
   },
   "blockers": [
-    "scripts/clean_clone_check.py::_remote_sha does not catch OSError (e.g. FileNotFoundError), so remote lookup can raise instead of returning None and main exit code 3."
+    "R1.12 closeout: scripts/clean_clone_check.py::_remote_sha must catch OSError, return None, and main must return code 3 before temp-dir/clone/install side effects."
   ],
   "blockers_note": "All three FIX5 code/test findings are repaired and independently source/quality reviewed. Focused tests 46/1, full suite 687/0/1, 12-label hashes, 208-row coverage and frozen-data checks passed. The pending final gate is not recorded as PASS in this file.",
-  "next_goal": "Kimi-Executor to handle OSError in _remote_sha with deterministic exit-3/no-side-effect tests, then rerun clean-clone against the exact new final origin/main SHA. Planner has already synchronized latest_plan.md, SESSION_HANDOFF_PROMPT.md and status.json in its metadata commits.",
+  "next_goal": "Fix _remote_sha OSError narrowly, then immediately run R1.13-E0 10-seed full-horizon offline mechanism experiment; if E0 passes, run separate CCP-NSGA3 vs matched random-parent experiment.",
   "limitations": [
     "Planner did not independently run local pytest, WSL symlink script, clean-clone, or recompute all 12 artifact SHA-256 values; runtime/test results remain Executor-reported.",
     "The hardened clean-clone gate is pending for the final FIX5 SHA at commit time; historical FIX4 PASS at 717a1fbe8371a444c33f02ff9300c90505ec5ea7 does not cover this round.",
@@ -148,7 +149,7 @@
     "planner/SESSION_HANDOFF_PROMPT.md",
     "planner/reviews/CE-DSH-P4-R1_12-review-fix4-independent-review.md"
   ],
-  "notes": "Planner independently reviewed FIX5 source at Executor SHA 3238ff5c646e09c8c80fa9f89dde54120476d8c6. Symlink classifier and Holm primary invariant passed source review; clean-clone core path passed source review, with one remaining OSError handling edge. Planner synchronized the handoff/plan/status in commits e1c465b and this follow-up status refresh. Executor-reported focused/full tests and exact clean-clone pass at 3238ff5c646e09c8c80fa9f89dde54120476d8c6 are historical and do not cover the new Planner metadata HEAD. No live API calls or spend authorized.",
+  "notes": "User requested faster experimental progress. Offline CPU simulation is authorized with 0 DeepSeek calls and CNY 0. R1.12 remains CHANGES_REQUESTED for one OSError edge. R1.12 raw data and Phase 0–3/R1.9 frozen artifacts remain immutable. R1.12 had only 5 behavioral observations and zero NSGA-III parent/survivor calls. Synthetic R1.13 results are not real-agent improvement evidence. Live validation requires separate explicit budget approval; R1.12 CNY 2 budget is spent.",
   "r1_2_fixes": {
     "F2_1_all_attempt_bucket_accounting": "FIXED",
     "F2_2_assistant_attempt_usage_parsing": "FIXED",
@@ -1029,5 +1030,26 @@
     "api_calls_authorized": 0,
     "spend_authorized_cny": 0,
     "phase5_authorized": false
+  },
+  "experiment_status": "AUTHORIZED_OFFLINE_ZERO_API_EXECUTION",
+  "experiment_plan_path": "planner/experiments/CE-DSH-P4-R1.13-FAST-CEA-MECHANISM.md",
+  "experiment_executor_prompt_path": "planner/experiments/CE-DSH-P4-R1.13-EXECUTOR-PROMPT.md",
+  "experiment_authorization": {
+    "user_request": "赶紧进入实验吧，不要太慢了",
+    "scope": "Offline CPU simulation only; may start before R1.12 final clean-clone gate",
+    "new_deepseek_api_calls_authorized": 0,
+    "new_spend_authorized_cny": 0,
+    "live_pilot_authorized": false,
+    "canary_authorized": false,
+    "phase5_authorized": false,
+    "output_dir": "results/phase4/r13-offline/"
+  },
+  "r1_13_offline_experiment": {
+    "status": "AUTHORIZED_NOT_YET_EXECUTED",
+    "e0": "10 seeds × 4 synthetic regimes × 7 arms; full horizons; remove stale structural truncation guard only after boundedness tests pass.",
+    "e1": "Separate CCP-NSGA3 context-conditioned Pareto variant and matched random-parent ablation after E0.",
+    "evidence_class": "synthetic_mechanism_test",
+    "output_dir": "results/phase4/r13-offline/",
+    "no_real_agent_claim": true
   }
 }
