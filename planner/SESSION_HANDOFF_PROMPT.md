@@ -16,18 +16,18 @@
 **FIX5 独立源码审查：REQUEST_CHANGES。**
 
 - FIX5 Executor 提交：`3238ff5c646e09c8c80fa9f89dde54120476d8c6`
-- Planner 已通过 GitHub API 独立确认，该 SHA 在复审时是 `refs/heads/main`。
+- Planner 通过 GitHub API 独立确认，该 SHA 在复审时是 `refs/heads/main`。
 - FIX5 执行报告：`planner/executor_report.md`
 - FIX5 独立审查：`planner/reviews/CE-DSH-P4-R1_12-review-fix5-independent-review.md`
-- 当前执行计划：`planner/latest_plan.md`（FIX5-R1 Remote Error Handling and Handoff Reconciliation）。
+- 当前计划：`planner/latest_plan.md`（FIX5-R1 Remote Error Handling and Final Gate）。
 - 当前状态：`status.json`，`phase_status=CHANGES_REQUESTED`，`next_actor=Kimi-Executor`。
-- 本 handoff 和 Planner 状态/计划更新会推进 main；新会话必须重新读取 GitHub 当前 `refs/heads/main`，不要把本提示中的 SHA 当作之后的当前 HEAD。
+- Planner 已在后续 metadata commits 中同步 handoff/plan/status。新会话必须重新读取 GitHub 当前 `refs/heads/main`，不要把此处 SHA 当作最新 HEAD。
 
 ## FIX5 三项核心修复的 Planner 源码审查结果
 
-1. **Symlink 分类：源码审查通过。** 明确权限/不支持错误可 skip；EIO、ENOSPC、ENOENT 等重新抛出；唯一临时目录与 finally 清理保留。Windows WinError 1314 的一个 skip 是 Executor 报告，WSL 真实逃逸拒绝也是 Executor 报告，Planner 未本地运行。
+1. **Symlink 分类：源码审查通过。** 明确权限/不支持错误可 skip；EIO、ENOSPC、ENOENT 等重新抛出；唯一临时目录与 finally 清理保留。Windows WinError 1314 的一个 skip 和 WSL 真实逃逸拒绝均为 Executor 报告，Planner 未本地执行。
 2. **Holm primary 排除：源码审查通过。** 生产函数接收包含 primary 的完整 mapping，内部排除 primary，primary 输出 None，main 传入完整四项 mapping；集成测试覆盖 primary contamination 和 secondary 结果不变性。
-3. **Clean-clone：核心源码审查通过，但仍有一个小缺口。** 显式 SHA 会核验远端；mismatch 在 clone 前失败；从 configured origin 克隆 main 并核对 clone HEAD；错误输出脱敏。当前 `_remote_sha()` 未捕获 `OSError`，例如 Git 无法启动时不能返回约定的 REMOTE_UNVERIFIED exit 3，FIX5-R1 必须补齐。
+3. **Clean-clone：核心源码审查通过，但有一个小缺口。** 显式 SHA 会核验远端；mismatch 在 clone 前失败；从 configured origin 克隆 main 并核对 clone HEAD；错误输出脱敏。当前 `_remote_sha()` 未捕获 `OSError`，例如 Git 无法启动时不能返回约定的 REMOTE_UNVERIFIED exit 3，FIX5-R1 必须补齐。
 
 ## FIX5 Executor 已报告的证据（不是 Planner 重跑）
 
@@ -38,10 +38,10 @@
 - 覆盖：26 tasks × 2 seeds × 4 arms = 208 unique keys。
 - R1.12 tasks/events/ledger 原始哈希报告保持不变；Phase 0–3 和 R1.9 冻结数据未改变。
 - 历史 738 settled；归一费用 CNY 1.0397171982；UNKNOWN bound 0。
-- 最终 clean-clone 报告对 SHA `3238ff5c646e09c8c80fa9f89dde54120476d8c6` PASS；这是 Executor 报告。GitHub API 独立确认当时 main 指向该 SHA。GitHub check-runs 为 0；Planner 没有运行 clean-clone、pytest、WSL 或账本重算。
+- 最终 clean-clone 对 SHA `3238ff5c646e09c8c80fa9f89dde54120476d8c6` PASS 为 Executor 报告；GitHub API 独立确认当时 main 指向该 SHA。GitHub check-runs 为 0；Planner 没有运行 clean-clone、pytest、WSL 或账本重算。
 - 新增 DeepSeek API calls 0、新增费用 CNY 0；未查询余额、未运行 live pilot/canary。
 
-**重要：** FIX5-R1 将新增代码/文档提交，原 `3238ff5c646e09c8c80fa9f89dde54120476d8c6` 的 clean-clone 不再覆盖新 SHA。必须对新最终 origin/main SHA 重新运行 clean-clone。
+**重要：** FIX5-R1 及 Planner metadata commits 推进了 main；旧的 clean-clone PASS 不覆盖新 SHA。必须对最新精确 origin/main SHA 重新运行门禁。
 
 ## FIX5-R1 具体任务
 
@@ -49,8 +49,8 @@
 
 1. 修复 `scripts/clean_clone_check.py::_remote_sha()`：捕获 Git 启动等 `OSError` 并返回 None。
 2. 增加确定性测试：底层 Git 调用抛出 FileNotFoundError/OSError 时，`main()` 返回 3，且不创建临时目录、不 clone、不 install。
-3. 同步更新 `planner/latest_plan.md`、`planner/SESSION_HANDOFF_PROMPT.md`、`status.json`，如实记录当前 SHA、FIX5 审查、Executor 证据与 Planner 未验证边界。
-4. 运行专项测试及哈希/冻结数据核对；所有 tracked-file 修改必须在最终门禁之前。
+3. 核对 Planner 已更新的 `latest_plan.md`、`SESSION_HANDOFF_PROMPT.md`、`status.json` 和 FIX5 review；不要恢复旧状态。
+4. 运行专项测试及哈希/冻结数据核对。
 5. commit/push，确认本地 HEAD == `git ls-remote origin main`，工作区 clean。
 6. 对精确最终 SHA 执行 clean-clone，保留原始命令、输出、exit code。
 7. **门禁后不再修改任何 tracked file。** 若修改，必须重新对新 SHA 执行门禁。

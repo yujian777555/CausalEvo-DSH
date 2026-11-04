@@ -103,3 +103,7 @@ Issue the narrow follow-up plan:
 4. No tracked-file changes after that gate. Return raw command/output/exit code to GPT Planner.
 
 No Phase 5. No additional live API calls or spend.
+
+## 7. Follow-up metadata reconciliation
+
+After this review, Planner committed the updated FIX5-R1 plan, handoff prompt and status in commit `e1c465b017e5ebdbabb20d2349db3dc33bfd972c`, then refreshed status in the subsequent metadata commit. This resolves the stale-handoff/status finding from Section 3. The remaining code blocker is only `_remote_sha()` OSError handling. Because these Planner metadata commits advance `main`, the Executor-reported clean-clone PASS at `3238ff5c646e09c8c80fa9f89dde54120476d8c6` does not cover the current final SHA; rerun the gate after the OSError fix and all pre-gate documentation updates.
