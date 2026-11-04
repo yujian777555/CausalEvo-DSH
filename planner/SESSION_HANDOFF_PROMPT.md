@@ -1,88 +1,125 @@
-# CE-DSH 下一会话接管提示词 — R1.12 REVIEW-FIX4
+# CE-DSH 下一会话接管提示词 — R1.12 REVIEW-FIX5
 
-你是 CausalEvo-DSH 项目的 **GPT Planner（规划者）**；Kimi 是 **Executor（执行者）**。严格遵循 GPT Planner → Kimi Executor → GPT Planner 独立验收闭环。不要把 Executor 自报结果当作 Planner 已验证事实。
+你是 CausalEvo-DSH 项目的 **GPT Planner（规划者）**；Kimi 是 **Executor（执行者）**。严格遵循 GPT Planner → Kimi Executor → GPT Planner 独立验收闭环。不能把 Executor 自报测试结果当作 Planner 已验证事实。
 
 ## 项目边界
 
 - 仓库：yujian777555/CausalEvo-DSH
 - GitHub：https://github.com/yujian777555/CausalEvo-DSH
 - 分支：main
-- 本会话只处理 CausalEvo-DSH，不得混入 openissue、agentfotagent、GLEPPO、EvoPareto-Agent 等其他项目。
-- 研究主线：以演化计算改进 LLM Agent 的故障诊断与干预策略。必须区分离线 NSGA-III 实现、在线 NSGA-III 真实调用、Agent 效果证据和 RSI。
-- 当前阶段：Phase 4 R1.12 最终离线审计修复；**尚未验收，不得进入 Phase 5**。
+- 本会话只处理 CausalEvo-DSH，不得混入 openissue、agentfotagent、GLEPPO、EvoPareto-Agent 等项目。
+- 研究主线：演化计算改进 LLM Agent 的故障诊断与干预策略。
+- 当前阶段：Phase 4 R1.12 离线审计修复；**尚未最终验收，不得进入 Phase 5**。
 
-## 当前 Planner 决策
+## 最新 Planner 决策
 
-最新 Planner 决策：**REQUEST_CHANGES**。
-当前 active status：phase_status=CHANGES_REQUESTED；next_actor=Kimi-Executor。
-当前计划：planner/latest_plan.md（CE-DSH-P4-R1.12-REVIEW-FIX4）。
-独立审查：planner/reviews/CE-DSH-P4-R1_12-review-fix3-independent-review.md。
+**FIX4 独立审查结论：REQUEST_CHANGES。**
 
-新会话开始时，必须重新读取 GitHub 当前 origin/main SHA。此前检查时，Planner 依次提交了 FIX3 review、FIX4 plan 和 status 更新；之后可能还有新的 handoff commit。不要把任何下述 SHA 当作新会话的当前 HEAD。
+- FIX4 Executor 提交：717a1fbe8371a444c33f02ff9300c90505ec5ea7
+- Planner 已通过 GitHub API 独立确认，该 SHA 在复审时是 refs/heads/main。
+- FIX4 执行报告：planner/executor_report.md
+- FIX4 独立审查：planner/reviews/CE-DSH-P4-R1_12-review-fix4-independent-review.md
+- FIX5 执行计划：planner/latest_plan.md
+- 项目状态：status.json，phase_status=CHANGES_REQUESTED，next_actor=Kimi-Executor。
+- 本 handoff 和 Planner 状态/计划更新会产生新的 Planner 文档提交。因此新会话必须重新读取 GitHub 当前 refs/heads/main；不要把 717a1fbe 当作新会话的当前 HEAD。
 
-## FIX3 独立复审结论
+## FIX4 已完成且通过源码审查的部分
 
-FIX3 实现提交：b9c949981c8489ada1a48a8cad43a57a3895115c。
-Executor 报告的 clean-clone PASS 对应 b9c9499。
-之后存在：
-- 5cbda42a37da955da3ddecfd798edadbd127699e：status/report follow-up；
-- ddbb1f82498c4e7bce4d52eed591e32811e3399b：handoff prompt；
-- 后续 Planner review/plan/status commits。
+- GitHub main 在 FIX4 复审时为 717a1fbe8371a444c33f02ff9300c90505ec5ea7。
+- FIX4 从接管 SHA 5d1c12c3... 到提交 SHA 717a1fbe... 为一个 commit，修改 8 个文件。
+- symlink 测试已使用唯一临时目录，并通过 finally 清理；独立 WSL 脚本创建链接、实际调用 verifier、断言 escape rejection 并清理。
+- Holm raw-p 顺序与 lexical key 顺序的负对照现已非平凡。
+- main() 当前确实先从比较列表中排除主比较，再调用 apply_secondary_holm。
+- fake-provider smoke 目录只含 manifest.json 和 controller_state.json；manifest 标记机制接线测试，不是模型效果证据。
+- FIX4 报告的全量测试为 665 passed / 1 skipped；Windows WinError 1314 symlink skip。Planner 没有本地重跑。
+- FIX4 报告 exact-SHA clean-clone PASS at 717a1fbe...；GitHub API 独立确认 main 指向相同 SHA。Planner 没有本地运行 clean-clone。
+- GitHub check-runs 查询为 0；本轮测试证据来自 Executor 本地终端报告，不是 Actions。
 
-因此，**当前最新 main 没有被已记录的 b9c9499 clean-clone 覆盖**。必须在 FIX4 所有修改完成并推送后，对精确最终 origin/main SHA 重新运行 clean-clone；运行后不允许再提交任何文件。
+## FIX4 独立审查的三个剩余问题
 
-Planner 已检查 GitHub 源码、提交关系、status、报告、分析工件和测试源文件，但没有本地执行 pytest/clean-clone，也没有重新计算 12 项 SHA-256。不得声称这些运行时结果已由 Planner 独立验证。
+### 1. Symlink skip 分类过宽（P2）
 
-## FIX3 的已确认问题
+tests/test_r12_hashes.py 捕获所有 OSError 并 pytest.skip。这样 EIO、ENOSPC、ENOENT 等无关文件系统错误也可能被误记为 skip。
 
-1. **P1 exact-SHA gate：** clean-clone 报告只覆盖 b9c9499；5cbda42、ddbb1f8 和 Planner commits 均在其后。
-2. **P1 status drift：** status.json 顶层 READY_FOR_REVIEW / GPT-Planner / blockers=[]，但内部仍有 FIX2 REQUEST_CHANGES、旧 clean-clone SHA、旧 MISSING_REQUIRED_HASHES / Holm / task coverage blockers。
-3. **P2 symlink test cleanup：** symlink 创建失败时 pytest.skip 发生在后续 finally 之前，可能留下临时目录；固定路径也可能导致后续运行错误跳过。
-4. **P2 standalone symlink script：** scripts/symlink_escape_check.py 假设 symlink 已存在，不会自行创建/清理；根目录 tmp-symlink-check.py 与其 blob 完全相同，是重复临时文件。
-5. **P2 Holm tests：** test_old_lexical_assignment_would_be_wrong 的 raw-p 顺序与字典键序相同，旧错误实现也会通过；另一个 integration test 只读取静态 analysis.json，没有执行生产分析路径。
-6. **P2 smoke artifacts：** results/phase4/cea_v2_agent_smoke 新增 manifest 声明 fake provider、repo_head_sha=c007b5c64280bad53c5c6f272be961eca472e855、时间 2026-10-28，但 FIX3 executor report 没解释为何在 FIX3 commit 加入。需说明来源/命令/哈希/安全扫描，或删除。
+FIX5 要求：
+- NotImplementedError 可 skip。
+- OSError 仅对明确的权限/不支持错误 skip，例如 Windows WinError 1314、POSIX EPERM/EACCES、ENOTSUP/EOPNOTSUPP/ENOSYS。
+- 对 EIO、ENOSPC、ENOENT 等不相关错误必须重新抛出，使测试失败。
+- 增加纯分类器回归测试：权限/不支持错误为 unavailable；EIO 等无关错误不是。
+- 保留唯一临时目录和 finally 清理。
 
-## Executor 必须执行的计划
+### 2. Holm primary exclusion 没有成为生产函数的不变量（P2）
 
-完整任务、文件、验收标准见 planner/latest_plan.md。核心要求：
+当前生产函数：
 
-- 修复 symlink 测试的临时目录生命周期；在 Linux/WSL 真实创建 symlink、调用 verifier、断言拒绝并清理；Windows 只有真实权限限制时才 skip。
-- 让 standalone 检查自包含，或移除；删除重复的 tmp-symlink-check.py。
-- 修正 Holm negative-control fixture，使 raw-p 顺序确实不同于 lexical key 顺序；让 integration test 执行生产 primary/secondary Holm 逻辑，不只读取静态 analysis.json。
-- 解释或删除 CEA-v2 fake-provider smoke 工件，记录来源、revision、生成命令、SHA-256 和安全扫描。
-- 归一 status.json active fields，旧 FIX1/FIX2 结论保留为历史，不能再混入 active blockers。
-- 更新 Executor report，清楚区分 Planner-reviewed 与 Executor-reported 证据。
-- 冻结数据不变，验证 12 项工件、26 tasks × 2 seeds × 4 arms = 208 唯一键。
-- 所有改动完成后 commit/push；确认 local HEAD == origin/main 且 worktree clean。
-- 对精确最终 SHA 运行 clean-clone；报告原始命令、SHA、输出和 exit code。
-- **clean-clone 后不得再 commit 或编辑任何 tracked file。**
+    return {primary_key: None, **holm_adjusted_by_key(secondary_raw_p)}
 
-## 科学结论与禁止事项
+如果 secondary_raw_p 恰好包含 primary_key，字典展开会覆盖 None，导致主比较被 Holm 校正。当前 main() 外部过滤正确，但测试人为构造了已排除 primary 的 secondary map，不能保护函数免受 primary 污染。
 
-R1.12 committed analysis reports:
+FIX5 优先方案：
+- 将 apply_secondary_holm 改为接收所有比较的 raw-p mapping（包括 primary）。
+- 函数内部确保 primary_key 返回 None，只对其他比较执行 Holm。
+- main() 将完整 raw-p mapping 传入，不要在函数外预先过滤 primary。
+- 集成测试必须让 primary_key 实际存在于输入 mapping，并断言输出 primary=None、三个次要比较正确校正。
+- 保留 lexical negative control、ties、累计最大值、单调性和 [0,1] 测试。
+
+### 3. clean_clone_check.py 显式 SHA 绕过远端检查（P2）
+
+当前 scripts/clean_clone_check.py：
+- 如果命令行传入 expected SHA，就不调用 _remote_sha()；
+- 使用 git clone str(REPO)，即克隆本地仓库路径；
+- 成功消息却写作 HEAD == origin/main。
+
+FIX4 这一次另有 Executor 报告的 git ls-remote 检查，且 Planner 通过 GitHub API 确认 main=717a1fbe...，所以本次目标 SHA 有外部佐证。但通用 gate helper 本身可能在本地有未推送 commit 时 false-pass。
+
+FIX5 要求：
+- 无论是否传显式 SHA，都必须查询配置的 origin/main。
+- remote 无法确定时 fail closed。
+- 显式 SHA 与 remote SHA 不一致时，在 clone/install 前失败。
+- 优先 clone 实际 origin URL 的 main；若保留本地 clone，则必须先证明本地 HEAD == remote main == expected，并准确描述 clone source。
+- 不得在未检查远端时声称 clone 的 origin/main 已验证。
+- 添加显式 SHA / remote SHA mismatch 的确定性回归测试。
+- 不输出可能带有嵌入凭据的 remote URL。
+
+## FIX5 完整任务
+
+所有详细文件与验收标准见 planner/latest_plan.md（CE-DSH-P4-R1.12-REVIEW-FIX5）。
+
+完成 A–C 后：
+1. 跑 symlink classifier/containment、Holm、clean-clone helper、analysis determinism、frozen-task-set 专项测试。
+2. 跑全量 pytest，记录原始输出、passed/failed/skipped 和 exit code。
+3. 验证 12-label manifest hashes。
+4. 验证 canonical task manifest hash 仍为 fcd9df30d61022fecc76067cabe4d3a78c5e9b85750c61d48aa3a8350e8ba483，覆盖 26 tasks × 2 seeds × 4 arms = 208 keys。
+5. 确认 R1.12 raw tasks/events/ledger、Phase 0–3 和历史 R1.9 冻结工件未改。
+6. 核对历史 738 settled、归一费用 CNY 1.0397171982、UNKNOWN bound 0；不得新增 provider 请求。
+7. 在最终 commit 前更新 executor_report.md 和 status.json。
+8. commit/push，确认 local HEAD == git ls-remote origin main，worktree/staging clean。
+9. 用 hardened clean-clone helper 对精确 final origin/main SHA 执行门禁。
+10. **门禁后禁止任何 tracked-file edit/commit。** 若改动了文件，必须对新 SHA 重跑门禁。
+
+## 科学结论（不可夸大）
+
+R1.12 committed analysis:
 - B0-original 0.8846153846
 - B1-random 0.9423076923
 - B5-v1-frozen-pareto 0.9230769231
 - CEA-v2-online 0.9423076923
-- Primary CEA-v2 vs B1 paired difference 0; exact cluster p=1.0; reported CI [-0.0769230769, 0.0769230769].
-- No evidence of CEA-v2 superiority.
-- Live NSGA-III parent-selection calls=0 and survivor-selection calls=0.
-- Five behavioral observations only; L4 RSI not implemented.
-- Same-suite fresh-seed replication, not unseen-task generalization.
+- Primary CEA-v2 vs B1 paired difference 0; exact cluster sign-flip p=1.0; reported CI [-0.0769230769, 0.0769230769].
+- 没有 CEA-v2 优于随机/静态基线的证据。
+- 真实 NSGA-III parent/survivor selection calls 均为 0。
+- 仅 5 条行为观察；L4 RSI 未实现。
+- 同任务集 fresh-seed replication，不是 unseen-task generalization。
 
-Authorization boundary:
-- New DeepSeek API calls = 0.
-- New spend = CNY 0.
-- No balance query.
-- No live pilot/canary.
-- No edits to raw R1.12 tasks/events/proxy ledger or frozen Phase 0–3/R1.9 artifacts.
-- No Phase 5.
+## 授权边界
 
-## Planner's next action
+- 新增 DeepSeek API calls = 0。
+- 新增费用 = CNY 0。
+- 不查询余额。
+- 不运行 live pilot/canary。
+- 不修改 R1.12 raw tasks/events/proxy ledger。
+- 不修改 Phase 0–3 或历史 R1.9 冻结数据。
+- 不进入 Phase 5。
 
-After Kimi returns FIX4:
-1. Re-read current remote main and exact commit graph.
-2. Inspect all changed source/tests/status/report.
-3. Verify the exact-SHA clean-clone output corresponds to the current origin/main SHA and no later commit exists.
-4. Clearly label Planner-verified, Executor-reported and Not verified evidence.
-5. Decide ACCEPTED or REQUEST_CHANGES. Do not proceed based solely on green test counts.
+## Planner 下一步
+
+Kimi 完成 FIX5 后，重新读取当前远端 main，检查所有代码和测试变更，核对 exact-SHA clean-clone 输出与实际 GitHub main 一致。清楚区分 Planner 已核查、Executor 自报、尚未验证的证据，再决定 ACCEPTED 或 REQUEST_CHANGES。不要只看测试数量。
