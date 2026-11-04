@@ -1,85 +1,52 @@
-# CE-DSH-P4-R1.12-REVIEW-FIX5-R1 — Remote error handling and final gate
+# CE-DSH R1.12 closeout + R1.13 offline experiment — FAST TRACK
 
-Planner review: `planner/reviews/CE-DSH-P4-R1_12-review-fix5-independent-review.md`
-Reviewed Executor SHA: `3238ff5c646e09c8c80fa9f89dde54120476d8c6`
-Planner decision: **REQUEST_CHANGES**
-Next actor: **Kimi-Executor**
+Current FIX5 Executor SHA: `3238ff5c646e09c8c80fa9f89dde54120476d8c6`
+GitHub main at plan creation: `91f530bfc2d11978664c65667063c4910bc21c68` (re-query before work)
+Decision: **REQUEST_CHANGES** for one narrow `_remote_sha()` OSError edge.
+Next actor: **Kimi-Executor**.
 
-## 0. Scope and hard boundaries
+## User priority
+User said: **“赶紧进入实验吧，不要太慢了”**. Fix the remaining OSError issue narrowly, then immediately run R1.13-E0 offline simulation. Do not wait for the final clean-clone gate to start offline work.
 
-Narrow offline-only follow-up. The three principal FIX5 source fixes passed Planner source review. Do not reopen or redesign them unless a regression is found.
+## A. Close R1.12 with one small fix
+- In `scripts/clean_clone_check.py`, catch `OSError` in `_remote_sha()` and return `None`.
+- Test `FileNotFoundError`: `main()` returns 3 and no `mkdtemp`, clone, venv or install occurs.
+- Preserve current mismatch and `CalledProcessError` behavior.
+- Do not reopen passed FIX5 symlink/Holm fixes absent regression.
 
-- Additional DeepSeek API calls: **0**.
-- New spend: **CNY 0**.
-- No balance query, no live pilot/canary, no Phase 5.
-- Do not modify R1.12 raw tasks/events/proxy ledger.
-- Do not modify Phase 0–3 or historical R1.9 frozen artifacts.
-- Preserve experiment rows, raw p-values, preregistration and scientific conclusions.
-- Re-read the latest origin/main before work. The most recent Planner metadata SHA known when this plan was refreshed is `e1c465b017e5ebdbabb20d2349db3dc33bfd972c`; this metadata commit itself advances main.
+## B. R1.13-E0: full-horizon offline mechanism test
+R1.12 had 5 behavioral observations, one evolve event, and zero NSGA-III parent/survivor calls. The first evolve occurs at observation 4; `n_parents=min(4,len(measured))` therefore passes all four measured candidates without NSGA-III. Observation 5 is insufficient to trigger the next evolve. Thus live NSGA-III selection was not tested.
 
-## 1. Task A — Make remote lookup fail closed with the documented exit code
+The current offline script still has an obsolete episode-15 structural truncation guard for an earlier phenotype-exhaustion livelock. Current `online_evolution.py` has `max_attempts=200` and bounded archive eviction. Add regression tests for termination, archive cap and deterministic replay; only then remove the stale pre-emptive guard, retaining a real watchdog.
 
-File: `scripts/clean_clone_check.py`
+Run **10 deterministic seeds × 4 frozen regimes × 7 arms**, full horizons:
+- Regimes: stationary contextual, abrupt shift, success-cost tradeoff, IID-noise negative control.
+- Arms: Random, Rule, Static Pareto, Frozen LinUCB, CEA-v2, CEA-v2 no-variation, CEA-v2 no-update.
+- Same contexts and outcome envelope across arms within each seed/regime.
+- No reward-table changes after seeing results.
+- Output per-seed rows and reproducible aggregate under `results/phase4/r13-offline/`.
 
-Current `_remote_sha()` catches `CalledProcessError` and `IndexError`, but an `OSError` raised while launching Git (for example `FileNotFoundError`) escapes the helper.
+Record full-horizon completion, termination, success, regret, adaptation lag, cost/calls, phenotype diversity, population size, generations, offspring attempts, NSGA-III parent/survivor counters and replay determinism. E0 is synthetic mechanism evidence only, not real-agent efficacy.
 
-Requirements:
-- Catch `OSError` from the remote lookup and return `None`.
-- Preserve the existing behavior for non-zero git exit and empty output.
-- `main()` must print the generic `REMOTE_UNVERIFIED` message and return exit code 3.
-- No temporary directory, clone, venv, install or tests may start after remote lookup failure.
-- Do not print remote URLs or exception strings that might contain credentials.
+## C. R1.13-E1: one separate EC variant, only after E0
+Hypothesis: action scoring is context-conditioned but current evolutionary parent fitness is global, mixing incompatible failure contexts.
 
-Add deterministic regression tests:
-1. Mock the underlying `_git(["ls-remote", ...])` call to raise `FileNotFoundError`; assert `_remote_sha()` returns `None`.
-2. Exercise `main()` through that failure; assert return code 3 and no `mkdtemp`/clone/install calls.
-3. Retain explicit-SHA mismatch and remote-unknown tests.
+Implement separate **CCP-NSGA3**:
+- Store per-context n, successes, incremental cost and calls.
+- Context fitness: `[Beta(1,1) posterior-mean success, -mean incremental cost, -mean incremental calls]`.
+- For a context, invoke NSGA-III parent selection when at least five distinct candidates have observations in that context; otherwise fall back to unchanged CEA-v2.
+- Keep population bounded and infrastructure/unknown-cost fail-closed semantics unchanged.
+- Add a matched random-parent ablation identical except seeded uniform parent selection.
+- Compare Random, Static Pareto, Frozen LinUCB, CEA-v2, CCP-NSGA3 and CCP-NSGA3-random-parent.
+- Use 10 screening seeds; if promising, freeze code/config and run 30 separate confirmation seeds. No tuning on confirmation seeds.
+- If CCP-NSGA3 does not beat the matched random-parent arm, report that EC selection has not demonstrated value.
 
-## 2. Task B — Handoff and status synchronization
+Detailed protocol: `planner/experiments/CE-DSH-P4-R1.13-FAST-CEA-MECHANISM.md`.
+Executor prompt: `planner/experiments/CE-DSH-P4-R1.13-EXECUTOR-PROMPT.md`.
 
-**Planner completed the synchronization in the Planner metadata commits following the FIX5 review.**
+## Authorization and immutability
+Offline CPU simulation only: authorized. DeepSeek calls=0, new spend=CNY 0, no balance query, no live pilot/canary, no Phase 5. R1.12 CNY 2 budget is spent and cannot be reused. Any live experiment needs separate explicit budget approval.
+Do not modify R1.12 raw tasks/events/ledger or Phase 0–3/R1.9 frozen artifacts. New output only under `results/phase4/r13-offline/`. Mark `synthetic_mechanism_test`.
 
-Current files to verify before the final gate:
-- `planner/latest_plan.md`
-- `planner/SESSION_HANDOFF_PROMPT.md`
-- `status.json`
-- `planner/reviews/CE-DSH-P4-R1_12-review-fix5-independent-review.md`
-
-Do not overwrite these files with stale FIX4/FIX5 state. If any correction is needed, make it before the final gate and rerun the gate on the resulting new SHA.
-
-## 3. Task C — Focused regression and exact-final-SHA gate
-
-After Task A:
-1. Run `tests/test_clean_clone_check.py` and relevant symlink/Holm/determinism/frozen-task focused suites.
-2. Run `scripts/verify_r12_hashes.py`; confirm all 12 labels and canonical task manifest/208-key coverage.
-3. Confirm frozen raw data and Phase 0–3/R1.9 artifacts remain unchanged.
-4. Run the full pytest suite if broader behavior changed; otherwise document why the focused suite plus clean-clone critical suite is sufficient.
-5. Update `planner/executor_report.md` and `status.json` **before** the final commit if the new test evidence changes their recorded state. Keep Executor and Planner evidence distinct.
-6. Commit and push. Verify local HEAD == `git ls-remote origin main`, worktree/staging clean.
-7. Run the hardened clean-clone helper against the exact final origin/main SHA. Capture the actual command, raw output and exit code.
-8. **No tracked-file edits or commits after the final gate.** If any tracked file changes, rerun the gate against the new exact final remote-main SHA.
-
-## 4. Scientific conclusions — do not change
-
-R1.12 reported:
-- B0-original 0.8846153846
-- B1-random 0.9423076923
-- B5-v1-frozen-pareto 0.9230769231
-- CEA-v2-online 0.9423076923
-- Primary CEA-v2 vs B1 paired difference 0; exact cluster sign-flip p=1.0; reported CI [-0.0769230769, 0.0769230769].
-- No evidence of CEA-v2 superiority.
-- Live NSGA-III parent/survivor selection calls both 0.
-- Five behavioral observations only; L4 RSI not implemented.
-- Same-suite fresh-seed replication, not unseen-task generalization.
-
-## 5. Authorization
-
-- New DeepSeek API calls = 0.
-- New spend = CNY 0.
-- No balance query.
-- No live pilot/canary.
-- No raw R1.12 task/event/ledger edits.
-- No Phase 0–3 or historical R1.9 frozen-data edits.
-- No Phase 5.
-
-Stop after the final gate and report to GPT Planner. Do not self-accept.
+## Final gate
+Finish code, tests, results, report, status and handoff before final gate. Commit/push, verify exact remote main and clean worktree, run clean-clone at exact final SHA. No tracked edits after gate. Stop for GPT Planner review; do not self-accept.
